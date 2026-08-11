@@ -67,6 +67,22 @@ Add `--check` to print the summary without writing. The script touches only the
 - **[Kıyas](https://github.com/XINMurat/Kiyas)** — generate missing features and
   risks; they re-enter the backlog as tasks.
 
+Both directions have an adapter, so the handoff moves files rather than
+intentions:
+
+```bash
+python skill/iskele/scripts/iskele_to_registry.py --backlog 03-gorev-listesi.md --out registry.yaml
+python skill/iskele/scripts/kiyas_to_backlog.py --seeds seeds.yaml --phase F2 --out new-tasks.md
+```
+
+Expect the registry to come back with every task at `arbiter: author` — that is
+correct, not a bug. A status column filled in by whoever did the work is
+self-report. Name a real judge in the backlog to change it:
+
+```markdown
+- *Kabul:* An unauthorized request gets 403. **Hakem:** pytest tests/test_authz.py
+```
+
 ---
 
 ## Türkçe
@@ -119,3 +135,18 @@ bölgelerine dokunur; raporun gerisi senindir.
   denetle; "doğrulandı" diyen her cümleyi karşı-örnek taramasına sok.
 - **[Kıyas](https://github.com/XINMurat/Kiyas)** — eksik özellik ve risk
   adaylarını üret; backlog'a görev olarak geri girerler.
+
+İki yönün de adaptörü var; devir niyet değil dosya taşır:
+
+```bash
+python skill/iskele/scripts/iskele_to_registry.py --backlog 03-gorev-listesi.md --out registry.yaml
+python skill/iskele/scripts/kiyas_to_backlog.py --seeds tohumlar.yaml --phase F2 --out yeni.md
+```
+
+Registry'de her görevin `arbiter: author` gelmesi hata değil, doğru davranış:
+işi yapanın doldurduğu durum sütunu öz-beyandır. Değiştirmek için backlog'da
+gerçek hakemi adlandır:
+
+```markdown
+- *Kabul:* Yetkisiz istek 403 alır. **Hakem:** pytest tests/test_authz.py
+```

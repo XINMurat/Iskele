@@ -85,6 +85,96 @@ jobs:
           fi
           echo "OK: the malformed task did not become a silently weighted row."
 
+  handoff:
+    # The İskele <-> Mizan/Kıyas loop is only real if the artifacts actually
+    # cross. This job runs both adapters and hands the output to MIZAN'S OWN
+    # validator, checked out from its repo — an arbiter this repo does not
+    # control, which is the whole point. A claim of interop verified by the
+    # tool making the claim would be class: author.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/checkout@v5
+        with:
+          repository: XINMurat/Mizan
+          path: _mizan
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -r skill/iskele/scripts/requirements.txt
+          pip install -r _mizan/tools/requirements.txt
+
+      - name: Kıyas seeds -> backlog tasks
+        run: |
+          set -e
+          python skill/iskele/scripts/kiyas_to_backlog.py \
+            --seeds examples/seeds-handoff.example.yaml \
+            --phase F2 --layer X --out /tmp/from-seeds.md
+          # Only H-aday seeds become work. A declined seed or a speculative one
+          # turning into a task would mean the tier filter silently failed.
+          grep -q 'F2-X-01' /tmp/from-seeds.md
+          grep -q 'F2-X-02' /tmp/from-seeds.md
+          test "$(grep -c '^- \[ \]' /tmp/from-seeds.md)" = "2" \
+            || { echo "FAIL: tier filter let a non-H-aday seed become a task" >&2; exit 1; }
+          grep -q 'KS-103' /tmp/from-seeds.md \
+            || { echo "FAIL: the parked [S] seed vanished instead of staying visible" >&2; exit 1; }
+          if grep -q 'KS-104' /tmp/from-seeds.md; then
+            echo "FAIL: a declined seed became backlog content" >&2; exit 1
+          fi
+          grep -q 'TAHMIN: kalibresiz' /tmp/from-seeds.md \
+            || { echo "FAIL: an unresolvable cost was weighted silently" >&2; exit 1; }
+          echo "OK: seeds -> backlog respected tiers, declines and calibration."
+
+      - name: Generated tasks must survive the tracker parser (round trip)
+        run: |
+          set -e
+          python skill/iskele/scripts/backlog_to_tracker.py \
+            --backlog /tmp/from-seeds.md --out /tmp/from-seeds.xlsx
+          test -s /tmp/from-seeds.xlsx
+
+      - name: backlog -> Mizan registry
+        run: |
+          set -e
+          python skill/iskele/scripts/iskele_to_registry.py \
+            --backlog examples/backlog.example.md \
+            --project "Iskele CI" --owner "XINMurat" --out /tmp/registry.yaml
+          python skill/iskele/scripts/iskele_to_registry.py \
+            --backlog /tmp/from-seeds.md --out /tmp/registry-seeds.yaml
+
+      - name: Mizan's own validator is the arbiter (R1–R8)
+        run: |
+          set -e
+          cd _mizan
+          python tools/mizan_validate.py /tmp/registry.yaml
+          python tools/mizan_validate.py /tmp/registry-seeds.yaml
+
+      - name: Self-test — a task with no arbiter must stay self-reported
+        run: |
+          set -e
+          # Silent promotion is the failure this default exists to prevent: a
+          # tracker column filled in by whoever did the work is self-report, and
+          # Mizan R8 must see class: author so K-promotion stays closed.
+          python - <<'PY'
+          import sys, yaml
+          reg = yaml.safe_load(open("/tmp/registry.yaml", encoding="utf-8"))
+          classes = {h["id"]: h["arbiter"]["class"] for h in reg["hypotheses"]}
+          bad = [k for k, v in classes.items() if v != "author"]
+          if bad:
+              print("FAIL: no-arbiter tasks were promoted above self-report:", bad)
+              sys.exit(1)
+          seeds = yaml.safe_load(open("/tmp/registry-seeds.yaml", encoding="utf-8"))
+          got = {h["id"]: h["arbiter"]["class"] for h in seeds["hypotheses"]}
+          if set(got.values()) != {"runtime"}:
+              print("FAIL: a **Hakem:** line did not survive into the registry:", got)
+              sys.exit(1)
+          print("OK: arbiter class follows the backlog, in both directions.")
+          PY
+
   examples-in-sync:
     runs-on: ubuntu-latest
     steps:

@@ -36,6 +36,11 @@ TASK_RE = re.compile(
     r'\((?P<est>[SMLsml])\)\s*(?P<rest>.+)$')
 DEP_RE = re.compile(r'\*\*(?:Bag\.?|Bağ\.?|Dep\.?|Bagimlilik|Bağımlılık)\s*:?\*\*\s*(?P<deps>.*)$',
                     re.IGNORECASE)
+# Kabul kriteri gorev satirinin ALTINDA, girintili bir alt-madde olarak durur.
+# Cizelgeye tasinmaz (orada sutunu yok) ama iskele_to_registry.py bunu
+# onkayitli curutme kosuluna cevirir; o yuzden parser burada yakalar.
+KABUL_RE = re.compile(r'^\s+[-*]\s*\*?(?:Kabul|Acceptance)\*?\s*:?\*?\s*(?P<kabul>.+?)\*?\s*$',
+                      re.IGNORECASE)
 
 
 def parse_backlog(path):
@@ -50,6 +55,9 @@ def parse_backlog(path):
             continue
         m = TASK_RE.match(raw)
         if not m:
+            km = KABUL_RE.match(raw)
+            if km and tasks:
+                tasks[-1]["kabul"] = km.group("kabul").strip()
             continue
         tid = m.group("id").strip()
         if tid in seen:
@@ -77,7 +85,8 @@ def parse_backlog(path):
         tasks.append(dict(id=tid, faz=faz,
                           epik=f"{epic_code} {epic_name}".strip(),
                           gorev=title, katman=katman,
-                          tahmin=m.group("est").upper(), bagimlilik=deps))
+                          tahmin=m.group("est").upper(), bagimlilik=deps,
+                          kabul="", satir=lineno))
     if not tasks:
         problems.append("hic gorev satiri bulunamadi — backlog formatini kontrol et")
     return tasks, problems

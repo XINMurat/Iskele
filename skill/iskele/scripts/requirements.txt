@@ -1,2 +1,4 @@
 # İskele tooling dependencies
 openpyxl>=3.1
+# iskele_to_registry.py / kiyas_to_backlog.py — the Mizan/Kıyas handoff
+PyYAML>=6.0

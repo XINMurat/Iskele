@@ -107,6 +107,29 @@ Kit tamamlanınca:
 - **kiyas** → eksik özellik/risk adaylarını üret; adaylar backlog'a görev olarak
   geri girer.
 
+Devir düzyazı değil, dosya. İki adaptör bunu taşır:
+
+```bash
+python scripts/iskele_to_registry.py --backlog 03-gorev-listesi.md --out registry.yaml
+python scripts/kiyas_to_backlog.py --seeds tohumlar.yaml --phase F2 --out yeni.md
+```
+
+Her kabul kriteri, iş başlamadan önce yazılmış bir çürütme koşuludur — Mizan'ın
+R1'inin istediği şeyin ta kendisi. Bu yüzden backlog zaten bir önkayıt kümesidir;
+adaptör onu Mizan'ın okuduğu şemaya çevirir, tersi yönde de Kıyas'ın "en ucuz
+çürütme"si doğrudan kabul kriteri olur.
+
+**Hakem varsayılanı `author`'dır ve öyle kalmalıdır.** Çizelgedeki `Durum`'u işi
+yapan doldurur; bu ölçüm değil öz-beyandır, Mizan K'ye terfiyi kapatır. Görevin
+hakemi gerçekten çalıştırılabilirse backlog'da adını ver:
+
+```markdown
+- *Kabul:* Yetkisiz istek 403 alır. **Hakem:** pytest tests/test_authz.py
+```
+
+Bunu sen yazmadıkça adaptör sınıfı yükseltmez — sessiz terfi, sessiz varsayımın
+en pahalı türüdür.
+
 Döngü kapanır: **iskele kurar → mizan tartar → kiyas üretir → iskele'ye geri girer.**
 
 ## Çıktı manifesti
@@ -164,3 +187,5 @@ işaretlenmeli. İkisi de değilse yazma.
 - `assets/templates/` — doldurulacak şablonlar
 - `scripts/backlog_to_tracker.py` — backlog markdown → `tracker.xlsx`
 - `scripts/progress.py` — `tracker.xlsx` → raporun GEN bölgelerini güncelle
+- `scripts/iskele_to_registry.py` — Adım 7: backlog → Mizan registry (önkayıt)
+- `scripts/kiyas_to_backlog.py` — Adım 7: Kıyas tohumları → backlog görevleri

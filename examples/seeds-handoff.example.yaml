@@ -1,0 +1,129 @@
+# Kıyas -> İskele handoff fixture.
+#
+# This is NOT a copy of the Kıyas repo's worked example — it is a purpose-built
+# fixture that exercises every branch of kiyas_to_backlog.py in one file:
+#
+#   KS-101  H-aday, runtime arbiter, resolvable cost  -> a task with **Hakem:**
+#   KS-102  H-aday, unresolvable cost                 -> (M) + "kalibresiz" mark
+#   KS-103  S (author arbiter)                        -> parked, not a task
+#   KS-104  H-aday but handoff.status: declined       -> skipped entirely
+#
+# It deliberately does NOT validate against the full Kıyas G1–G6 schema: the
+# adapter reads a subset of fields, and a fixture that pretended to be a
+# complete Kıyas batch would imply this repo can judge Kıyas contracts. It
+# cannot — that arbiter is tools/kiyas_validate.py, in the Kıyas repo.
+
+batch:
+  problem: >
+    Kit teslim edildikten sonra kabul kriterlerinin fiilen kosulup kosulmadigi
+    gorunmuyor; cizelge yalniz oz-beyani tasiyor.
+  date: "2026-08-11"
+  operators_used: ["O1", "O2", "O5"]
+  symmetry_check: >
+    KS-103 mevcut tezi kiriyor: sorunun olcum degil tesvik sorunu oldugunu
+    one suruyor.
+
+seeds:
+  - id: "KS-101"
+    tier: "H-aday"
+    claim: >
+      Kabul kriterinin yanina calistirilabilir bir hakem yazmak, "Tamamlandi"
+      isaretli ama dogrulanmamis gorev oranini olculebilir sekilde dusurur.
+    operator: "O1"
+    illet: >
+      Kriterin metni ile hukmu veren sey ayni satirda durdugunda, isaretlemek
+      icin hakemi kosmaktan kacinmanin maliyeti kosmaktan yuksek olur.
+    breaking_point: >
+      Hakemi olmayan gorevlerde (tasarim, dokuman) satir bos kalir; oradaki
+      oz-beyan sorunu aynen surer.
+    cheapest_refutation:
+      test: >
+        Iki fazi karsilastir; hakem satiri zorunlu olan fazda, kapida geri
+        donen gorev orani dusmezse iddia oler.
+      adds_capacity: false
+    arbiter:
+      class: "runtime"
+      who: "python skill/iskele/scripts/iskele_to_registry.py --backlog 03-gorev-listesi.md"
+      independent_of_author: true
+      latency: "seconds"
+    cost: "orta — 1-2 gun"
+    prior_art:
+      searched: true
+    claims_superiority: false
+
+  - id: "KS-102"
+    tier: "H-aday"
+    claim: >
+      Efor-agirlikli ilerlemeye "kriteri kosulmus gorev" orani eslik ettiginde,
+      rapor "neredeyse bitti" yanilsamasini uretmeyi birakir.
+    operator: "O2"
+    illet: >
+      Tek gostergeli bir rapor, gostergenin olcmedigi her seyi sifir sayar;
+      ikinci gosterge kaybi gorunur kilar.
+    breaking_point: >
+      Iki gosterge de ayni oz-beyandan besleniyorsa hicbir sey eklemez.
+    cheapest_refutation:
+      test: >
+        Raporun GEN bolgesine ikinci gostergeyi ekle; kapida surpriz geri donus
+        sayisi degismezse gosterge dekoratiftir.
+      adds_capacity: false
+    arbiter:
+      class: "instrument"
+      who: "progress.py --check ciktisi ile kapi tutanaklarinin karsilastirmasi"
+      independent_of_author: true
+      latency: "days"
+    cost: "belirsiz"          # cozulemez -> (M) + kalibresiz isareti
+    prior_art:
+      searched: false
+    claims_superiority: false
+
+  - id: "KS-103"
+    tier: "S"
+    claim: >
+      Sorun olcum degil tesviktir: kimse kendi isini geri cevirecek bir kriteri
+      istekle kosmaz.
+    operator: "O5"
+    illet: >
+      Denetim maliyeti denetlenene yuklendiginde, denetimden kacinma
+      rasyoneldir.
+    breaking_point: >
+      Kriteri baskasi kosuyorsa tesvik argumani cokuyor.
+    cheapest_refutation:
+      test: >
+        Kriteri gorev sahibi disinda biri kossun; oran degismezse tesvik
+        aciklamasi yanlis.
+      adds_capacity: false
+    arbiter:
+      class: "author"
+      who: "metodolojinin yazari"
+      independent_of_author: false
+      latency: "never"
+    cost: "S"
+    prior_art:
+      searched: false
+    claims_superiority: false
+
+  - id: "KS-104"
+    tier: "H-aday"
+    claim: >
+      Cizelgeye kismi kredi eklemek ilerlemeyi daha dogru gosterir.
+    operator: "O1"
+    illet: >
+      Ikili durum, surmekte olan isi sifir sayar.
+    breaking_point: >
+      Kismi kredi, "neredeyse bitti"yi sayiya cevirir — kit'in kirmizi
+      cizgilerinden biri tam olarak bu.
+    cheapest_refutation:
+      test: "Kismi kredili ve kredisiz raporlari kapi sonuclariyla karsilastir."
+      adds_capacity: false
+    arbiter:
+      class: "author"
+      who: "rapor yazari"
+      independent_of_author: false
+      latency: "never"
+    cost: "S"
+    prior_art:
+      searched: false
+    claims_superiority: false
+    handoff:
+      status: "declined"    # kirmizi cizgiye carpti; kayitta kalir, ise donmez

@@ -52,6 +52,8 @@ workdays by default): a four-day task must not weigh the same as a half-day one.
 | `skill/iskele/assets/templates/` | The fillable templates (00–08) |
 | `skill/iskele/scripts/backlog_to_tracker.py` | backlog markdown → `tracker.xlsx` |
 | `skill/iskele/scripts/progress.py` | `tracker.xlsx` → the report's GEN regions |
+| `skill/iskele/scripts/iskele_to_registry.py` | backlog → a Mizan registry (each acceptance criterion is already a preregistered refutation condition) |
+| `skill/iskele/scripts/kiyas_to_backlog.py` | Kıyas seeds → backlog tasks (each seed's cheapest refutation is already an executable acceptance criterion) |
 | `iskele.skill` | One-file package for installing the skill |
 | `examples/` | A worked backlog + config + report that CI runs end to end |
 | `docs/` | Quickstart and usage guide (EN/TR) |
@@ -75,6 +77,41 @@ python skill/iskele/scripts/progress.py --xlsx tracker.xlsx --html examples/07-i
 `--check` prints the computed summary without writing. Drop it to rewrite the
 GEN regions. `python skill/iskele/scripts/progress.py --self-test` runs the
 embedded regression tests.
+
+## The handoff, as files rather than as prose
+
+The three tools exchange artifacts, and the exchange is checked in CI:
+
+```bash
+# Kıyas seeds -> backlog tasks (only H-aday seeds become work)
+python skill/iskele/scripts/kiyas_to_backlog.py --seeds seeds.yaml --phase F2 --out new-tasks.md
+
+# backlog -> a Mizan registry of preregistered acceptance criteria
+python skill/iskele/scripts/iskele_to_registry.py --backlog 03-gorev-listesi.md --out registry.yaml
+
+# ...and Mizan itself returns the verdict on the result
+python ../Mizan/tools/mizan_validate.py registry.yaml
+```
+
+Two defaults carry the weight here, and both are deliberately unflattering:
+
+**Every task starts at `arbiter: author`.** A `Durum` column filled in by
+whoever did the work is self-report, not measurement, so Mizan's R8 keeps
+K-promotion closed and stamps a permanent KKE. To earn a real arbiter, name it
+in the backlog next to the criterion — `**Hakem:** pytest tests/test_authz.py`
+— and the class becomes `runtime`. The adapter never upgrades this on its own;
+it reports how many tasks are still self-reported.
+
+**Only `H-aday` seeds become tasks.** A speculative seed is a research
+question, not work; putting it in a backlog would let something with no arbiter
+count toward effort. `[S]`/`[NK]`/`[GB]` seeds are parked in a visible comment
+block instead of being dropped, and a seed whose cost cannot be resolved to
+S/M/L gets `(M)` **plus a `TAHMIN: kalibresiz` mark** rather than a silent
+weight.
+
+The interop claim is not self-assessed: CI checks out the Mizan repo and runs
+`mizan_validate.py` against the generated registry, so the arbiter for "these
+tools actually interoperate" lives outside this repository.
 
 ## What the tooling does NOT do
 
@@ -167,6 +204,8 @@ sayılmamalı.
 | `skill/iskele/assets/templates/` | Doldurulacak şablonlar (00–08) |
 | `skill/iskele/scripts/backlog_to_tracker.py` | backlog markdown → `tracker.xlsx` |
 | `skill/iskele/scripts/progress.py` | `tracker.xlsx` → raporun GEN bölgeleri |
+| `skill/iskele/scripts/iskele_to_registry.py` | backlog → Mizan registry'si (her kabul kriteri zaten önkayıtlı bir çürütme koşulu) |
+| `skill/iskele/scripts/kiyas_to_backlog.py` | Kıyas tohumları → backlog görevleri (her tohumun en ucuz çürütmesi zaten çalıştırılabilir bir kabul kriteri) |
 | `iskele.skill` | Skill'i kurmak için tek-dosya paket |
 | `examples/` | CI'ın uçtan uca koştuğu çalışılmış backlog + config + rapor |
 | `docs/` | Hızlı başlangıç ve kullanım kılavuzu (EN/TR) |
@@ -190,6 +229,39 @@ python skill/iskele/scripts/progress.py --xlsx tracker.xlsx --html examples/07-i
 `--check` yazmadan hesaplanan özeti basar; kaldırınca GEN bölgelerini yeniden
 yazar. `python skill/iskele/scripts/progress.py --self-test` gömülü regresyon
 testlerini koşar.
+
+## Devir — düzyazı değil, dosya
+
+Üç araç birbirine artefakt geçirir ve bu geçiş CI'da denetlenir:
+
+```bash
+# Kıyas tohumları -> backlog görevleri (yalnız H-aday tohumlar işe döner)
+python skill/iskele/scripts/kiyas_to_backlog.py --seeds tohumlar.yaml --phase F2 --out yeni.md
+
+# backlog -> önkayıtlı kabul kriterlerinden oluşan Mizan registry'si
+python skill/iskele/scripts/iskele_to_registry.py --backlog 03-gorev-listesi.md --out registry.yaml
+
+# ...ve hükmü Mizan'ın kendisi verir
+python ../Mizan/tools/mizan_validate.py registry.yaml
+```
+
+Yükü taşıyan iki varsayılan var; ikisi de bilerek pohpohlamıyor:
+
+**Her görev `arbiter: author` ile başlar.** İşi yapanın doldurduğu `Durum`
+sütunu ölçüm değil öz-beyandır; Mizan'ın R8'i bu durumda K'ye terfiyi kapatır
+ve kalıcı bir KKE basar. Gerçek hakem kazanmak için kriterin yanına yaz —
+`**Hakem:** pytest tests/test_authz.py` — sınıf `runtime` olur. Adaptör bunu
+kendiliğinden yükseltmez; kaç görevin öz-beyanda kaldığını raporlar.
+
+**Yalnız `H-aday` tohumlar göreve döner.** Spekülatif tohum iş değil araştırma
+sorusudur; backlog'a koymak, hakemi olmayan bir şeyi efora saydırmak olur.
+`[S]`/`[NK]`/`[GB]` tohumlar silinmez, görünür bir yorum bloğunda park edilir;
+`cost` alanı S/M/L'ye çözülemeyen tohum sessizce ağırlık almaz, `(M)` **artı
+`TAHMIN: kalibresiz` işareti** alır.
+
+Birlikte-çalışırlık iddiası öz-değerlendirme değil: CI, Mizan deposunu checkout
+edip üretilen registry'yi `mizan_validate.py`'a veriyor — yani "bu araçlar
+gerçekten birbirine bağlanıyor" hükmünün hakemi bu deponun dışında.
 
 ## Araçların YAPMADIĞI şey
 

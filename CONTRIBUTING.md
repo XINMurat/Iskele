@@ -71,8 +71,14 @@ so it stays in sync (the shipped `iskele.skill` embeds those files):
 python - <<'PY'
 import zipfile, os
 with zipfile.ZipFile("iskele.skill", "w", zipfile.ZIP_DEFLATED) as z:
-    for root, _, files in os.walk("skill/iskele"):
+    for root, dirs, files in os.walk("skill/iskele"):
+        # Running the scripts leaves __pycache__ behind; git ignores it but a
+        # naive packer would ship it, and then the package no longer matches
+        # its source on a machine that never ran them.
+        dirs[:] = [d for d in dirs if d != "__pycache__"]
         for f in sorted(files):
+            if f.endswith(".pyc"):
+                continue
             p = os.path.join(root, f)
             z.write(p, os.path.relpath(p, "skill").replace(os.sep, "/"))
 PY

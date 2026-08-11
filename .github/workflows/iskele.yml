@@ -1,0 +1,139 @@
+name: CI
+
+# Runs the İskele toolchain end to end on the worked example and checks that
+# the shipped iskele.skill stays in sync with skill/iskele/.
+#
+# Scope note: this pipeline is a `runtime` arbiter for the GENERATOR'S
+# ARITHMETIC and for package/template drift. It cannot judge whether a row
+# marked `Tamamlandi` was actually verified against its acceptance criterion —
+# that arbiter is human, and the Definition of Done is where it lives.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  toolchain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r skill/iskele/scripts/requirements.txt
+
+      - name: Generator self-test (embedded regressions)
+        run: python skill/iskele/scripts/progress.py --self-test
+
+      - name: backlog markdown -> tracker.xlsx
+        run: |
+          set -e
+          python skill/iskele/scripts/backlog_to_tracker.py \
+            --backlog examples/backlog.example.md \
+            --config examples/iskele.config.example.json \
+            --out /tmp/tracker.xlsx
+          test -s /tmp/tracker.xlsx
+
+      - name: tracker.xlsx -> report summary (--check writes nothing)
+        run: |
+          set -e
+          cp examples/07-ilerleme-raporu.example.html /tmp/report-before.html
+          python skill/iskele/scripts/progress.py \
+            --xlsx /tmp/tracker.xlsx \
+            --html examples/07-ilerleme-raporu.example.html \
+            --config examples/iskele.config.example.json --check
+          diff -q /tmp/report-before.html examples/07-ilerleme-raporu.example.html \
+            || { echo "FAIL: --check modified the report; it must be read-only." >&2; exit 1; }
+
+      - name: Report generation rewrites only the GEN regions
+        run: |
+          set -e
+          cp examples/07-ilerleme-raporu.example.html /tmp/report.html
+          python skill/iskele/scripts/progress.py \
+            --xlsx /tmp/tracker.xlsx --html /tmp/report.html \
+            --config examples/iskele.config.example.json
+          # Every marker pair must survive a write, otherwise the next run has
+          # nowhere to write into and the report silently freezes.
+          for m in $(grep -o 'GEN:[A-Za-z0-9_.-]*:BEGIN' /tmp/report.html | sed 's/:BEGIN//'); do
+            grep -q "$m:END" /tmp/report.html \
+              || { echo "FAIL: $m lost its END marker." >&2; exit 1; }
+          done
+          echo "OK: GEN markers intact after a write."
+
+      - name: Self-test — a malformed estimate must be REJECTED
+        run: |
+          set -e
+          # A parser that accepts an unknown estimate would weight the task
+          # silently, which is exactly the "silent assumption" red line.
+          cat > /tmp/bad-backlog.md <<'MD'
+          ### Epik F0.1 — Test
+          - [ ] **F0-INF-01** (Q) Gecersiz tahmin. **Bag.:** —
+            - *Kabul:* n/a
+          MD
+          rm -f /tmp/bad.xlsx
+          if python skill/iskele/scripts/backlog_to_tracker.py \
+               --backlog /tmp/bad-backlog.md --out /tmp/bad.xlsx; then
+            echo "FAIL: the parser accepted an unknown estimate" >&2; exit 1
+          fi
+          if [ -e /tmp/bad.xlsx ]; then
+            echo "FAIL: a tracker was written despite the rejected input" >&2; exit 1
+          fi
+          echo "OK: the malformed task did not become a silently weighted row."
+
+  examples-in-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: examples/ copies must match the shipped templates
+        run: |
+          set -e
+          # The examples are convenience copies of the templates. Nothing stops
+          # the two from drifting except this check — and a drifted example
+          # demonstrates a format the tooling no longer produces.
+          diff -u skill/iskele/assets/templates/03-gorev-listesi.md examples/backlog.example.md \
+            || { echo "examples/backlog.example.md has drifted from the template." >&2; exit 1; }
+          diff -u skill/iskele/assets/templates/07-ilerleme-raporu.html examples/07-ilerleme-raporu.example.html \
+            || { echo "examples/07-ilerleme-raporu.example.html has drifted from the template." >&2; exit 1; }
+          diff -u skill/iskele/assets/iskele.config.example.json examples/iskele.config.example.json \
+            || { echo "examples/iskele.config.example.json has drifted from the asset." >&2; exit 1; }
+
+  skill-package-in-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: iskele.skill must match skill/iskele/ contents
+        run: |
+          python - <<'PY'
+          import zipfile, os, sys
+          def norm(b): return b.replace(b"\r\n", b"\n")
+          z = zipfile.ZipFile("iskele.skill")
+          names = set(z.namelist())
+          bad = []
+          # every packaged file must match its source
+          for name in names:
+              src = os.path.join("skill", name)   # arcname is iskele/... ; source is skill/iskele/...
+              if not os.path.exists(src):
+                  bad.append(f"{name}: packaged but missing from source"); continue
+              if norm(z.read(name)) != norm(open(src, "rb").read()):
+                  bad.append(f"{name}: content differs from skill/{name}")
+          # every source file must be packaged
+          for root, _, files in os.walk("skill/iskele"):
+              for f in files:
+                  rel = os.path.relpath(os.path.join(root, f), "skill").replace(os.sep, "/")
+                  if rel not in names:
+                      bad.append(f"{rel}: in source but not packaged")
+          if bad:
+              print("iskele.skill is OUT OF SYNC with skill/iskele/:")
+              for b in bad: print("  -", b)
+              print("\nRebuild it (see CONTRIBUTING.md) and commit.")
+              sys.exit(1)
+          print("iskele.skill is in sync with skill/iskele/.")
+          PY

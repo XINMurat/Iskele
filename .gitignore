@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Generated kit artifacts — the committed samples live under examples/.
+/tracker.xlsx
+/iskele.config.json
+/out/
+~$*.xlsx

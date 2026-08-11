@@ -1,0 +1,2 @@
+# İskele tooling dependencies
+openpyxl>=3.1

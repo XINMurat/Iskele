@@ -1,0 +1,39 @@
+{
+  "phases": ["F0", "F1", "F2"],
+  "effort_weights": {"S": 0.75, "M": 1.5, "L": 4.0},
+  "status_credit": {"Tamamlandi": 1.0, "Devam": 0.0, "Bloke": 0.0, "Yapilacak": 0.0},
+  "workdays_per_month": 21,
+  "phase_meta": {
+    "F0": {"title": "F0 · Kurulum", "repo": "faz/f0-kurulum", "stack": "Docker · API · Web",
+           "ms": "M0", "dep": null,
+           "desc": "Repo, altyapi, iskeletler ve uctan uca dikey dilim."},
+    "F1": {"title": "F1 · Cekirdek", "repo": "faz/f1-cekirdek", "stack": "API · DB",
+           "ms": "M1", "dep": "M0",
+           "desc": "Alan modelinin cekirdek akislari; ilk kullanilabilir surum."},
+    "F2": {"title": "F2 · Genisletme", "repo": "faz/f2-genisletme", "stack": "API · Web",
+           "ms": "M2", "dep": "M1",
+           "desc": "Ikincil akislar, raporlama, sertlestirme."}
+  },
+  "epic_display": {
+    "F0.1": "F0.1 Proje iskeleti",
+    "F1.1": "F1.1 Cekirdek model",
+    "F2.1": "F2.1 Genisletme"
+  },
+  "static_steps": [
+    {"mk": "\u2713", "t": "Mimari ve veri modeli onaylandi", "m": "01-mimari-ve-veri-modeli.md"}
+  ],
+  "flow": [
+    {"kind": "phase", "phase": "F0", "mk": "M0", "t": "M0 — Iskelet + dikey dilim",
+     "m": "Altyapi ayakta; tek akis DB'den ekrana calisiyor"},
+    {"kind": "gate", "phase": "F0", "mk": "\u25c6", "t": "Kapi M0",
+     "m": "go/no-go gecilince F1 acilir"},
+    {"kind": "phase", "phase": "F1", "mk": "\u25b8", "t": "F1 — Cekirdek",
+     "m": "Alan modelinin ana akislari"},
+    {"kind": "gate", "phase": "F1", "mk": "\u25c6", "t": "Kapi M1",
+     "m": "Donma/izolasyon testi dogrulanir"},
+    {"kind": "phase", "phase": "F2", "mk": "\u25b8", "t": "F2 — Genisletme",
+     "m": "Ikincil akislar ve sertlestirme"},
+    {"kind": "gate", "phase": "F2", "mk": "\u25c6", "t": "Kapi M2",
+     "m": "Yayina alma oncesi go/no-go"}
+  ]
+}

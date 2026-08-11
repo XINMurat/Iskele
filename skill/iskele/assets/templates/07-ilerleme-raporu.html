@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[PROJE] — Program Durum Raporu</title>
+<style>
+  :root{
+    --bg:#e9edf1; --surface:#fff; --surface-2:#f4f7f9; --inset:#eef2f5;
+    --ink:#161d24; --ink-2:#4b5763; --ink-3:#77828e; --line:#dbe2e9; --line-2:#c9d3dc;
+    --accent:#0b6e7d; --accent-2:#0a5a66; --accent-soft:#d8ecef;
+    --done:#2f855a; --prog:#2563a8; --todo:#7a8598; --block:#b07518;
+    --shadow:0 1px 2px rgba(18,32,44,.06),0 6px 20px rgba(18,32,44,.06); --radius:14px;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0d1317; --surface:#141c22; --surface-2:#19232a; --inset:#111a20;
+      --ink:#e7eef3; --ink-2:#a2b1bd; --ink-3:#74838f; --line:#25323b; --line-2:#31414c;
+      --accent:#41b7c7; --accent-2:#69c9d6; --accent-soft:#122c31;
+      --done:#4bbf85; --prog:#5b9be0; --todo:#8593a1; --block:#d69b48;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.28);
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+    line-height:1.55;font-size:15.5px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:clamp(20px,4vw,52px) clamp(16px,4vw,32px)}
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--accent);font-weight:600}
+  h1{font-size:clamp(28px,5vw,44px);line-height:1.05;margin:.35em 0 .3em;
+    letter-spacing:-.02em;font-weight:760}
+  h2{font-size:19px;margin:0 0 2px;font-weight:680}
+  .sub{color:var(--ink-2);max-width:64ch;margin:0}
+  .num{font-variant-numeric:tabular-nums}
+  header{border-bottom:1px solid var(--line);padding-bottom:26px;margin-bottom:30px}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;align-items:center}
+  .chip{font-family:var(--mono);font-size:11.5px;padding:4px 10px;border-radius:999px;
+    border:1px solid var(--line-2);color:var(--ink-2);background:var(--surface);
+    display:inline-flex;gap:6px;align-items:center}
+  .chip b{color:var(--ink);font-weight:600}
+  .dot{width:7px;height:7px;border-radius:50%}
+  .d-done{background:var(--done)} .d-prog{background:var(--prog)} .d-todo{background:var(--todo)}
+  section{margin:34px 0}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--ink-3);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+  .kicker::after{content:"";flex:1;height:1px;background:var(--line)}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px;box-shadow:var(--shadow)}
+  .kpi .v{font-size:29px;font-weight:740;line-height:1}
+  .kpi .v small{font-size:15px;font-weight:600;color:var(--ink-2)}
+  .kpi .l{color:var(--ink-2);font-size:13px;margin-top:7px}
+  .kpi .l2{color:var(--ink-3);font-size:11.5px;font-family:var(--mono);margin-top:3px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+    background:var(--edge,var(--todo))}
+  .card h2{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .card .repo{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+  .card p{color:var(--ink-2);font-size:13.5px;margin:10px 0 14px}
+  .card .row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;
+    border-top:1px dashed var(--line)}
+  .card .row span:first-child{color:var(--ink-3)}
+  .status{font-family:var(--mono);font-size:10.5px;padding:3px 8px;border-radius:6px;
+    text-transform:uppercase;font-weight:600;white-space:nowrap}
+  .s-prog{background:color-mix(in srgb,var(--prog) 15%,transparent);color:var(--prog)}
+  .s-wait{background:color-mix(in srgb,var(--todo) 16%,transparent);color:var(--todo)}
+  .s-done{background:color-mix(in srgb,var(--done) 15%,transparent);color:var(--done)}
+  .bars{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px 22px;box-shadow:var(--shadow)}
+  .bar{display:grid;grid-template-columns:170px 1fr 38px 34px 74px;align-items:center;
+    gap:9px;padding:5px 0;font-size:13px}
+  .bar .name{color:var(--ink-2)}
+  .lane{display:block;min-width:0}
+  .track{display:block;background:var(--inset);border-radius:6px;height:16px;overflow:hidden}
+  .fill{display:block;height:100%;border-radius:6px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+  .bar .pct{text-align:right;font-family:var(--mono);font-size:11.5px;color:var(--ink-2);
+    font-variant-numeric:tabular-nums}
+  .bar .ka{text-align:right;font-family:var(--mono);font-size:12px;color:var(--ink);
+    font-variant-numeric:tabular-nums}
+  .bar .rem{text-align:right;font-family:var(--mono);font-size:11px;color:var(--ink-3);
+    font-variant-numeric:tabular-nums}
+  .bar.total{border-top:1px solid var(--line);margin-top:8px;padding-top:12px}
+  .bar.total .name{color:var(--ink);font-weight:640}
+  .bar.total .track{background:none}
+  .bar.total .pct,.bar.total .ka{color:var(--ink);font-weight:700}
+  .tl{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:8px 22px;box-shadow:var(--shadow)}
+  .tl .step{display:grid;grid-template-columns:26px 1fr auto;gap:14px;padding:14px 0}
+  .tl .step + .step{border-top:1px solid var(--line)}
+  .tl .mk{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;
+    font-family:var(--mono);font-size:11px;font-weight:600;border:1.5px solid var(--line-2);
+    color:var(--ink-3);background:var(--surface-2)}
+  .tl .step.on .mk{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+  .tl .step.ok .mk{border-color:var(--done);color:#fff;background:var(--done)}
+  .tl .t{font-weight:620;font-size:14.5px}
+  .tl .m{color:var(--ink-2);font-size:13px;margin-top:1px}
+  .tl .when{font-family:var(--mono);font-size:12px;color:var(--ink-3);align-self:center}
+  .gate .t{color:var(--accent)}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:680px){.split{grid-template-columns:1fr}
+    .bar{grid-template-columns:130px 1fr 40px 34px}}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px;box-shadow:var(--shadow)}
+  ul.clean{list-style:none;padding:0;margin:0}
+  ul.clean li{padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;
+    color:var(--ink-2);display:flex;gap:10px;align-items:baseline}
+  ul.clean li:first-child{border-top:0}
+  ul.clean li b{color:var(--ink);font-weight:600}
+  code{font-family:var(--mono);font-size:.86em;background:var(--inset);padding:1px 6px;
+    border-radius:5px}
+  .callout{background:var(--accent-soft);border-radius:var(--radius);padding:16px 18px;
+    display:flex;gap:13px;align-items:flex-start;
+    border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line))}
+  .callout.warn{background:color-mix(in srgb,var(--block) 12%,transparent);
+    border-color:color-mix(in srgb,var(--block) 34%,var(--line))}
+  .callout .tx{font-size:13.5px;color:var(--ink)}
+  .foot{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;
+    color:var(--ink-3);font-size:12.5px;font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">[PROJE] · Program Durum Raporu</div>
+    <h1>[Tek cümlelik program başlığı]</h1>
+    <p class="sub">[Programın ne olduğu, hangi kısıtlarla kurulduğu, şu anki durumu.]</p>
+<!-- GEN:CHIPS:BEGIN (progress.py üretir; kaynak: tracker.xlsx — ELLE DÜZENLEME) -->
+    <div class="meta"></div>
+<!-- GEN:CHIPS:END -->
+  </header>
+
+  <section>
+    <div class="kicker">Efor özeti · iş-günü (bottom-up, tahmin)</div>
+<!-- GEN:KPI:BEGIN (progress.py üretir; kaynak: tracker.xlsx — ELLE DÜZENLEME) -->
+    <div class="kpis"></div>
+<!-- GEN:KPI:END -->
+  </section>
+
+  <section>
+    <div class="kicker">Fazlar</div>
+<!-- GEN:CARDS:BEGIN (progress.py üretir; kaynak: tracker.xlsx — ELLE DÜZENLEME) -->
+    <div class="cards"></div>
+<!-- GEN:CARDS:END -->
+  </section>
+
+  <section>
+    <div class="kicker">Epikler · efor (çubuk boyu) × tamamlanma (dolgu)</div>
+<!-- GEN:BARS:BEGIN (progress.py üretir; kaynak: tracker.xlsx — ELLE DÜZENLEME) -->
+    <div class="bars"></div>
+<!-- GEN:BARS:END -->
+  </section>
+
+  <section>
+    <div class="kicker">Yol haritası · kapılar ve fazlar</div>
+<!-- GEN:TIMELINE:BEGIN (progress.py üretir; kaynak: tracker.xlsx — ELLE DÜZENLEME) -->
+    <div class="tl"></div>
+<!-- GEN:TIMELINE:END -->
+  </section>
+
+  <!-- Buradan aşağısı ELLE yazılır; progress.py dokunmaz. -->
+  <section>
+    <div class="kicker">Riskler ve kararlar</div>
+    <div class="split">
+      <div class="panel">
+        <h2>Açık riskler</h2>
+        <ul class="clean">
+          <li><span>▸</span><span><b>R1</b> — [risk] · azaltma: [aksiyon]</span></li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h2>Mimari kararlar (ADR)</h2>
+        <ul class="clean">
+          <li><span>✓</span><span><b>ADR-1</b> — [karar]</span></li>
+        </ul>
+      </div>
+    </div>
+    <div style="height:14px"></div>
+    <div class="callout">
+      <div class="tx"><b>[Kanıtlanmamış çekirdek varsayım].</b>
+        [Neye dayandığı, nasıl kanıtlanacağı, hangi kapıda test edileceği.]</div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <b>Kaynak:</b> 01-mimari-ve-veri-modeli.md · 02-yol-haritasi.md · 03-gorev-listesi.md
+    · 04-kalite-kapilari.md · 06-riskler-ve-kararlar.md · tracker.xlsx<br>
+    Efor rakamları görev S/M/L orta-nokta ağırlıklarıyla (S=0.75 · M=1.5 · L=4 gün)
+    hesaplanmış <b>kalibresiz tahminlerdir</b>; ilk faz gerçekleşince yeniden kalibre edilir.
+    Yüzdeler çizelgeden hesaplanır — rapor çizelgenin türevidir.
+  </div>
+</div>
+</body>
+</html>

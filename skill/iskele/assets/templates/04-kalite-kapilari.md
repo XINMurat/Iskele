@@ -10,8 +10,17 @@ Kutu tam dolmadan ilerleme yok.
 - [ ] Davranış değiştiyse **otomatik test** kabul kriterini doğruluyor.
 - [ ] Yeni arayüz ise yetki kontrolü var (yetkisiz istek reddediliyor).
 - [ ] Veri değiştiren işlemse denetim izi (audit) yazılıyor.
+- [ ] **Kullanıcının göreceği bir bilgi üretiyorsa: o bilgiyi okuyabileceği bir yüzey
+      var ve fiilen açıldı** — ya da aynı fazda o yüzeyi getiren görev listede ve bu
+      görevin kutusunda ID'si yazılı. *Üretim tarafı bir kriteri tek başına karşılamaz.*
 - [ ] `tracker.xlsx`'te durum güncellendi.
 - [ ] Tıkanma/negatif bulgu `06-riskler-ve-kararlar.md`'ye yazıldı.
+
+**"üretiyor" tuzağı:** *"Sistem X üretiyor"* ile *"kullanıcı X'e ulaşıyor"* farklı iki
+cümledir; ilki ikincisini ima etmez. Uç yazıldı, tablo doldu, olay yayımlandı — hiçbiri
+kullanıcıya ulaşan bir yetenek demek değildir. Kriteri kullanıcının **yapabildiği** şeyle
+yaz. Bu boşluk görevlerin *arasında* yaşadığı için tek bir görevin kontrol listesi onu
+göremez; bu yüzden DoD'de ayrı madde.
 
 **"mış gibi" testi:** Yorum satırı, log mesajı veya buton *varlığı* davranış kanıtı
 değildir. Kabul kriterini gerçek veriyle bir kez daha çalıştırmadan done deme.

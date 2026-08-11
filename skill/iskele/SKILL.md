@@ -76,15 +76,32 @@ Her görev: `ID` · epik · katman · **tahmin (S/M/L)** · **bağımlılık** �
   buna bağlanır.
 - Kabul kriteri **çalıştırılabilir** olmalı: "endpoint 200 döner", "yetkisiz istek
   403 alır". "İyi çalışır" kabul kriteri değildir.
+- Kabul kriteri **tüketim tarafından** yazılır: *"kullanıcı X'e ulaşıyor"*, *"sistem
+  X üretiyor"* değil. İkisi farklı cümledir ve ilki ikincisini **ima etmez**.
+  Üretim taraflı bir kriter, üretim doğru yapıldığında geçer — ulaşılamayan bir
+  yetenek geride kalsa bile.
+- **Üreten görev, tüketen eşini adlandırır.** Kullanıcının göreceği bir bilgi üreten
+  her görevin kabul kriterinde ya okuma yüzeyi vardır ya da o yüzeyi getiren görevin
+  ID'si yazılıdır (`→ F3-FE-03`). Backlog'u katman ekseninde (BE/FE) kesmek bu
+  boşluğu **varsayılan hâle getirir**: boşluk görevlerin arasında yaşar, hiçbir
+  görevin kendi listesi onu göremez.
 - Bir görev "kısmen bitti" olamaz; olabiliyorsa görev fazla büyüktür, böl.
+
+> **Somut hata (bu kuralı doğuran):** bir bildirim görevi *"ilgili olay bildirim
+> üretiyor"* kriteriyle kapandı. Uçlar ve on iki test yerindeydi; ön yüzde tek bir
+> bildirim çağrısı yoktu — kullanıcı hiçbir bildirimi göremiyordu. Testlerden biri
+> `read_all_clears_the_badge` adını taşıyordu: **var olmayan bir rozeti** sınıyordu.
+> Aynı sınıf o projede dört kez tekrarladı (denetim izi, ek silme, parola, bildirim)
+> ve **hiçbiri plandan çıkmadı** — dördü de tesadüfen fark edildi.
 
 ### 5. Kalite kapılarını yaz
 
 İki seviye:
 
 - **Tamamlandı Tanımı (DoD)** — her görev için ortak kontrol listesi.
-  Zorunlu madde: *kabul kriterini fiilen çalıştır*. Yorumun, butonun, log satırının
-  varlığı davranışın varlığı değildir.
+  Zorunlu iki madde: *kabul kriterini fiilen çalıştır* (yorumun, butonun, log
+  satırının varlığı davranışın varlığı değildir) ve *üretilen her bilginin bir
+  okuma yüzeyi vardır* (üretim tarafı tek başına yetmez).
 - **Faz go/no-go** — kapıda tek tek doğrulanacak somut maddeler.
 
 ### 6. Takip + üreteci kur

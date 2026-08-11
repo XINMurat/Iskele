@@ -25,8 +25,13 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 
 FONT = "Arial"
+# "Hakem" SONA eklendi, araya degil: Durum H sutununda kalmali — Ozet
+# sekmesindeki COUNTIF/COUNTIFS formulleri ve acilir liste dogrulamasi ona
+# bagli. Sutun sirasini estetik gerekceyle degistirmek o formulleri sessizce
+# yanlis hucreye baglar.
 HEADERS = ["ID", "Faz", "Epik", "Gorev", "Katman", "Tahmin",
-           "Bagimlilik", "Durum", "Sorumlu", "Baslangic", "Bitis", "Not"]
+           "Bagimlilik", "Durum", "Sorumlu", "Baslangic", "Bitis", "Not",
+           "Hakem"]
 STATUSES = ["Yapilacak", "Devam", "Bloke", "Tamamlandi"]
 PALETTE = ["E2EFDA", "DEEBF7", "FCE4D6", "EDEDED", "FFF2CC", "E4DFEC"]
 
@@ -40,6 +45,11 @@ DEP_RE = re.compile(r'\*\*(?:Bag\.?|Bağ\.?|Dep\.?|Bagimlilik|Bağımlılık)\s*
 # Cizelgeye tasinmaz (orada sutunu yok) ama iskele_to_registry.py bunu
 # onkayitli curutme kosuluna cevirir; o yuzden parser burada yakalar.
 KABUL_RE = re.compile(r'^\s+[-*]\s*\*?(?:Kabul|Acceptance)\*?\s*:?\*?\s*(?P<kabul>.+?)\*?\s*$',
+                      re.IGNORECASE)
+# Kabul kriterinin icindeki opsiyonel hakem: "... **Hakem:** pytest tests/x.py".
+# Yazilmadiginda BOS kalir — varsayilan uydurulmaz; bos hucre "bu gorevin
+# 'Tamamlandi'si oz-beyandir" demektir ve rapor bunu oyle basar.
+HAKEM_RE = re.compile(r'\*\*(?:Hakem|Arbiter)\*?\s*:?\*\*\s*(?P<hakem>.+?)\s*$',
                       re.IGNORECASE)
 
 
@@ -57,7 +67,11 @@ def parse_backlog(path):
         if not m:
             km = KABUL_RE.match(raw)
             if km and tasks:
-                tasks[-1]["kabul"] = km.group("kabul").strip()
+                kabul = km.group("kabul").strip()
+                tasks[-1]["kabul"] = kabul
+                hm = HAKEM_RE.search(kabul)
+                if hm:
+                    tasks[-1]["hakem"] = hm.group("hakem").strip()
             continue
         tid = m.group("id").strip()
         if tid in seen:
@@ -86,7 +100,7 @@ def parse_backlog(path):
                           epik=f"{epic_code} {epic_name}".strip(),
                           gorev=title, katman=katman,
                           tahmin=m.group("est").upper(), bagimlilik=deps,
-                          kabul="", satir=lineno))
+                          kabul="", hakem="", satir=lineno))
     if not tasks:
         problems.append("hic gorev satiri bulunamadi — backlog formatini kontrol et")
     return tasks, problems
@@ -111,7 +125,8 @@ def build(tasks, out_path, phases):
 
     for r, t in enumerate(tasks, start=2):
         values = [t["id"], t["faz"], t["epik"], t["gorev"], t["katman"],
-                  t["tahmin"], t["bagimlilik"], "Yapilacak", "", "", "", ""]
+                  t["tahmin"], t["bagimlilik"], "Yapilacak", "", "", "", "",
+                  t.get("hakem", "")]
         for c, v in enumerate(values, start=1):
             cell = ws.cell(row=r, column=c, value=v)
             cell.font = Font(name=FONT, size=10)
@@ -125,10 +140,10 @@ def build(tasks, out_path, phases):
     ws.add_data_validation(dv)
     dv.add(f"H2:H{last}")
 
-    for i, w in enumerate([12, 6, 26, 42, 8, 8, 24, 13, 14, 13, 13, 30], start=1):
+    for i, w in enumerate([12, 6, 26, 42, 8, 8, 24, 13, 14, 13, 13, 30, 34], start=1):
         ws.column_dimensions[get_column_letter(i)].width = w
     ws.freeze_panes = "A2"
-    ws.auto_filter.ref = f"A1:L{last}"
+    ws.auto_filter.ref = f"A1:M{last}"
     ws.sheet_view.showGridLines = False
 
     # ---- Ozet
@@ -184,7 +199,12 @@ def build(tasks, out_path, phases):
         ("- Sorumlu, Baslangic, Bitis, Not", False, 10),
         ("", False, 10),
         ("Uretilen sutunlar (elle degistirme, backlog'u degistir):", True, 11),
-        ("- ID, Faz, Epik, Gorev, Katman, Tahmin, Bagimlilik", False, 10),
+        ("- ID, Faz, Epik, Gorev, Katman, Tahmin, Bagimlilik, Hakem", False, 10),
+        ("", False, 10),
+        ("Hakem sutunu:", True, 11),
+        ("- Kabul kriterindeki '**Hakem:**' satirindan gelir; bos olmasi normaldir.", False, 10),
+        ("- Bos = o gorevin 'Tamamlandi'si oz-beyandir (kimse disaridan dogrulamadi).", False, 10),
+        ("- Rapor bunu ayri bir gosterge olarak basar; ilerleme yuzdesini DEGISTIRMEZ.", False, 10),
         ("", False, 10),
         ("Ozet sekmesi formullerle hesaplanir; elle sayi girme.", False, 10),
         ("Rapor icin: python progress.py", False, 10),

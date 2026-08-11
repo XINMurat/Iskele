@@ -27,6 +27,29 @@ görünümdür. İkisini elle senkron tutma — üreteci çalıştır.
 | `Bagimlilik` | ✓ | ID listesi |
 | `Durum` | **elle** | `Yapilacak` / `Devam` / `Bloke` / `Tamamlandi` |
 | `Sorumlu` `Baslangic` `Bitis` `Not` | **elle** | serbest |
+| `Hakem` | ✓ kabul kriterinden | boş olabilir |
+
+> `Hakem` sütunu **sona** eklenir, araya değil: `Durum` H sütununda kalmalı,
+> çünkü `Ozet` formülleri ve açılır liste doğrulaması ona bağlı.
+
+## Hakem sütunu ve ikinci gösterge
+
+Kabul kriterine `**Hakem:** pytest tests/test_authz.py` yazarsan üreteç bunu
+`Hakem` sütununa taşır. Yazmazsan sütun boş kalır — bu normaldir ve
+**uydurulmaz**.
+
+Rapor bunu ayrı bir bölge olarak basar (`GEN:HAKEM`): *tamamlanan eforun ne
+kadarında yazardan başka bir hakem adı geçiyor.* İki şeye dikkat:
+
+- **İlerleme yüzdesini değiştirmez.** "Bitti" ile "doğrulandı" iki ayrı şeydir;
+  tek göstergeye eritmek ikisini de okunamaz yapar.
+- **Kriterin fiilen koşulduğunu göstermez.** Bunu hiçbir çizelge bilemez; onu
+  Tamamlandı Tanımı bilir. Gösterge yalnızca "bitti" hükmünün ne kadarının işi
+  yapanın kendi beyanına dayandığını söyler.
+
+`Hakem` sütunu olmayan eski çizelgelerde gösterge **%0 değil "ölçülmedi"**
+basar. Ölçülmemiş bir şeyi sıfır göstermek, sessiz varsayımın en pahalı türüdür:
+ölçüm gibi görünür.
 
 **Sekme `Ozet`** — `COUNTIF`/`COUNTIFS` formülleriyle durum ve faz kırılımı.
 Elle sayı girme; formül bozulur.

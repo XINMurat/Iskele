@@ -65,6 +65,35 @@ jobs:
           done
           echo "OK: GEN markers intact after a write."
 
+      - name: Self-test — a missing Hakem column reads "olculmedi", never %0
+        run: |
+          set -e
+          # Reporting an unmeasured indicator as 0% is the silent-assumption
+          # red line in its most damaging form: it looks like a measurement.
+          python - <<'PY'
+          import sys, re
+          from openpyxl import load_workbook
+          wb = load_workbook("/tmp/tracker.xlsx")
+          ws = wb["Takip"]
+          headers = [c.value for c in ws[1]]
+          if "Hakem" not in headers:
+              print("FAIL: backlog_to_tracker.py stopped emitting the Hakem column")
+              sys.exit(1)
+          # drop the column to simulate a tracker built by an older version
+          ws.delete_cols(headers.index("Hakem") + 1)
+          wb.save("/tmp/tracker-old.xlsx")
+          PY
+          cp examples/07-ilerleme-raporu.example.html /tmp/report-old.html
+          python skill/iskele/scripts/progress.py \
+            --xlsx /tmp/tracker-old.xlsx --html /tmp/report-old.html \
+            --config examples/iskele.config.example.json | tee /tmp/old.log
+          grep -q 'olculmedi' /tmp/old.log \
+            || { echo "FAIL: a missing column was not reported as unmeasured" >&2; exit 1; }
+          grep -q 'GEN:HAKEM:BEGIN' /tmp/report-old.html
+          grep -q 'veri yok' /tmp/report-old.html \
+            || { echo "FAIL: the report did not say the indicator is unmeasured" >&2; exit 1; }
+          echo "OK: unmeasured stays unmeasured."
+
       - name: Self-test — a malformed estimate must be REJECTED
         run: |
           set -e
@@ -136,6 +165,20 @@ jobs:
           python skill/iskele/scripts/backlog_to_tracker.py \
             --backlog /tmp/from-seeds.md --out /tmp/from-seeds.xlsx
           test -s /tmp/from-seeds.xlsx
+          # A seed's arbiter must reach the tracker column too, otherwise the
+          # report would call Kıyas-sourced work self-reported when it is not.
+          python - <<'PY'
+          import sys
+          from openpyxl import load_workbook
+          ws = load_workbook("/tmp/from-seeds.xlsx")["Takip"]
+          h = {c.value: i for i, c in enumerate(ws[1])}
+          rows = [r for r in ws.iter_rows(min_row=2, values_only=True) if r[0]]
+          missing = [r[h["ID"]] for r in rows if not str(r[h["Hakem"]] or "").strip()]
+          if missing:
+              print("FAIL: the seed arbiter did not reach the Hakem column:", missing)
+              sys.exit(1)
+          print("OK: arbiter survives seed -> backlog -> tracker.")
+          PY
 
       - name: backlog -> Mizan registry
         run: |

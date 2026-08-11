@@ -27,6 +27,10 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 COL = dict(id="ID", faz="Faz", epik="Epik", tahmin="Tahmin", durum="Durum")
+# Opsiyonel sutun: eski cizelgelerde yok. YOKSA gosterge hesaplanmaz ve rapora
+# "veri yok" yazilir — %0 yazilmaz. Veri yoklugunu sifir olarak gostermek,
+# "sessiz varsayim" kirmizi cizgisinin ta kendisidir.
+OPT_COL = dict(hakem="Hakem")
 
 DEFAULTS = {
     "phases": [],
@@ -70,7 +74,11 @@ def load_config(path):
 
 # ---------------------------------------------------------------- VERI
 def load_tasks(xlsx, cfg):
-    """xlsx -> (tasks, issues). issues: ('ERROR'|'WARN', mesaj)"""
+    """xlsx -> (tasks, issues). issues: ('ERROR'|'WARN', mesaj)
+
+    Opsiyonel sutunlarin VARLIGI her gorevin `_cols` alaninda tasinir; bos
+    hucre ile hic olmayan sutun ayri seylerdir ve rapor ikisini ayri basar.
+    """
     wb = load_workbook(xlsx, data_only=True)
     if "Takip" not in wb.sheetnames:
         sys.exit("HATA: 'Takip' sekmesi yok.")
@@ -99,6 +107,8 @@ def load_tasks(xlsx, cfg):
         seen[tid] = rno
 
         raw = {k: str(row[headers[v]] or "").strip() for k, v in COL.items()}
+        raw.update({k: (str(row[headers[v]] or "").strip() if v in headers else "")
+                    for k, v in OPT_COL.items()})
 
         faz = ph_alias.get(norm(raw["faz"]))
         if faz is None:
@@ -130,7 +140,8 @@ def load_tasks(xlsx, cfg):
             issues.append(("ERROR", f"satir {rno} [{tid}]: Epik bos"))
 
         tasks.append(dict(id=tid, faz=faz, epik=raw["epik"],
-                          tahmin=tahmin, durum=durum))
+                          tahmin=tahmin, durum=durum, hakem=raw["hakem"],
+                          _cols={k: (v in headers) for k, v in OPT_COL.items()}))
 
     if not tasks:
         issues.append(("ERROR", "Takip sekmesinde hic gorev satiri yok"))
@@ -165,12 +176,29 @@ def compute(tasks, cfg):
             f"{total_eff:g}. Faz sutunu {phases} disinda deger iceriyor: "
             f"{orphan or '?'} — bu gorevler cubukta gorunur ama toplama girmez.")
 
+    # --- ikinci gosterge: tamamlanan eforun ne kadari oz-beyan? -------------
+    # Ilerleme yuzdesi "bitti denen is"i olcer, "dogrulanmis is"i degil. Tek
+    # gostergeli rapor, gostergenin olcmedigi seyi sifir degil GORUNMEZ yapar.
+    # Burada olculen sey mutevazi ve dogru: tamamlanmis eforun ne kadarinin
+    # kabul kriterinde YAZARDAN BASKA bir hakem adi var. Kriterin fiilen
+    # kosuldugunu iddia ETMEZ — onu bu script bilemez.
+    has_col = bool(tasks) and tasks[0].get("_cols", {}).get("hakem", False)
+    arb_done = sum(W.get(t["tahmin"], 0.0) * CR.get(t["durum"], 0.0)
+                   for t in tasks if str(t.get("hakem", "")).strip())
+    arb_n = sum(1 for t in tasks
+                if str(t.get("hakem", "")).strip() and CR.get(t["durum"], 0.0) >= 1)
+    total_done = sum(p["done"] for p in ph.values())
+    total_dn = sum(p["dn"] for p in ph.values())
+
     return dict(epics=epics, phases=ph, total_eff=total_eff,
-                total_done=sum(p["done"] for p in ph.values()),
+                arbiter_col=has_col,
+                arbiter_done=arb_done, arbiter_dn=arb_n,
+                arbiter_pct=(round(100 * arb_done / total_done)
+                             if has_col and total_done else None),
+                total_done=total_done,
                 total_n=sum(p["n"] for p in ph.values()),
-                total_dn=sum(p["dn"] for p in ph.values()),
-                overall_pct=round(100 * sum(p["done"] for p in ph.values()) / total_eff)
-                if total_eff else 0)
+                total_dn=total_dn,
+                overall_pct=round(100 * total_done / total_eff) if total_eff else 0)
 
 
 def active_phase(C, cfg):
@@ -312,8 +340,45 @@ def r_timeline(C, cfg):
     return "\n".join(out)
 
 
+def r_hakem(C, cfg):
+    """Tamamlanan eforun ne kadari disaridan hakemli — ilerlemenin yaninda,
+    ILERLEMENIN ICINDE degil. Bu sayiyi yuzdeye katmak, iki ayri seyi
+    (bitti / dogrulandi) tek gostergeye eritirdi."""
+    if not C["arbiter_col"]:
+        return ('<div class="note">\n'
+                '      <b>Hakem gostergesi: veri yok.</b> Cizelgede <code>Hakem</code>\n'
+                '      sutunu bulunmuyor (eski surum). Bu <em>%0</em> demek degildir —\n'
+                '      olculmedi demektir. Cizelgeyi <code>backlog_to_tracker.py</code>\n'
+                '      ile yeniden uret.\n'
+                '    </div>')
+    if C["total_done"] <= 0:
+        return ('<div class="note">\n'
+                '      <b>Hakem gostergesi: henuz tamamlanan is yok.</b> Oran, ilk\n'
+                '      gorev kapandiginda anlam kazanir.\n'
+                '    </div>')
+
+    pct = C["arbiter_pct"]
+    self_rep = 100 - pct
+    return ('<div class="note">\n'
+            f'      <div class="row"><span>Tamamlanan eforun hakemli olani</span>'
+            f'<b class="num">%{pct}</b></div>\n'
+            f'      <span class="track" style="height:6px;margin:6px 0 10px">'
+            f'<span class="fill" style="width:{pct}%"></span></span>\n'
+            f'      <div class="row"><span>Oz-beyanda kalan</span>'
+            f'<b class="num">%{self_rep}</b></div>\n'
+            f'      <div class="row"><span>Hakemli kapanan gorev</span>'
+            f'<b class="num">{C["arbiter_dn"]}/{C["total_dn"]}</b></div>\n'
+            '      <p class="l2">Olculen sey: kabul kriterinde yazardan baska bir\n'
+            '      hakem adi gecen gorevlerin, tamamlanan efor icindeki payi.\n'
+            '      Kriterin fiilen kosuldugunu <b>gostermez</b> — bunu hicbir\n'
+            '      cizelge bilemez; Tamamlandi Tanimi bilir. Dusuk oran, isin\n'
+            '      kotu oldugunu degil, "bitti" hukmunun buyuk olcude isi yapanin\n'
+            '      kendi beyanina dayandigini soyler.</p>\n'
+            '    </div>')
+
+
 RENDERERS = dict(CHIPS=r_chips, KPI=r_kpi, CARDS=r_cards,
-                 BARS=r_bars, TIMELINE=r_timeline)
+                 BARS=r_bars, TIMELINE=r_timeline, HAKEM=r_hakem)
 
 
 def patch(html, key, block):
@@ -377,6 +442,32 @@ def self_test():
     except ValueError:
         check("faz disi kayit degismez ihlali uretir", True)
 
+    # 5) Hakem sutunu YOKSA gosterge %0 degil "olculmedi" olmali
+    t, _ = load_tasks(make([["A-1", "F0", "F0.1 Bir", "M", "Tamamlandi"]]), cfg)
+    C = compute(t, cfg)
+    check("Hakem sutunu yoksa gosterge None (0 degil)",
+          C["arbiter_col"] is False and C["arbiter_pct"] is None)
+
+    # 6) Hakem sutunu varsa oran TAMAMLANAN efor uzerinden hesaplanir.
+    #    L(4) hakemli tamam + S(0.75) hakemsiz tamam + M(1.5) hakemli ama
+    #    yapilacak -> 4/4.75 = %84. Bitmemis is orana girmemeli: girseydi
+    #    "hakem yazdim" demek, dogrulanmis is gibi gorunurdu.
+    def make_h(rows):
+        wb = Workbook(); ws = wb.active; ws.title = "Takip"
+        ws.append(["ID", "Faz", "Epik", "Tahmin", "Durum", "Hakem"])
+        for r in rows:
+            ws.append(r)
+        p = tmp / "th.xlsx"; wb.save(p); return p
+
+    t, _ = load_tasks(make_h([
+        ["A-1", "F0", "F0.1 Bir", "L", "Tamamlandi", "pytest tests/a.py"],
+        ["A-2", "F0", "F0.1 Bir", "S", "Tamamlandi", ""],
+        ["B-1", "F1", "F1.1 Iki", "M", "Yapilacak", "pytest tests/b.py"]]), cfg)
+    C = compute(t, cfg)
+    check("hakemli oran tamamlanan efor uzerinden (%84)", C["arbiter_pct"] == 84)
+    check("hakemli kapanan gorev sayisi 1", C["arbiter_dn"] == 1)
+    check("hakem orani ilerleme yuzdesini degistirmez", C["overall_pct"] == 76)
+
     print("SELF-TEST:", "BASARILI" if ok else "BASARISIZ")
     return 0 if ok else 1
 
@@ -422,6 +513,15 @@ def main():
         d = C["phases"][p]
         pct = round(100 * d["done"] / d["eff"]) if d["eff"] else 0
         print(f"  {p}: %{pct:>3} · {d['dn']}/{d['n']} gorev · {fmt(d['eff'])} gun")
+
+    if not C["arbiter_col"]:
+        print("  Hakem: olculmedi (cizelgede 'Hakem' sutunu yok) — %0 DEGIL")
+    elif C["total_done"] <= 0:
+        print("  Hakem: henuz tamamlanan is yok")
+    else:
+        print(f"  Hakem: tamamlanan eforun %{C['arbiter_pct']}'i hakemli · "
+              f"%{100 - C['arbiter_pct']}'i oz-beyan "
+              f"({C['arbiter_dn']}/{C['total_dn']} gorev)")
 
     if a.check:
         return

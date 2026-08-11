@@ -41,6 +41,14 @@ markers. Everything else in the report stays hand-editable.
 Progress is **effort-weighted**, not task-counted (`S=0.75 · M=1.5 · L=4`
 workdays by default): a four-day task must not weigh the same as a half-day one.
 
+Alongside it the report carries a second, deliberately modest indicator: **how
+much of the completed effort rests on self-report.** A task whose acceptance
+criterion names an arbiter (`**Hakem:** pytest tests/test_authz.py`) counts as
+arbitered; one that names none does not. It does not claim the criterion was
+actually run — no spreadsheet can know that — and it never moves the progress
+percentage, because "done" and "verified" are two different things. On a tracker
+built before this column existed, the indicator reads **"unmeasured", not 0%**.
+
 ## What is in here
 
 | Path | What it is |
@@ -192,6 +200,14 @@ bölgeleri yeniden yazar. Raporun gerisi elle düzenlenebilir kalır.
 İlerleme görev sayısıyla değil **efor-ağırlıklı** hesaplanır (varsayılan
 `S=0.75 · M=1.5 · L=4` iş-günü): dört günlük görev, yarım günlükle aynı ağırlıkta
 sayılmamalı.
+
+Yanında rapor, bilerek mütevazı ikinci bir gösterge taşır: **tamamlanan eforun
+ne kadarı öz-beyana dayanıyor.** Kabul kriterinde hakem adı geçen görev
+(`**Hakem:** pytest tests/test_authz.py`) hakemli sayılır, geçmeyen sayılmaz.
+Kriterin fiilen koşulduğunu iddia etmez — bunu hiçbir çizelge bilemez — ve
+ilerleme yüzdesini asla değiştirmez, çünkü "bitti" ile "doğrulandı" iki ayrı
+şeydir. Bu sütun yokken üretilmiş çizelgede gösterge **%0 değil, "ölçülmedi"**
+basar.
 
 ## Depoda ne var
 

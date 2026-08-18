@@ -104,6 +104,38 @@ Her görev: `ID` · epik · katman · **tahmin (S/M/L)** · **bağımlılık** �
   okuma yüzeyi vardır* (üretim tarafı tek başına yetmez).
 - **Faz go/no-go** — kapıda tek tek doğrulanacak somut maddeler.
 
+- **Senaryo provası** — üçüncü seviye, ve kapıların en çok atlanan maddesi.
+  DoD ile go/no-go, *yazılmış olanı* denetler: kabul kriteri tuttu mu, uç
+  ulaşılabilir mi. İkisi de **hiç yazılmamış olanı** göremez. İki soru sınıfı
+  yalnız burada yakalanır:
+
+  1. **Alanın gerçeği modelde ifade edilebiliyor mu?** Sahada rutin olarak
+     olan durumları listele ve tek tek dene. Üç sonuç: ifade edilebiliyor
+     (tamam) · edilemiyor **ama bilinçli sınır olarak yazılı** (tamam, bu bir
+     karardır) · edilemiyor **ve hiçbir yerde yazılı değil** (bulgu).
+     *Belgesiz boşluk, karar verilmiş sınırdan her zaman kötüdür.*
+  2. **İki özellik aynı anda geçerliyken hangisinin güvencesi kırılıyor?**
+     Backlog'u atomize etmek (adım 4) tam da bu kusuru yok eder: parçalara
+     ayırınca yalnız *kesişimde* var olan hata görünmez olur. Bu yüzden
+     kapıda bilerek geri toplanır. Her yeni özellik için, dokunabileceği
+     mevcut güvenceleri listele ve *"bu özellik etkinken o güvence hâlâ
+     geçerli mi?"* diye sor. En kırılgan ikisi: **türetilmiş sinyaller**
+     (bir yokluktan hesaplanan her şey — "3 gündür dokunulmadı",
+     "atanmamış" — yeni bir durum eklenince sessizce anlam değiştirir) ve
+     **çağrı yeri yeri uygulanan güvenceler** (beş yerde doğru uygulanan bir
+     gizlilik kuralını, altıncı bir toplu yüzey tek hamlede deler).
+     **Sıra da sayılır:** bazı çiftler yalnız tek yönde güvenlidir.
+
+  **Listeyi tek başına yazamazsın ve yazıyormuş gibi yapma.** Alanı bilen
+  kişiye sor; uydurulmuş makul senaryolar, kanıt etiketi takılmış kurgudur.
+  **Ve senaryolar bulgudan ÖNCE yazılır:** sonradan yazılan senaryo, kendi
+  bulduğu şeyi bulmuş olur ve kapsam hakkında hiçbir şey kanıtlamaz (HARKing).
+  Bu yüzden kural listenin kendisinden önemlidir: **her yeni faz, kendi
+  senaryolarını faz açılırken ekler**, kapıya gelince değil.
+
+  Yeşil test süiti burada karşı-kanıt değildir: testler özellik başına
+  yazılır, yani parçalar hakkında konuşur ve çift hakkında susar.
+
 ### 6. Takip + üreteci kur
 
 - **Çizelge** (`tracker.xlsx`): backlog'un satır satır hâli + Durum/Sorumluluk/Tarih.
@@ -146,6 +178,19 @@ hakemi gerçekten çalıştırılabilirse backlog'da adını ver:
 
 Bunu sen yazmadıkça adaptör sınıfı yükseltmez — sessiz terfi, sessiz varsayımın
 en pahalı türüdür.
+
+**Devir aynı zamanda bir bağlam kesme noktasıdır.** Uzun oturumda her tur,
+konuşmanın tamamını yeniden taşır: maliyet bulgunun değil transkriptin
+boyutuyla büyür. Kit dosyaya yazıldığı anda o yükü taşımanın bir sebebi
+kalmaz — bir sonraki faz **taze bir oturumda** başlayabilir, çünkü ihtiyacı
+olan her şey (backlog, ADR günlüğü, çizelge, devir notu) diskte durur.
+Bunu faz sınırında açıkça söyle; alışkanlıktan geçmiş bütün geçmişi ileri
+taşımak, kitin var oluş sebebini boşa çıkarır.
+
+Aynı ilkenin gündelik hâli: **dosyayı değil aralığı oku** (önce ara, sonra
+gereken satırları aç), **geniş taramayı alt ajana ver** (ham çıktı değil sonuç
+dönsün), ve **bulguyu üretildiği anda dosyaya yaz** — sona saklanan bulgu, hem
+her turda bedelini ödetir hem ilk bağlam sıfırlamasında kaybolur.
 
 Döngü kapanır: **iskele kurar → mizan tartar → kiyas üretir → iskele'ye geri girer.**
 

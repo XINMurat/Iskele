@@ -34,7 +34,7 @@ satirinda kac gorevin oz-beyanda kaldigini basar.
 
 Kullanim:
     python iskele_to_registry.py --backlog 03-gorev-listesi.md --out registry.yaml
-    python iskele_to_registry.py --backlog ... --project "PortalX" --owner "XINMurat"
+    python iskele_to_registry.py --backlog ... --project "PortalX" --owner "your-org"
     python iskele_to_registry.py --backlog ... --phase F1        # tek faz
 """
 import argparse, sys

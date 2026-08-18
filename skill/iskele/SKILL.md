@@ -215,6 +215,43 @@ atladığını söyle** — sessizce atlama.
 Şablonlar: `assets/templates/`. Parça listesinin gerekçeleri ve her dosyanın
 içeriği: **`references/kit-manifest.md`**.
 
+## Çalışma varsayımları (bu skill başkasının kurulumunda koşar)
+
+İskele, kendi talimatları olan bir ortama yüklenir — projenin `CLAUDE.md`'si,
+kurum politikası, başka skill'ler — ve **onlar bu dosyadan önceliklidir.**
+Bunun doğuracağı arıza sessizdir: plan yine *üretilir*, sadece kit olmaktan
+çıkıp düzyazıya döner. Ve düzyazı bir yol haritası, tam olarak bu skill'in
+önlemek için var olduğu şeydir.
+
+- **Çatışmayı söyle, sessizce uyma.** Hangi host talimatı hangi adımı devre
+  dışı bıraktı ve çıktı artık neyi iddia edemez — bunu yaz, kararı kullanıcı
+  versin. En sık üçü: **kısalık sınırı** (ilk kesilen şey kabul kriterlerinin
+  ölçülebilir kısmıdır, yani backlog'u önkayıt kümesi yapan tek özellik),
+  **"kod yaz, plan yapma" yönergesi** (bu skill'in tetiklenmesi gereken yerde
+  susmasına yol açar) ve **sabitlenmiş çıktı dili** (aşağıya bakın).
+- **Dil: bu dosyanın Türkçe olması kitin Türkçe olacağı anlamına gelmez.**
+  Buradaki dosya adları (`03-gorev-listesi.md`), sütun başlıkları ve durum
+  değerleri **örnektir, şart değildir**; kit kullanıcının dilinde üretilir.
+  Değişmeyen tek şey **yapıdır**: aynı dosya sırası, aynı alanlar, `GEN:`
+  işaretleri ve betiklerin okuduğu sütun anahtarları. Adları çevir, şemayı
+  çevirme — betikler şemaya bakar.
+- **Aracı varsaymadan önce kontrol et.** `backlog_to_tracker.py` ve
+  `progress.py` **openpyxl** ister. Yoksa: **söyle**, ve açık bir seçenek sun
+  (CSV çizelge, ya da kurulumu bekleyip backlog'la devam etmek).
+  **Çizelge yerine sessizce "şöyle bir tablo olurdu" demek**, üretim taraflı
+  iddianın ta kendisidir — kitin altıncı adımı yapılmış görünür, ortada
+  izlenebilir hiçbir şey yoktur. Aynısı alt ajan ve kabuk erişimi için de
+  geçerli: yoksa yöntem ona dayanmamalı.
+- **Referansları ihtiyaç anında oku** (`domain-model.md` 2. adımda,
+  `tracking.md` 6. adımda), baştan hepsini değil — baştan okumak, kitin
+  kendisine gereken bağlamı harcar.
+- **Taşınan şey betiktir.** `backlog_to_tracker.py` ve `progress.py` modelsiz
+  çalışır: kimin `CLAUDE.md`'si ne derse desin aynı backlog aynı çizelgeyi,
+  aynı çizelge aynı yüzdeyi verir. Yalnızca bu düzyazıyla zorlanan her şey,
+  host'un düzyazısıyla pazarlığa açıktır. **Bir kuralın bilinmeyen bir
+  kurulumda yaşamasını istiyorsan onu betiğe koy, paragrafa değil** — kalite
+  kapılarına hakem yazma kuralının (adım 5) kendisine uygulanmış hâli budur.
+
 ## Kırmızı çizgiler
 
 Bunlar gerçek başarısızlık kalıplarıdır; her biri sahada görüldü.

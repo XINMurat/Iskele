@@ -141,6 +141,38 @@ control arm and no measured hit rate. It is stated here rather than implied,
 which is the same standard the skill applies to every estimate it emits: give
 the basis, say it is uncalibrated, recalibrate after the first phase lands.
 
+## No setup required — and a disclosed confound
+
+**You do not need to configure your assistant for this skill to work.** No
+custom instructions, no system prompt, no house style. If it only behaves
+when your `CLAUDE.md` is arranged a particular way, that is a **defect in the
+skill**, not a missing step in your setup — please open an issue.
+
+Honest tier on that claim here: **`[H]`**, not `[K]`. It was tested for
+Mizan, this project's sibling, under a `CLAUDE.md` written to fight the
+method and again under none at all
+([the runs](https://github.com/XINMurat/Mizan/blob/main/examples/portability-across-hosts.md)).
+The equivalent runs have **not** been done for İskele, and İskele has an
+extra exposure the other two do not: this file and the skill body are in
+Turkish, while the kit it produces should follow the user's language. The
+filenames and column headers in the skill are **examples**; the structure —
+file order, fields, `GEN:` markers, the column keys the scripts read — is
+what is fixed. Translate the names, not the schema.
+
+**Disclosed confound:** this project's author keeps an always-on personal
+instruction set that overlaps these rules at several points. Their own
+sessions are therefore a maximally reinforcing host, and *"it works well for
+me"* from that setup is confounded by construction. That instruction set is
+deliberately **not** shipped as a recommendation: installing it would erase
+the neutral-host case from the user population — the only case that can
+produce field evidence — and it would put the same rules in two places under
+separate maintenance, where a user's copy silently overrides the skill.
+
+If a rule must survive an unknown setup, it belongs in a script, not in a
+paragraph asking users to reconfigure their assistant. For this skill that is
+`backlog_to_tracker.py` and `progress.py`: they run without a model, so the
+same backlog yields the same tracker and the same percentage in any host.
+
 ## Contributing
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md).

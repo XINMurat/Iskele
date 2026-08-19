@@ -212,6 +212,45 @@ atladığını söyle** — sessizce atlama.
 | 08 | `tracker.xlsx` | ✓ | Canlı takip çizelgesi |
 | 09 | `08-onboarding.md` | — | Ekip için tek sayfalık bağlam |
 
+### Okuma yüzeyi — kit büyür, devir maliyeti büyümemeli
+
+Manifest **hangi parçaların** olacağını söyler; bu bölüm **ne kadar büyüyeceklerini**
+söyler. Çünkü kitin devri ucuzsa oturum temizlenebilir, ve devir ucuzluğu
+kendiliğinden korunmaz.
+
+İki dosya doğası gereği **append-only**'dir ve öyle kalmalıdır: ADR günlüğü
+(bir kararın gerekçesi silinmez) ve backlog'un kapanmış kısmı (kabul kriterinin
+kanıtı silinmez). İkisi de doğru kurallar. **Kesişimleri pahalı:** devir yüzeyi
+sınırsız büyür ve bir noktada "temizle, dosyadan devam et" konuşmaya devam
+etmekten daha pahalı hâle gelir — yani kitin varlık sebebi tersine döner.
+
+Üç hamle, üçü de aynı deseni kullanır — **kaynak durur, okunan küçülür**:
+
+- **Üretilmiş indeks.** ADR günlüğü tek satırlık bir indekse indirgenir (numara,
+  karar, özet, durum). Önce indeks okunur, kararın tam metni **gerektiğinde**
+  açılır. İndeks **elle tutulmaz, üretilir** — elle tutulan her sayı bakılmadığı
+  anda bayatlar (ölçülmüş örnek: bir projede elle tutulan özet tablosu 79
+  diyordu, gerçek 87'ydi).
+- **Kapanan iş arşive.** Tamamlanmış fazların tam metni `arsiv/` altına taşınır;
+  canlı backlog **açık işi** taşır. Taşınır, **silinmez** — kanıt yerinde durur.
+- **Sayı çizelgeden gelir, metinden değil.** Arşivleme yüzdeyi **değiştirmez**,
+  çünkü ilerleme `tracker.xlsx`'ten türetilir. Bu ayrım yazılı olmalı: arşiv bir
+  **okuma** kararıdır, kapsam kararı değil. Karışırsa arşivlemek iş silmek gibi
+  görünür ve kimse yapmaz.
+
+**Ne zaman:** bir faz kapandığında — devir zaten o an yazılıyor (adım 7).
+
+**Ölçülmüş örnek ve beklentiyi düşüren kısmı.** Bir projede devir yüzeyi
+420 KB'dan 133 KB'a indi (ADR günlüğü: 177 KB kaynak → 19 KB indeks, 9x);
+hakemler ve ilerleme üreteci etkilenmedi. **Ama aynı devir görevini iki taze
+ajana yaptırınca token farkı yalnızca %16 çıktı** — bayt 3,2x düşerken.
+Oran taşımıyor, çünkü ajan dosyanın tamamını değil ihtiyacı kadarını okuyor.
+**Bunu böyle yaz:** "okuma yüzeyini küçülttük" cümlesi bayt olarak doğru
+olsa bile token kazancını olduğundan büyük gösterir. İndeksin asıl kazancı
+boyut değil **yönlendirme** — indeksli ajan üreteci koşturup kesin sayıyı
+aldı, diğeri metinden tahmin okudu. Kazancı boyutla değil, **doğru yere
+gitmekle** gerekçelendir.
+
 Şablonlar: `assets/templates/`. Parça listesinin gerekçeleri ve her dosyanın
 içeriği: **`references/kit-manifest.md`**.
 

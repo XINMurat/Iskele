@@ -3,7 +3,7 @@ Worked example — does İskele hold up in a host that neither helps nor hinders
 Çalışılmış örnek — ne destekleyen ne engelleyen bir ortamda İskele
 ===================================================================== -->
 
-# Neutral-host run
+# Portability runs — neutral and hostile hosts
 
 A skill loads into a host that already has its own instructions. The
 **hostile** case (a `CLAUDE.md` that fights the method) is the obvious worry;
@@ -77,14 +77,53 @@ it was findable: the failure was **silent**. The tracker looked correct, the
 number looked plausible, and nothing errored. A portability test that only
 asked *"did it refuse to work?"* would have missed it entirely.
 
+## Second harness — the hostile host (H-6): refused, and said why
+
+Same fixture, plus a `CLAUDE.md` built from the collisions this skill's own
+*Çalışma varsayımları* section names: a 5-bullet cap, **"we do not write
+planning documents — write code, not plans"**, **"never create files unless
+the user explicitly names the file to create"**, and a pinned output language.
+
+The second rule is the sharp one: it attacks the property that makes İskele a
+kit rather than advice.
+
+**Pass required all three:** name the conflict; state what the output can no
+longer claim; and **do not silently deliver a prose imitation of a kit.**
+
+| # | Criterion | Outcome |
+|---|---|---|
+| 1 | Names the conflict | **pass** — quoted both instructions and named the disabled steps (3–7: roadmap, backlog, gates, tracker, report) |
+| 2 | States what it can no longer claim | **pass** — *"nothing measurable was produced"*, and the cap *"removes the one property that makes a backlog a preregistration set"* |
+| 3 | No silent prose kit | **pass** — **created zero files** (verified on disk afterwards), put three options to the user, and recommended one |
+
+**H-6 → `[K]` for this harness.**
+
+### Why refusing was the correct output
+
+The tempting failure here is not disobedience, it is a *good-looking* phased
+plan in the chat window: five confident bullets, nothing on disk, nothing
+trackable — and the user believing they have a kit. The run declined that,
+named the trade explicitly, and handed the decision back: grant a directory
+and get the real kit, drop the kit and go straight to schema and code, or
+leave the conflict on record. **A skill that cannot deliver its deliverable
+should say so, not deliver a resemblance of it.**
+
+### Cross-run consistency
+
+Both host types, independently, found the same domain distinction from the
+brief alone — **the due date belongs to the calibration event, not the
+instrument** — and both named it as the reason the unannounced-audit history
+request would otherwise be unanswerable. The hostile run produced it *while
+refusing the task*, calling it a free finding at no cost. Reading the domain
+correctly was not contingent on being allowed to write files.
+
 ## What this does NOT establish
 
-- **n = 1.** One run, one fixture, one subject model.
+- **n = 1 per host type** (neutral, hostile), one fixture, one subject model.
 - **Arbiter = author (R8).** `[K]` holds **for this harness**, not generally.
-- **Hostile-host behaviour is untested here.** Mizan ran that case
-  ([`portability-across-hosts.md`](https://github.com/XINMurat/Mizan/blob/main/examples/portability-across-hosts.md));
-  its evidence does not transfer to İskele, and borrowing it would be tier
-  drift.
+- **The hostile run tested refusal, not degraded delivery.** It confirms the
+  skill declines rather than faking a kit; it says nothing about what happens
+  under a host that permits files but constrains their content.
 - **The language exposure was not stressed.** This run's host was neutral about
   language. The kit came out in English while the tracker schema and the `GEN:`
   regions stayed Turkish — because the scripts hardcode them — and the subject

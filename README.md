@@ -155,9 +155,11 @@ tracker included, acceptance criteria consumer-side, scenario rehearsals in
 the gates: see
 [`examples/portability-neutral-host.md`](examples/portability-neutral-host.md).
 That run also found and fixed a real defect in `backlog_to_tracker.py`. The
-**hostile**-host case was tested for the sibling project Mizan
-([those runs](https://github.com/XINMurat/Mizan/blob/main/examples/portability-across-hosts.md))
-but **not** for İskele; that evidence does not transfer. İskele also has an
+**hostile**-host case passed too: under a `CLAUDE.md` banning planning
+documents and file creation, the run **created nothing**, named which steps
+were disabled, said plainly that nothing measurable was produced, and handed
+the decision back with three options — rather than delivering a good-looking
+prose plan that no one could track. İskele also has an
 extra exposure the other two do not: this file and the skill body are in
 Turkish, while the kit it produces should follow the user's language. The
 filenames and column headers in the skill are **examples**; the structure —

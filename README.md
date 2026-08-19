@@ -148,11 +148,16 @@ custom instructions, no system prompt, no house style. If it only behaves
 when your `CLAUDE.md` is arranged a particular way, that is a **defect in the
 skill**, not a missing step in your setup — please open an issue.
 
-Honest tier on that claim here: **`[H]`**, not `[K]`. It was tested for
-Mizan, this project's sibling, under a `CLAUDE.md` written to fight the
-method and again under none at all
-([the runs](https://github.com/XINMurat/Mizan/blob/main/examples/portability-across-hosts.md)).
-The equivalent runs have **not** been done for İskele, and İskele has an
+Honest tier on that claim: **`[K]` for the neutral host**, `[H]` for the
+hostile one. İskele was run on a vague real brief with no conflicting *and no
+reinforcing* host instructions, and produced the full ten-part kit on disk —
+tracker included, acceptance criteria consumer-side, scenario rehearsals in
+the gates: see
+[`examples/portability-neutral-host.md`](examples/portability-neutral-host.md).
+That run also found and fixed a real defect in `backlog_to_tracker.py`. The
+**hostile**-host case was tested for the sibling project Mizan
+([those runs](https://github.com/XINMurat/Mizan/blob/main/examples/portability-across-hosts.md))
+but **not** for İskele; that evidence does not transfer. İskele also has an
 extra exposure the other two do not: this file and the skill body are in
 Turkish, while the kit it produces should follow the user's language. The
 filenames and column headers in the skill are **examples**; the structure —

@@ -57,7 +57,24 @@ def parse_backlog(path):
     """markdown -> (tasks, problems)"""
     tasks, problems, seen = [], [], {}
     epic_code = epic_name = ""
+    in_fence = False
+    fence_marker = None
     for lineno, raw in enumerate(Path(path).read_text(encoding="utf-8").splitlines(), 1):
+        # Cit icindeki satirlar ORNEKTIR, gorev degil. Backlog'lar bicim ornegi
+        # tasir ("- [ ] **F1-BE-01** (M) ...") ve cit atlanmazsa o ornek canli bir
+        # gorev olarak cizelgeye girer: sayim ve efor sessizce sisar. Acilis
+        # isaretini sakla, ayni uzunluktaki kapanis kapatsin -- ic ice ``` bloklari
+        # erken kapanmasin.
+        stripped = raw.lstrip()
+        if stripped.startswith("```") or stripped.startswith("~~~"):
+            marker = stripped[:3]
+            if not in_fence:
+                in_fence, fence_marker = True, marker
+            elif marker == fence_marker:
+                in_fence, fence_marker = False, None
+            continue
+        if in_fence:
+            continue
         m = EPIC_RE.match(raw.strip())
         if m:
             epic_code = m.group("code").strip()

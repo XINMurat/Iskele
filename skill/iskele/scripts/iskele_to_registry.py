@@ -101,6 +101,16 @@ def to_hypothesis(task, today):
         "threshold": {
             "support": "kabul kriteri fiilen kosuldu ve gecti",
             "refute": "kabul kriteri kosuldu ve gecmedi",
+            # Mizan R10 ister ki esik bir NICELIK adlandirsin ("improves
+            # things" bir esik degildir). Bir GOREV onkaydinda esik gercekten
+            # kategoriktir: kriter ya kosuldu ve gecti ya gecmedi. R10'un
+            # bunun icin acik kacis kapisi var; sessizce gecmek yerine
+            # gerekcesini yaziyoruz.
+            "non_numeric_justification": (
+                "Gorev kabul kriteri ikili (gecti/gecmedi) bir hukumdur, olculen "
+                "bir buyukluk degil. Nicelik gerektiren kriterler ('p95 < 200ms' "
+                "gibi) zaten kriter metninin kendisinde durur ve oraya yazilir."
+            ),
             "underpowered": "kriter kosulmadi -> hukum YOK (Durum 'Tamamlandi' olamaz)",
         },
         "refutation": (f"Kabul kriteri saglanmiyor: {kabul}" if kabul else
@@ -150,7 +160,7 @@ def main():
         "registry": {
             "project": a.project,
             "owner": a.owner,
-            "schema_version": "1.2",
+            "schema_version": "1.5",
             "methodology": "mizan-v2",
             "created": today,
             "notes": (

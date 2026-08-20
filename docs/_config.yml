@@ -1,0 +1,4 @@
+title: "İskele — From a Vague Project Intent to an Executable Delivery Kit"
+description: "A Claude skill that turns a vague project intent into a domain model, a phased roadmap with gates, an atomic backlog with acceptance criteria, quality gates, a tracker and a self-regenerating progress report. Bilingual TR/EN."
+theme: jekyll-theme-minimal
+lang: en

@@ -192,6 +192,13 @@ templates and methodology text → CC-BY-4.0**
 
 ### Version
 
+**v1.1** — Mizan 1.5 compatibility: the generated registry declares schema
+1.5 and answers R10 explicitly instead of opting out of the newer rules on a
+version pin. A task's threshold is genuinely categorical (the acceptance
+criterion was run and passed, or it was not), which is what R10's
+`non_numeric_justification` escape hatch is for. CI runs Mizan's validator
+with `--strict`.
+
 **v1.0** — seven-step loop + domain-distinction procedure + phase gates + atomic
 backlog schema + DoD/go-no-go + tracker generator + effort-weighted,
 GEN-marked progress report.
@@ -349,6 +356,12 @@ Bilinçli olarak ikili: **kod ve şemalar → MIT** ([`LICENSE`](LICENSE)); **d�
 ([`LICENSE-docs.md`](LICENSE-docs.md)).
 
 ### Sürüm
+
+**v1.1** — Mizan 1.5 uyumu: üretilen registry artık şema 1.5 beyan ediyor ve
+yeni kuralların dışında kalmak için sürüm sabitlemek yerine R10'u açıkça
+yanıtlıyor. Bir görevin eşiği gerçekten kategoriktir (kabul kriteri koşuldu ve
+geçti ya da geçmedi) — R10'un `non_numeric_justification` kaçış kapısı tam
+bunun için var. CI, Mizan'ın doğrulayıcısını `--strict` ile koşuyor.
 
 **v1.0** — yedi adımlı döngü + alan-ayrımı prosedürü + faz kapıları + atomik
 backlog şeması + DoD/go-no-go + çizelge üreteci + efor-ağırlıklı, GEN-işaretli

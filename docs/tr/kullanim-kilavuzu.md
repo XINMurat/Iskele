@@ -15,13 +15,13 @@ pip install -r skill/iskele/scripts/requirements.txt
 
 | Adım | Ne yapılır | Nerede anlatılır |
 |---|---|---|
-| 1 | Kısıtları çıkar (tek turda, en fazla üç soru) | SKILL.md §1 |
+| 1 | Kısıtları çıkar (tek turda, en fazla üç soru) | SKILL.md §1 · TR: [`metodoloji.md`](metodoloji.md) |
 | 2 | Alan ayrımını bul — şemadan **önce** | `references/domain-model.md` · TR: [`alan-modeli.md`](alan-modeli.md) |
-| 3 | Fazları ve kapıları kur (bağımlılık zinciri, takvim değil) | SKILL.md §3 |
-| 4 | Backlog'u atomize et (ID · tahmin · bağ. · kabul) | `assets/templates/03-*.md` |
-| 5 | Kalite kapılarını yaz (DoD + go/no-go) | `assets/templates/04-*.md` |
+| 3 | Fazları ve kapıları kur (bağımlılık zinciri, takvim değil) | SKILL.md §3 · TR: [`kit-manifesti.md`](kit-manifesti.md) §02 |
+| 4 | Backlog'u atomize et (ID · tahmin · bağ. · kabul) | `assets/templates/03-*.md` · TR: [`kit-manifesti.md`](kit-manifesti.md) §03 |
+| 5 | Kalite kapılarını yaz (DoD + go/no-go) | `assets/templates/04-*.md` · TR: [`kit-manifesti.md`](kit-manifesti.md) §04 |
 | 6 | Takip + üreteci kur | `references/tracking.md` · TR: [`takip.md`](takip.md) |
-| 7 | Devret (mizan / kiyas) | SKILL.md §7 |
+| 7 | Devret (mizan / kiyas) | SKILL.md §7 · TR: [`metodoloji.md`](metodoloji.md) §7 |
 
 ## Zinciri kurmak
 

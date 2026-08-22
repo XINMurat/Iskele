@@ -1,75 +1,83 @@
-# Adım 2 — Alan modelini bulmak
+# Step 2 — Finding the domain model
 
-Bu, kitin mekanikleştirilemeyen tek adımı. Iskele senin yerine ayrımı *bulmaz*;
-aramanı zorlar ve bulduktan sonrasını mekanikleştirir. Buradaki dürüstlük önemli:
-kalan altı adım şablon işidir, bu adım muhakemedir.
+This is the one step of the kit that cannot be mechanised. Iskele will not
+*find* the split for you; it forces you to look, and mechanises everything
+after you have found it. Honesty matters here: the remaining six steps are
+template work, this step is judgement.
 
-## Aranan soru
+## The question to ask
 
-> Bu alanda birbirine karıştırılan ama **ayrı yaşam döngüsüne** sahip iki şey var mı?
+> Are there two things in this domain that get conflated but have **separate
+> life cycles**?
 
-Ayrı yaşam döngüsü testi: A değiştiğinde B de zorunlu değişiyor mu? Cevap **hayır**
-ise ikisi ayrı varlıktır ve ayrı tablolarda durmalıdır.
+The separate-life-cycle test: when A changes, must B change too? If the answer
+is **no**, they are separate entities and belong in separate tables.
 
-## Sık karşılaşılan ayrım kalıpları
+## Recurring split patterns
 
-| Kalıp | A (yavaş değişen) | B (hızlı üretilen) | Örnek alan |
+| Pattern | A (slow-changing) | B (fast-produced) | Example domain |
 |---|---|---|---|
-| **Tanım / Örnek** | Şablon, prosedür, tarif | O şablonun bir çalıştırması | Süreç yönetimi, iş akışı, sınav, checklist |
-| **Katalog / Sipariş** | Ürün tanımı, fiyat listesi | Verilmiş sipariş satırı | E-ticaret, satın alma |
-| **Kural / Değerlendirme** | Politika, formül, tarife | Bir olaya uygulanmış sonuç | Sigorta, faturalama, puanlama |
-| **Plan / Gerçekleşen** | Bütçe, program, rota | Fiili harcama, kayıt, iz | Proje yönetimi, lojistik |
-| **Kimlik / Olay** | Kişi, varlık, hesap | O varlığa olan şey | CRM, muhasebe, IoT |
-| **Sürüm / Anlık görüntü** | Canlı belge | Yayınlanmış donmuş kopya | Doküman, sözleşme, mevzuat |
+| **Definition / Instance** | Template, procedure, recipe | One run of that template | Process management, workflow, exams, checklists |
+| **Catalogue / Order** | Product definition, price list | A placed order line | E-commerce, procurement |
+| **Rule / Assessment** | Policy, formula, tariff | The result applied to one event | Insurance, billing, scoring |
+| **Plan / Actual** | Budget, schedule, route | Real spend, record, trace | Project management, logistics |
+| **Identity / Event** | Person, asset, account | What happens to that entity | CRM, accounting, IoT |
+| **Version / Snapshot** | Live document | Published frozen copy | Documents, contracts, legislation |
 
-Bir alan birden fazla kalıp taşıyabilir. Hepsini isimlendir.
+A domain can carry more than one pattern. Name all of them.
 
-## Ayrımı bulmanın üç sorusu
+## Three questions that surface the split
 
-1. **Geçmişe bakma sorusu:** "Altı ay sonra 'bunu o zaman nasıl yapıyorduk?' diye
-   sorulacak mı?" Evet ise, geçmişi koruyan bir *donmuş kopya* mekanizması gerekir;
-   canlı kaydı geçmişe yansıtmak bu cevabı yok eder.
-2. **Çoğalma sorusu:** "Hangi kayıt bir kere yazılır, hangisi her kullanımda yeniden
-   üretilir?" Farklı çoğalma hızları = farklı varlık.
-3. **Sahiplik sorusu:** "Bunu kim değiştirebilir, kim yalnız kullanır?" Farklı yetki
-   sınıfları çoğu zaman farklı varlığa işaret eder.
+1. **The retrospection question:** "Six months from now, will someone ask 'how
+   were we doing this back then?'" If yes, you need a *frozen copy* mechanism
+   that preserves the past; projecting the live record backwards destroys that
+   answer.
+2. **The multiplication question:** "Which record is written once, and which is
+   produced anew on every use?" Different rates of multiplication mean
+   different entities.
+3. **The ownership question:** "Who can change this, and who only uses it?"
+   Different permission classes usually point at different entities.
 
-## Ayrım bulunduktan sonra — üç zorunlu karar
+## Once the split is found — three mandatory decisions
 
-**a) Donma (freezing).** B, A'nın hangi hâlinden üretildi? Referans mı tutuyor,
-kopya mı? Referans tutarsa A değişince B'nin geçmişi bozulur. Geçmiş önemliyse
-**kopyala ve dondur** (snapshot), sadece işaret etme.
+**a) Freezing.** Which state of A produced B? Does it hold a reference or a
+copy? With a reference, B's history breaks when A changes. If history matters,
+**copy and freeze** (snapshot); do not merely point at it.
 
-**b) Kimlik izlenebilirliği.** Donmuş kopya, canlı kayda geri izlenebilmeli
-(`source_id` + `version`), ama ona *bağımlı* olmamalı.
+**b) Identity traceability.** The frozen copy must be traceable back to the
+live record (`source_id` + `version`) without being *dependent* on it.
 
-**c) Yetki asimetrisi.** Genelde A'yı düzenlemek dar yetki, B'yi üretmek geniş
-yetkidir. Bunu baştan modelle; sonradan eklemek acı verir.
+**c) Permission asymmetry.** Editing A is usually a narrow permission and
+producing B a broad one. Model this from the start; retrofitting hurts.
 
-## Anti-kalıplar
+## Anti-patterns
 
-- **Tek tablo cazibesi.** "İkisi de adım, tek tabloda tutayım" → iki yaşam döngüsü
-  tek yere sıkışır, sorgular ve yetkiler birbirine girer.
-- **Polimorfik sahiplik.** `owner_type` + `owner_id` ile tek tabloda çok tip
-  sahiplik pratiktir ama **yabancı anahtar zorlanamaz** (yetim kayıt riski). Küçük
-  ölçekte kabul edilebilir; bilinçli ödünleşim olarak **yaz ve işaretle**, sessizce
-  yapma.
-- **Erken genelleştirme.** Henüz doğrulanmamış bir model üzerine dallanma/kural
-  motoru kurma. Önce düz hâlini çalıştır (bkz. dikey dilim).
+- **The single-table temptation.** "They are both steps, I will keep one
+  table" → two life cycles are crushed into one place, and queries and
+  permissions tangle.
+- **Polymorphic ownership.** `owner_type` + `owner_id` for multi-type
+  ownership in one table is practical, but **a foreign key cannot be
+  enforced** (risk of orphan rows). Acceptable at small scale; **write it
+  down and mark it** as a deliberate trade-off, never silently.
+- **Premature generalisation.** Do not build a branching or rule engine on a
+  model that has not been validated yet. Get the flat version working first
+  (see the vertical slice).
 
-## Çıktı: ne yazılmalı
+## Output: what to write
 
-`01-mimari-ve-veri-modeli.md` içinde:
+In `01-mimari-ve-veri-modeli.md` (or its equivalent in your language):
 
-1. Bulunan ayrım(lar) ve **neden ayrı tutulduğu** (bir paragraf).
-2. Varlık listesi + ilişkiler (tercihen çalıştırılabilir DDL).
-3. Donma mekanizması varsa yapısı ve doğrulama testi:
-   *"A'yı değiştir → eski B değişmemeli"*. Bu test kapıya (go/no-go) girer.
-4. Bilinçli ödünleşimler (ne kaybediyoruz, ne zaman geri döneceğiz).
+1. The split(s) found and **why they are kept apart** (one paragraph).
+2. The entity list and relationships (preferably executable DDL).
+3. If there is a freezing mechanism, its structure and its verification test:
+   *"change A → the old B must not change"*. This test goes into the gate
+   (go/no-go).
+4. Deliberate trade-offs (what are we losing, when will we revisit).
 
-## Dikey dilim kuralı
+## The vertical-slice rule
 
-Model kurulduktan sonra ilk inşa görevi **dikey dilim** olmalı: tek bir küçük akışı
-veritabanından ekrana kadar uçtan uca çalıştır. Katmanları ayrı ayrı "bitirip"
-sonra entegrasyonda sürprizle karşılaşmak, en pahalı rework kaynağıdır. Dikey dilim
-çalışmıyorsa model veya altyapı gerçekten bağlı değildir.
+Once the model is in place, the first build task must be a **vertical slice**:
+run one small flow end to end, from the database to the screen. "Finishing"
+the layers separately and meeting the surprise at integration is the most
+expensive source of rework. If the vertical slice does not run, the model or
+the infrastructure is not really connected.

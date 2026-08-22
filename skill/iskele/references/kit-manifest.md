@@ -1,140 +1,156 @@
-# Kit manifesti — her parça ne içerir, neden var
+# Kit manifest — what each piece contains, and why it exists
 
-Şablonlar `assets/templates/` altında. Bu belge her parçanın **amacını** ve
-**doldurma kurallarını** verir; şablonlar iskeleti.
+The templates live under `assets/templates/`. This document gives each
+piece's **purpose** and its **filling rules**; the templates give the skeleton.
 
-Küçük projede parça atlayabilirsin — ama atladığını ve nedenini `00`'da yaz.
+On a small project you may skip a piece — but write down in `00` that you
+skipped it, and why.
 
----
-
-## 00 — Rehber (`00-BASLA-rehber.md`) · zorunlu
-
-Kitin haritası. İçerir: dosya tablosu (hangi dosya ne işe yarar, ne zaman
-kullanılır), önerilen kullanım sırası, çalışma disiplini kuralları.
-
-Disiplin maddeleri (en az bunlar):
-- Faz atlama yok.
-- Görev = tek atomik iş; "kısmen bitti" yok.
-- Kanıt olmadan "done" yok.
-- Negatif bulguyu kaydet (sessizce başka yola sapma).
+> File names below follow the templates and are examples. Produce the kit in
+> the user's language; keep the **order and the fields** unchanged.
 
 ---
 
-## 01 — Mimari ve veri modeli · zorunlu
+## 00 — Guide (`00-BASLA-rehber.md`) · required
 
-Bkz. `domain-model.md`. İçerir: alan ayrımı + gerekçesi, varlıklar/ilişkiler
-(tercihen DDL), teknoloji seçimleri ve **neden** seçildiği, bilinçli ödünleşimler.
+The map of the kit. Contains: the file table (what each file is for, when it
+is used), the recommended reading order, and the working-discipline rules.
 
-Kural: her teknoloji seçimi bir kısıta bağlanmalı ("on-prem + AD zorunlu olduğu
-için ..."). Kısıta bağlanamayan seçim tercihtir; öyle işaretle.
-
----
-
-## 02 — Yol haritası · zorunlu
-
-Fazlar, kapılar, bağımlılık zinciri.
-
-Her faz için: amaç, kapsam, **kapsam dışı (açık)**, çıkış kriteri, kaba efor.
-Her kapı için: kilometre taşı adı + go/no-go'ya işaret.
-
-Kural: fazlar takvim değil bağımlılık sırasıdır. "Bir sonraki fazın kaydedecek
-verisi bir öncekinden gelir" testini uygula.
-
-Efor verirken: tabanı söyle (bottom-up görev toplamı mı, top-down tahmin mi),
-kalibresiz olduğunu işaretle, ilk faz sonrası yeniden kalibre edeceğini yaz.
+Discipline items (at least these):
+- No phase skipping.
+- A task is one atomic piece of work; there is no "partly done".
+- No "done" without evidence.
+- Record the negative finding (do not quietly take another route).
 
 ---
 
-## 03 — Görev listesi (backlog) · zorunlu
+## 01 — Architecture and data model · required
 
-Format (üreteç buna bağlı — bkz. `tracking.md`):
+See `domain-model.md`. Contains: the domain split and its rationale, entities
+and relationships (preferably DDL), the technology choices and **why** they
+were chosen, deliberate trade-offs.
+
+Rule: every technology choice must be tied to a constraint ("because it is
+on-prem and AD is mandatory, ..."). A choice that cannot be tied to a
+constraint is a preference; mark it as one.
+
+---
+
+## 02 — Roadmap · required
+
+Phases, gates, dependency chain.
+
+Per phase: purpose, scope, **out-of-scope (explicit)**, exit criterion, rough
+effort. Per gate: the milestone name and a pointer to its go/no-go.
+
+Rule: phases are a dependency order, not a calendar. Apply the test "the next
+phase's data to record comes from the previous one".
+
+When giving effort: state the basis (a bottom-up sum of tasks, or a top-down
+estimate), mark that it is uncalibrated, and write that you will recalibrate
+after the first phase.
+
+---
+
+## 03 — Backlog (`03-gorev-listesi.md`) · required
+
+Format (the generator depends on it — see `tracking.md`):
 
 ```markdown
-### Epik F1.2 — Süreç & adım
-- [ ] **F1-BE-04** (M) Süreç CRUD API. **Bağ.:** F1-BE-02, F1-BE-03
-  - *Kabul:* Süreç oluşturma/düzenleme yetki kontrolüyle çalışır; taslak başlar.
+### Epic F1.2 — Process & steps
+- [ ] **F1-BE-04** (M) Process CRUD API. **Dep.:** F1-BE-02, F1-BE-03
+  - *Acceptance:* Creating and editing a process works with the permission
+    check; it starts as a draft.
 ```
 
-Zorunlu alanlar: ID, tahmin `(S|M|L)`, başlık, bağımlılık, **kabul kriteri**.
+Required fields: ID, estimate `(S|M|L)`, title, dependency, **acceptance
+criterion**.
 
-Kabul kriteri testi: *bunu çalıştırarak doğrulayabilir miyim?* Hayırsa yeniden yaz.
+The acceptance-criterion test: *can I verify this by running it?* If not,
+rewrite it.
 
-| Kötü | İyi |
+| Bad | Good |
 |---|---|
-| "Arama iyi çalışır" | "Başlıkta geçen kelimeyle arama sonuç döner; yetkisiz birim sonuçları gelmez" |
-| "Güvenlik eklenir" | "Yetkisiz istek 403 alır; token'sız istek 401 alır" |
+| "Search works well" | "Searching by a word in the title returns results; results from an unauthorised unit do not appear" |
+| "Security is added" | "An unauthorised request gets 403; a request with no token gets 401" |
 
-Tahmin ölçeği (varsayılan): `S≈0.75`, `M≈1.5`, `L≈4` iş-günü. Projeye göre
-değiştirilebilir ama **çizelge, rapor ve üreteçte aynı olmalı**.
-
----
-
-## 04 — Kalite kapıları · zorunlu
-
-İki bölüm:
-
-**Tamamlandı Tanımı (DoD)** — her görevde geçerli. Çekirdek maddeler:
-- Kabul kriteri **fiilen çalıştırıldı** (göz kararı değil).
-- Değişiklik ana dala girdi.
-- Davranış değiştiyse otomatik test var.
-- Yeni arayüz ise yetki kontrolü var.
-- Çizelge güncellendi.
-- Tıkanma/negatif bulgu kayda geçti.
-
-**Faz go/no-go** — kapı başına somut, tek tek işaretlenebilir maddeler. Her
-kapıda alan modelinin kritik değişmezi (ör. donma testi) yer almalı.
+Estimate scale (default): `S≈0.75`, `M≈1.5`, `L≈4` work-days. It can change
+per project, but it **must be the same in the backlog, the tracker and the
+generator**.
 
 ---
 
-## 05 — Geliştirme kurulumu · opsiyonel (ama çoğu projede gerekli)
+## 04 — Quality gates · required
 
-Ön gereksinimler (sürümlerle), klasör yapısı, adım adım kurulum komutları,
-doğrulama komutu ("şunu çalıştır, şunu görmelisin"), sık sorunlar.
+Two sections:
 
----
+**Definition of Done (DoD)** — applies to every task. Core items:
+- The acceptance criterion was **actually run** (not eyeballed).
+- The change landed on the main branch.
+- If behaviour changed, there is an automated test.
+- If it is a new interface, there is a permission check.
+- The tracker was updated.
+- Blockers and negative findings were recorded.
 
-## 06 — Riskler ve kararlar · zorunlu
-
-**Risk kaydı:** risk, etki, olasılık, azaltma, durum. Proje boyunca canlı.
-
-**ADR (karar kaydı):** her mimari karar için bağlam → karar → gerekçe → sonuç.
-Kararı değiştirdiğinde eskisini silme, "değiştirildi (→ ADR-x)" diye işaretle.
-Bir yol tıkandığında "denedim, olmadı, çünkü…" diye ADR yaz — negatif bulgu
-kaydedilmezse aynı duvara ikinci kez çarpılır.
-
----
-
-## 07 — İlerleme raporu (`.html`) · zorunlu
-
-Üst düzey görünüm. Sayısal bölgeler `GEN:...:BEGIN/END` işaretleri arasında;
-üreteç yalnız oraya dokunur. Bölümler: özet göstergeler, faz kartları,
-efor-ağırlıklı epik çubukları, kapı/faz zaman çizelgesi, riskler, ADR listesi.
-
-Kural: **rapor çizelgenin türevidir.** Çelişki varsa çizelge doğrudur, rapor
-düzeltilir. Rapordaki her sayı ya hesaplanır ya "tahmin" diye işaretlenir.
+**Phase go/no-go** — concrete, individually checkable items per gate. Every
+gate must include the domain model's critical invariant (e.g. the freezing
+test).
 
 ---
 
-## 08 — Takip çizelgesi (`tracker.xlsx`) · zorunlu
+## 05 — Dev setup · optional (but needed on most projects)
 
-Backlog'un satır satır hâli + Durum/Sorumlu/Tarih/Not. `Ozet` sekmesi formülle
-hesaplar (elle sayı girme). Şema: `tracking.md`.
-
----
-
-## 09 — Onboarding (`08-onboarding.md`) · opsiyonel
-
-Yeni katılan için 15 dakikalık bağlam: ne yapıyoruz, anlaşılması gereken tek
-en önemli fikir (alan ayrımı), yığın, kritik kurallar, okuma sırası, "hangi soru
-hangi dosyada" tablosu.
+Prerequisites with versions, folder structure, step-by-step setup commands, a
+verification command ("run this, you should see that"), common problems.
 
 ---
 
-## Kalite kontrol — kit teslim edilmeden önce
+## 06 — Risks and decisions · required
 
-- [ ] Her sayı üç yerde aynı mı? (backlog ↔ çizelge ↔ rapor)
-- [ ] Her görevin kabul kriteri çalıştırılabilir mi?
-- [ ] Her fazın "kapsam dışı"ı yazılı mı?
-- [ ] Efor tabanı ve kalibresizlik işaretli mi?
-- [ ] Üreteç bozuk veriyle denendi mi? (yalnız mutlu yol değil)
-- [ ] Atlanan parçalar ve nedeni `00`'da yazılı mı?
+**Risk register:** risk, impact, likelihood, mitigation, status. Live for the
+whole project.
+
+**ADR (decision record):** for each architectural decision, context → decision
+→ rationale → consequence. When you change a decision, do not delete the old
+one; mark it "superseded (→ ADR-x)". When a route is blocked, write an ADR
+saying "tried it, it did not work, because…" — an unrecorded negative finding
+means walking into the same wall a second time.
+
+---
+
+## 07 — Progress report (`.html`) · required
+
+The high-level view. Numeric regions sit between `GEN:...:BEGIN/END` markers;
+the generator touches only those. Sections: summary indicators, phase cards,
+effort-weighted epic bars, the gate/phase timeline, risks, the ADR list.
+
+Rule: **the report is a derivative of the tracker.** If they contradict, the
+tracker is right and the report is corrected. Every number in the report is
+either computed or marked as an estimate.
+
+---
+
+## 08 — Tracker (`tracker.xlsx`) · required
+
+The backlog row by row, plus Status/Owner/Date/Note. The `Ozet` (summary)
+sheet computes with formulas — do not type numbers into it. Schema:
+`tracking.md`.
+
+---
+
+## 09 — Onboarding (`08-onboarding.md`) · optional
+
+Fifteen minutes of context for someone joining: what we are doing, the single
+most important idea to understand (the domain split), the stack, the critical
+rules, the reading order, and a "which question lives in which file" table.
+
+---
+
+## Quality control — before the kit is handed over
+
+- [ ] Is every number the same in all three places? (backlog ↔ tracker ↔ report)
+- [ ] Is every task's acceptance criterion executable?
+- [ ] Is every phase's out-of-scope written down?
+- [ ] Are the effort basis and its lack of calibration marked?
+- [ ] Was the generator tried with broken data? (not only the happy path)
+- [ ] Are the skipped pieces and the reason for skipping them written in `00`?

@@ -1,101 +1,116 @@
-# Adım 6 — Takip ve üreteç
+# Step 6 — Tracking and the generator
 
-Amaç: ilerlemeyi *tahmin etmek* değil *hesaplamak*. Rapor, çizelgenin türevidir.
+The goal is not to *estimate* progress but to *compute* it. The report is a
+derivative of the tracker.
 
-## Zincir
+## The chain
 
 ```
 03-gorev-listesi.md ──backlog_to_tracker.py──> tracker.xlsx ──progress.py──> 07-ilerleme-raporu.html
-        (kaynak)                                  (canlı durum)                 (GEN bölgeleri)
+      (source)                                  (live state)                    (GEN regions)
 ```
 
-Backlog "ne yapılacak"ın kaynağıdır; çizelge günlük durumu taşır; rapor okunur
-görünümdür. İkisini elle senkron tutma — üreteci çalıştır.
+The backlog is the source of "what will be done"; the tracker carries daily
+state; the report is the readable view. Do not keep them in sync by hand — run
+the generator.
 
-## Çizelge şeması (`tracker.xlsx`)
+## Tracker schema (`tracker.xlsx`)
 
-**Sekme `Takip`** — sütunlar (bu adlar üreteç tarafından aranır):
+**Sheet `Takip`** — columns (the generator looks for these names):
 
-| Sütun | Üretilen mi | Değerler |
+| Column | Generated | Values |
 |---|---|---|
-| `ID` | ✓ backlog'dan | benzersiz |
-| `Faz` | ✓ | yapılandırmadaki faz kodları |
-| `Epik` | ✓ | `F1.2 Baslik` (ilk kelime epik kodu) |
-| `Gorev` | ✓ | başlık |
-| `Katman` | ✓ | ID'den türetilir |
-| `Tahmin` | ✓ | `S` / `M` / `L` |
-| `Bagimlilik` | ✓ | ID listesi |
-| `Durum` | **elle** | `Yapilacak` / `Devam` / `Bloke` / `Tamamlandi` |
-| `Sorumlu` `Baslangic` `Bitis` `Not` | **elle** | serbest |
-| `Hakem` | ✓ kabul kriterinden | boş olabilir |
+| `ID` | ✓ from the backlog | unique |
+| `Faz` (phase) | ✓ | the phase codes in the config |
+| `Epik` (epic) | ✓ | `F1.2 Title` (the first word is the epic code) |
+| `Gorev` (task) | ✓ | title |
+| `Katman` (layer) | ✓ | derived from the ID |
+| `Tahmin` (estimate) | ✓ | `S` / `M` / `L` |
+| `Bagimlilik` (dependency) | ✓ | list of IDs |
+| `Durum` (status) | **by hand** | `Yapilacak` / `Devam` / `Bloke` / `Tamamlandi` |
+| `Sorumlu` `Baslangic` `Bitis` `Not` | **by hand** | free text |
+| `Hakem` (arbiter) | ✓ from the acceptance criterion | may be empty |
 
-> `Hakem` sütunu **sona** eklenir, araya değil: `Durum` H sütununda kalmalı,
-> çünkü `Ozet` formülleri ve açılır liste doğrulaması ona bağlı.
+> The `Hakem` column is appended **at the end**, never inserted: `Durum` must
+> stay in column H, because the `Ozet` formulas and the dropdown validation
+> depend on it.
 
-## Hakem sütunu ve ikinci gösterge
+**The column keys are part of the schema, not of the language.** Produce the
+kit in the user's language, but if you rename these keys, rename them in the
+config and the scripts too — the generator matches on the key, not on the
+label.
 
-Kabul kriterine `**Hakem:** pytest tests/test_authz.py` yazarsan üreteç bunu
-`Hakem` sütununa taşır. Yazmazsan sütun boş kalır — bu normaldir ve
-**uydurulmaz**.
+## The arbiter column and the second indicator
 
-Rapor bunu ayrı bir bölge olarak basar (`GEN:HAKEM`): *tamamlanan eforun ne
-kadarında yazardan başka bir hakem adı geçiyor.* İki şeye dikkat:
+If the acceptance criterion says `**Hakem:** pytest tests/test_authz.py`, the
+generator carries it into the `Hakem` column. If you do not write one, the
+column stays empty — that is normal, and it **is not invented**.
 
-- **İlerleme yüzdesini değiştirmez.** "Bitti" ile "doğrulandı" iki ayrı şeydir;
-  tek göstergeye eritmek ikisini de okunamaz yapar.
-- **Kriterin fiilen koşulduğunu göstermez.** Bunu hiçbir çizelge bilemez; onu
-  Tamamlandı Tanımı bilir. Gösterge yalnızca "bitti" hükmünün ne kadarının işi
-  yapanın kendi beyanına dayandığını söyler.
+The report prints this as its own region (`GEN:HAKEM`): *how much of the
+completed effort names an arbiter other than the author.* Two cautions:
 
-`Hakem` sütunu olmayan eski çizelgelerde gösterge **%0 değil "ölçülmedi"**
-basar. Ölçülmemiş bir şeyi sıfır göstermek, sessiz varsayımın en pahalı türüdür:
-ölçüm gibi görünür.
+- **It does not change the progress percentage.** "Done" and "verified" are
+  two different things; melting them into one indicator makes both
+  unreadable.
+- **It does not show that the criterion was actually run.** No tracker can
+  know that; the Definition of Done knows it. The indicator only says how much
+  of the "done" verdict rests on the self-report of the person who did the
+  work.
 
-**Sekme `Ozet`** — `COUNTIF`/`COUNTIFS` formülleriyle durum ve faz kırılımı.
-Elle sayı girme; formül bozulur.
+On older trackers with no `Hakem` column, the indicator prints **"not
+measured", not 0%.** Showing an unmeasured thing as zero is the most expensive
+kind of silent assumption: it looks like a measurement.
 
-**Sekme `Aciklama`** — hangi sütun elle doldurulur, hangisi üretilir.
+**Sheet `Ozet`** — status and phase breakdown via `COUNTIF`/`COUNTIFS`. Do not
+type numbers; you will break the formulas.
 
-> ASCII not: sekme ve sütun adlarını ASCII tut (`Aciklama`, `Gorev`). Türkçe
-> karakter, dosya/sütun eşleşmesinde platformlar arası sürtünme yaratır. Hücre
-> *içeriği* Türkçe olabilir — üreteç `ı/i` katlamasını yapar.
+**Sheet `Aciklama`** — which column is filled by hand and which is generated.
 
-## Efor-ağırlıklı ilerleme
+> ASCII note: keep sheet and column names ASCII (`Aciklama`, `Gorev`).
+> Non-ASCII characters create cross-platform friction in file and column
+> matching. Cell *contents* can be in any language — the generator handles the
+> `ı/i` folding.
+
+## Effort-weighted progress
 
 ```
-ilerleme % = Σ(tamamlanan görevlerin eforu) / Σ(tüm görevlerin eforu)
+progress % = Σ(effort of completed tasks) / Σ(effort of all tasks)
 ```
 
-Görev sayısı değil **efor** ağırlıklı: 4 günlük bir görev, 0.75 günlük bir görevle
-aynı ağırlıkta sayılmamalı.
+Weighted by **effort**, not by task count: a four-day task must not weigh the
+same as a 0.75-day one.
 
-Varsayılan ağırlıklar `S=0.75 · M=1.5 · L=4` (iş-günü). Değiştireceksen üç yerde
-birden değiştir: backlog ölçeği, `iskele.config.json`, rapor dipnotu.
+Default weights `S=0.75 · M=1.5 · L=4` (work-days). If you change them, change
+them in three places at once: the backlog scale, `iskele.config.json`, and the
+report footnote.
 
-**Kredi kuralı.** Varsayılan ikili: yalnız `Tamamlandi` kredi alır. `Devam`a kısmi
-kredi (ör. 0.5) vermek ilerlemeyi şişirir ve "neredeyse bitti" yanılsaması üretir;
-vereceksen bilinçli yap ve rapora yaz.
+**The credit rule.** The default is binary: only `Tamamlandi` earns credit.
+Giving partial credit to `Devam` (say 0.5) inflates progress and manufactures
+the "almost done" illusion; if you do it, do it deliberately and write it in
+the report.
 
-## GEN işaretleri
+## GEN markers
 
-Rapor HTML'inde üretilecek her bölge şu çiftle sarılır:
+Every region to be generated in the report HTML is wrapped in this pair:
 
 ```html
-<!-- GEN:BARS:BEGIN (progress.py uretir; kaynak: tracker.xlsx) -->
+<!-- GEN:BARS:BEGIN (produced by progress.py; source: tracker.xlsx) -->
     <div class="bars">...</div>
 <!-- GEN:BARS:END -->
 ```
 
-Üreteç **yalnız** bu bölgelerin içini değiştirir. Dışarısı (yorumlar, riskler, ADR
-listesi, dipnot) elle düzenlenebilir ve korunur. Bu ayrım önemli: rapor hem
-otomatik hem yazılabilir kalır.
+The generator changes **only** the inside of these regions. Everything outside
+(commentary, risks, the ADR list, footnotes) stays hand-editable and is
+preserved. That separation matters: the report stays both automatic and
+writable.
 
-Varsayılan bölge anahtarları: `CHIPS` (üst rozetler), `KPI` (özet göstergeler),
-`CARDS` (faz kartları), `BARS` (epik çubukları), `TIMELINE` (kapı/faz akışı).
+Default region keys: `CHIPS` (top badges), `KPI` (summary indicators), `CARDS`
+(phase cards), `BARS` (epic bars), `TIMELINE` (gate/phase flow).
 
-## Yapılandırma (`iskele.config.json`)
+## Configuration (`iskele.config.json`)
 
-Üreteci projeye bağlayan tek dosya. Şablon: `assets/iskele.config.example.json`.
+The single file that binds the generator to the project. Template:
+`assets/iskele.config.example.json`.
 
 ```jsonc
 {
@@ -105,43 +120,45 @@ Varsayılan bölge anahtarları: `CHIPS` (üst rozetler), `KPI` (özet gösterge
                     "Bloke": 0.0, "Yapilacak": 0.0},
   "workdays_per_month": 21,
   "phase_meta": {
-    "F0": {"title": "F0 · Kurulum", "repo": "faz/f0", "stack": "Docker",
+    "F0": {"title": "F0 · Setup", "repo": "phase/f0", "stack": "Docker",
            "ms": "M0", "dep": null, "desc": "..."}
   },
-  "epic_display": {"F0.1": "F0.1 Proje iskeleti"},
-  "static_steps": [{"t": "Mimari onaylandı", "m": "01-...md"}],
+  "epic_display": {"F0.1": "F0.1 Project skeleton"},
+  "static_steps": [{"t": "Architecture approved", "m": "01-...md"}],
   "flow": [{"kind": "phase", "phase": "F0", "mk": "M0",
-            "t": "M0 — İskelet", "m": "..."},
+            "t": "M0 — Skeleton", "m": "..."},
            {"kind": "gate", "phase": "F0", "mk": "◆",
-            "t": "Kapı M0", "m": "go/no-go"}]
+            "t": "Gate M0", "m": "go/no-go"}]
 }
 ```
 
-`phase_meta`/`epic_display`/`flow` **küratörlüdür** (insan yazar); sayılar
-çizelgeden gelir. Bu ayrımı koru: prose yapılandırmada, sayı veride.
+`phase_meta` / `epic_display` / `flow` are **curated** (a human writes them);
+the numbers come from the tracker. Keep that separation: prose in the config,
+numbers in the data.
 
-## Girdi doğrulama — sessiz varsayım yasak
+## Input validation — no silent assumptions
 
-Üreteç bilinmeyen bir değeri sessizce varsayılana düşürmemeli. Sahada görülmüş
-üç hata ve kuralı:
+The generator must not quietly fall back to a default for an unknown value.
+Three errors seen in the field, and the rule for each:
 
-| Hata | Sessiz davranış (yanlış) | Doğru davranış |
+| Error | Silent behaviour (wrong) | Correct behaviour |
 |---|---|---|
-| Geçersiz `Tahmin` (`XL`) | sessizce `M` ağırlık | HATA, yazma |
-| Yerelleştirilmiş `Durum` (`Tamamlandı` vs `Tamamlandi`) | sessizce 0 kredi → ilerleme eksik | normalize et + UYARI |
-| Faz listesi dışı `Faz` (`F9`) | epik çubuğunda görünür, toplama girmez | **değişmez ihlali** → HATA |
+| Invalid `Tahmin` (`XL`) | silently weigh it as `M` | ERROR, write nothing |
+| Localised `Durum` (`Tamamlandı` vs `Tamamlandi`) | silently 0 credit → progress understated | normalise + WARN |
+| `Faz` outside the phase list (`F9`) | shows in the epic bar, missing from the total | **invariant violation** → ERROR |
 
-**Değişmez:** `Σ epik eforu == Σ faz eforu`. Iraksama, bir görevin tanımlı fazların
-dışına düşmesi demektir ve gösterge sessizce yanlışlanır. Üreteç bunu kontrol eder
-ve ihlalde durur.
+**Invariant:** `Σ epic effort == Σ phase effort`. A divergence means a task
+has fallen outside the defined phases, and the indicator is silently falsified.
+The generator checks this and stops on a violation.
 
-`progress.py` çıkış kodları: `0` başarılı · `2` doğrulama hatası (rapor yazılmadı)
-· `3` değişmez ihlali. `--force` hatayı geçer (önerilmez), `--check` yazmadan özet
-basar.
+`progress.py` exit codes: `0` success · `2` validation error (the report was
+not written) · `3` invariant violation. `--force` overrides the error (not
+recommended); `--check` prints a summary without writing.
 
-## Haftalık akış
+## Weekly flow
 
-1. Çizelgede `Durum` sütununu güncelle.
-2. `python progress.py` çalıştır.
-3. Uyarı/hata çıkarsa çizelgeyi düzelt (raporu değil).
-4. Raporun elle yazılan bölümlerini (risk, "bu hafta odağı") tazele.
+1. Update the `Durum` column in the tracker.
+2. Run `python progress.py`.
+3. If it warns or errors, fix the tracker (not the report).
+4. Refresh the hand-written sections of the report (risks, "this week's
+   focus").

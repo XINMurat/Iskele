@@ -11,6 +11,7 @@ The three verbs are kept separate on purpose:
 
 > **İskele builds** · [**Mizan**](https://github.com/XINMurat/Mizan) **weighs**
 > · [**Kıyas**](https://github.com/XINMurat/Kiyas) **generates**
+> · [**ux-mizan**](https://github.com/XINMurat/ux-mizan) **measures experience**
 
 İskele produces the structure the other two operate on. When the kit is done it
 hands off: Mizan audits the kit's own claims, Kıyas generates the missing
@@ -216,6 +217,7 @@ Koddan *önceki* an için bir Claude skill'i. İskele projeni yazmaz — **proje
 
 > **İskele kurar** · [**Mizan**](https://github.com/XINMurat/Mizan) **tartar**
 > · [**Kıyas**](https://github.com/XINMurat/Kiyas) **üretir**
+> · [**ux-mizan**](https://github.com/XINMurat/ux-mizan) **deneyimi ölçer**
 
 İskele, diğer ikisinin üzerinde çalıştığı yapıyı üretir. Kit bitince devreder:
 Mizan kitin kendi iddialarını denetler, Kıyas eksik özellik ve riskleri üretir,

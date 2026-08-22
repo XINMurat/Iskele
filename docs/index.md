@@ -11,7 +11,8 @@ description: "A Claude skill that turns a vague project intent into a domain mod
 [Repository](https://github.com/XINMurat/Iskele) ·
 [Latest release](https://github.com/XINMurat/Iskele/releases/latest) ·
 [Mizan](https://github.com/XINMurat/Mizan) ·
-[Kıyas](https://github.com/XINMurat/Kiyas)
+[Kıyas](https://github.com/XINMurat/Kiyas) ·
+[ux-mizan](https://github.com/XINMurat/ux-mizan)
 
 ---
 

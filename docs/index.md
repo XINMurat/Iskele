@@ -34,6 +34,15 @@ context survives regeneration.
 
 - [Quickstart](QUICKSTART.md)
 - [Usage guide](en/usage-guide.md)
+- [Methodology](en/methodology.md) — the English counterpart of the skill:
+  the seven steps, the split patterns, the tracker schema, the red lines
+
+> **A note on languages.** İskele's skill body is written in Turkish, which
+> is the mirror image of the rest of the family — in Mizan, Kıyas and
+> ux-mizan the packaged skill is English and the Turkish docs are its
+> counterpart. So here it is `docs/en/methodology.md` that plays the
+> counterpart's role. Either way the rule is the same: **the kit is
+> produced in the user's language**, and only the structure is fixed.
 
 **Worked examples** (in the repository): an
 [atomic backlog](https://github.com/XINMurat/Iskele/blob/main/examples/backlog.example.md),

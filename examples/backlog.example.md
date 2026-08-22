@@ -7,6 +7,10 @@ Görevler faz → epik → görev hiyerarşisinde. Her görev tek atomik iştir.
 **Bağ.:** önce tamamlanması gereken görev(ler).
 `[ ]` yapılacak · `[~]` devam · `[x]` tamamlandı (kabul kriteri doğrulandı).
 
+> **Kabul kriteri tüketim tarafından yazılır:** "kullanıcı X'e ulaşıyor", "sistem X
+> üretiyor" değil. Kullanıcının göreceği bir bilgi üreten görev, o bilgiyi gösteren
+> görevin ID'sini kendi satırında adlandırır (`→ F3-FE-03`).
+>
 > Bu dosya "ne yapılacak"ın kaynağıdır; günlük durum `tracker.xlsx`'te yürür.
 > Çizelgeyi elle doldurma: `python backlog_to_tracker.py --backlog 03-gorev-listesi.md`
 

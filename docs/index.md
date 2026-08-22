@@ -13,7 +13,7 @@ description: "A Claude skill that turns a vague project intent into a domain mod
 [Mizan](https://github.com/XINMurat/Mizan) ·
 [Kıyas](https://github.com/XINMurat/Kiyas) ·
 [ux-mizan](https://github.com/XINMurat/ux-mizan) ·
-[**the family**](https://xinmurat.github.io/)
+[**the family · aile**](https://xinmurat.github.io/)
 
 ---
 

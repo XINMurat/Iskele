@@ -273,3 +273,44 @@ jobs:
               sys.exit(1)
           print("iskele.skill is in sync with skill/iskele/.")
           PY
+
+  skill-scan:
+    # A skill is code plus instructions that load into an agent's context and
+    # run with the user's permissions, so this repo ships an attack surface,
+    # not just a document. This job scans skill/iskele with skillvet
+    # (github.com/V3r7ig0/skillvet) and fails on any high/critical finding.
+    #
+    # skillvet is pinned to a commit, not a branch: an unpinned security
+    # scanner is itself a supply-chain hole, and a rule set that changes
+    # under us turns a green run into a claim we cannot reproduce. Bumping
+    # the pin is a deliberate commit, and the diff in findings is the point
+    # of the bump.
+    #
+    # Only skills/skillvet is checked out. The upstream repo also carries 44
+    # deliberately malicious benchmark fixtures; they are inert test data,
+    # but there is no reason to put them on a runner, and endpoint AV
+    # heuristics flag them on sight.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Fetch the pinned scanner (scanner only, no benchmark corpus)
+        run: |
+          set -e
+          git clone --quiet --filter=blob:none --no-checkout \n            https://github.com/V3r7ig0/skillvet.git /tmp/skillvet
+          git -C /tmp/skillvet sparse-checkout set --no-cone skills/skillvet
+          git -C /tmp/skillvet checkout --quiet 7db0c4d30abe05ed2d6f3544e262da5d79af25b5
+          echo "skillvet pinned at $(git -C /tmp/skillvet rev-parse --short HEAD)"
+
+      - name: Scan skill/iskele
+        env:
+          # The scanner prints a U+2192 in its verdict line; without this it
+          # dies on any runner whose stdout is not UTF-8.
+          PYTHONIOENCODING: utf-8
+        run: |
+          set -e
+          python /tmp/skillvet/skills/skillvet/scripts/scan_skill.py \n            skill/iskele --fail-on high

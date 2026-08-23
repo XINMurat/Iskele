@@ -1,6 +1,9 @@
 ---
 name: iskele
 description: Turns a vague project intent into an executable delivery kit — domain model, phased roadmap with gates, atomic backlog with acceptance criteria, Definition-of-Done quality gates, a tracking spreadsheet, and a progress report that regenerates itself from the tracker. Use this skill whenever someone wants to plan, scope, structure, or kick off a software project or major feature — including "proje planla", "yol haritası çıkar", "task listesi / backlog çıkar", "nereden başlayacağımı bilmiyorum", "bu projeyi nasıl kurarım", "geliştirme planı", "kit oluştur", "sprint planı", "MVP kapsamı", "ilerleme raporu / takip çizelgesi kur" — and also when a user merely describes an app or system they want to build and clearly needs structure rather than code. Use it too when an existing project has a roadmap but no tracking, no acceptance criteria, or no way to see progress. Generative sibling of mizan (audits claims) and kiyas (generates ideas); iskele builds the structure they operate on.
+license: MIT
+metadata:
+  author: XINMurat
 ---
 
 # Iskele

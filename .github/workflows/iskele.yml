@@ -235,6 +235,26 @@ jobs:
           diff -u skill/iskele/assets/iskele.config.example.json examples/iskele.config.example.json \
             || { echo "examples/iskele.config.example.json has drifted from the asset." >&2; exit 1; }
 
+      - name: No real name reaches what gets published
+        env:
+          # Set this repository secret to a newline-separated list of names that
+          # must never be published: clients, internal products, private repos.
+          # Unset, the sweep reports NOT CONFIGURED and passes -- a repository
+          # that has not set this up is not a repository that failed.
+          FORBIDDEN_TERMS: ${{ secrets.FORBIDDEN_TERMS }}
+        run: |
+          set -e
+          # From vaddermail/maestro-framework, check 14. The examples here use
+          # invented names on purpose; that is the discipline, this is the net.
+          # A real name in a tracked file is published the moment it is pushed,
+          # and deleting it afterwards does not un-publish it.
+          #
+          # The tree and the package are swept separately: they are built by
+          # different code, so a clean tree does not prove a clean iskele.skill.
+          # A hit prints the file, the line and the term's index -- never the
+          # term, because this log is public.
+          python tools/leak_check.py --package iskele.skill
+
   skill-package-in-sync:
     runs-on: ubuntu-latest
     steps:

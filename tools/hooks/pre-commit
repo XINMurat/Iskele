@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Iskele pre-commit hook -- refuses to stage a real name.
+# Iskele pre-commit kancasi -- gercek bir adin hazirlanmasini reddeder.
+#
+# Install / Kurulum:
+#   git config core.hooksPath tools/hooks
+#
+# The list of forbidden terms lives in .forbidden-terms (gitignored). With no
+# list this hook is a no-op, so it is safe to install before setting one up.
+set -euo pipefail
+
+PYTHON="${PYTHON:-python}"
+here="$(git rev-parse --show-toplevel)"
+
+if ! "$PYTHON" "$here/tools/leak_check.py" --staged; then
+  echo ""
+  echo "iskele: commit blocked -- a staged file matches a forbidden term."
+  echo "iskele: commit engellendi -- hazirlanan bir dosya yasakli bir terimle eslesiyor."
+  exit 1
+fi
+exit 0

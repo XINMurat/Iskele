@@ -323,7 +323,7 @@ jobs:
           set -e
           git clone --quiet --filter=blob:none --no-checkout https://github.com/V3r7ig0/skillvet.git /tmp/skillvet
           git -C /tmp/skillvet sparse-checkout set --no-cone skills/skillvet
-          git -C /tmp/skillvet checkout --quiet 7db0c4d30abe05ed2d6f3544e262da5d79af25b5
+          git -C /tmp/skillvet checkout --quiet 025c8d8dd389fe92dbb21522b51385591653ba5d
           echo "skillvet pinned at $(git -C /tmp/skillvet rev-parse --short HEAD)"
 
       - name: Scan skill/iskele

@@ -218,6 +218,89 @@ jobs:
           print("OK: arbiter class follows the backlog, in both directions.")
           PY
 
+  counts-agree:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Every manifest and reference count matches what is on disk
+        run: |
+          set -e
+          # The manifest is described in five places and three languages, and
+          # each one states a number. None of them was connected to anything
+          # until this ran: an eleventh piece shipped and four documents still
+          # said ten, while QUICKSTART claimed "yedisi zorunlu" over a table
+          # showing eight. Nothing failed, because a number in prose is not a
+          # check. This is the counting counterpart of the rule-range guard the
+          # sibling repositories run over "R1-RN" claims.
+          python tools/check_counts.py --verbose
+
+      - name: Self-test - the count guard actually fires
+        run: |
+          set -e
+          # A guard that has never failed is indistinguishable from a guard
+          # that cannot fail, and a false negative agrees with you, which is
+          # why it survives review. So break each class on purpose, require a
+          # non-zero exit, and restore ONLY the file the fixture touched --
+          # `git checkout -- .` would also revert whatever change is under
+          # review in this very run.
+          fail_expected() {
+            if python tools/check_counts.py >/dev/null 2>&1; then
+              echo "FAIL: the guard passed after: $1" >&2
+              git checkout -- "$2"
+              exit 1
+            fi
+            echo "ok  fires on: $1"
+            git checkout -- "$2"
+          }
+
+          sed -i 's/The full kit is eleven pieces\./The full kit is ten pieces./' skill/iskele/SKILL.md
+          fail_expected "a prose piece count that no longer matches the table" skill/iskele/SKILL.md
+
+          python - <<'PY'
+          import io
+          p = "docs/QUICKSTART.md"
+          s = io.open(p, encoding="utf-8").read()
+          # Written through Python rather than sed: the fixture text is Turkish
+          # and a runner whose locale mangles ç would turn a real check into
+          # a silent no-op -- the exact failure this job exists to catch.
+          before = s
+          s = s.replace("On bir parça, dokuzu zorunlu.", "On bir parça, yedisi zorunlu.")
+          assert s != before, "fixture sentence not found -- the self-test is testing nothing"
+          io.open(p, "w", encoding="utf-8", newline="").write(s)
+          PY
+          fail_expected "a required-count claim that disagrees with the table above it" docs/QUICKSTART.md
+
+          python - <<'PY'
+          import io
+          p = "docs/tr/metodoloji.md"
+          s = io.open(p, encoding="utf-8").read()
+          lines = s.splitlines(keepends=True)
+          keep = [l for l in lines if not l.startswith("| 10 | `09-")]
+          assert len(keep) < len(lines), "fixture row not found -- the self-test is testing nothing"
+          io.open(p, "w", encoding="utf-8", newline="").write("".join(keep))
+          PY
+          fail_expected "a manifest row silently dropped from a mirror" docs/tr/metodoloji.md
+
+          python - <<'PY'
+          import io
+          p = "docs/QUICKSTART.md"
+          s = io.open(p, encoding="utf-8").read()
+          before = s
+          s = s.replace("| 10 | `09-kurtarma-rampalari.md` | ✓ |",
+                        "| 10 | `09-kurtarma-rampalari.md` | — |")
+          assert s != before, "fixture row not found -- the self-test is testing nothing"
+          io.open(p, "w", encoding="utf-8", newline="").write(s)
+          PY
+          fail_expected "a required flag flipped in a mirror" docs/QUICKSTART.md
+
+          git diff --exit-code
+          echo "OK: the guard fires on all four classes, and the tree is clean."
+
   examples-in-sync:
     runs-on: ubuntu-latest
     steps:

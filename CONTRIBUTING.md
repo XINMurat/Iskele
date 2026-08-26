@@ -50,7 +50,11 @@ python skill/iskele/scripts/progress.py --xlsx /tmp/tracker.xlsx \
   --html examples/07-ilerleme-raporu.example.html \
   --config examples/iskele.config.example.json --check
 
-# 4. the packaged skill must match its source:
+# 4. every count claimed in prose or in a mirror table must match the
+#    manifest in skill/iskele/SKILL.md and the files in references/:
+python tools/check_counts.py --verbose
+
+# 5. the packaged skill must match its source:
 python - <<'PY'
 import zipfile, os, sys
 n = lambda b: b.replace(b"\r\n", b"\n"); z = zipfile.ZipFile("iskele.skill")
@@ -139,11 +143,17 @@ göstermek zorundadır.
 
 ### PR açmadan önce
 
-Yukarıdaki İngilizce bölümdeki dört komutu çalıştır. `skill/iskele/` altında
+Yukarıdaki İngilizce bölümdeki beş komutu çalıştır. `skill/iskele/` altında
 **herhangi bir** dosyayı değiştirdiysen tek-dosya paketi yeniden üret (aynı
 bölümdeki script). CI bunu kontrol eder. Bayat paket kozmetik bir sorun
 değildir: kullanıcı kaynağı değil paketi kurar, yani kaymış bir `iskele.skill`
 belgelenen davranışla dağıtılan davranışın çelişmesi demektir.
+
+Bir sayı değiştirdiysen — kit parçası ekledin, referans ekledin — `python
+tools/check_counts.py` koş. Manifest beş yerde ve üç dilde anlatılıyor; her
+biri bir sayı söylüyor ve düzyazıdaki sayı hiçbir şeye bağlı değil. Kaynak:
+`skill/iskele/SKILL.md`'deki manifest tablosu ve `references/` içindeki
+dosyalar. Düzyazıyı düzelt, kontrolü değil.
 
 ### Kapsam disiplini
 

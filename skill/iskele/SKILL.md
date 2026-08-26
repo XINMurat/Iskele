@@ -239,7 +239,7 @@ iskele.**
 
 ## The output manifest
 
-The full kit is ten pieces. On a small project you may shorten it, but **say
+The full kit is eleven pieces. On a small project you may shorten it, but **say
 which piece you skipped and why** — never silently.
 
 | # | File | Required | Function |
@@ -328,7 +328,7 @@ this skill exists to prevent.
   **structure**: the same file order, the same fields, the `GEN:` markers, and
   the column keys the scripts read. Translate the names, never the schema —
   the scripts look at the schema. (The Turkish originals of this file and of
-  the three references are kept in the repository under `docs/tr/`.)
+  the four references are kept in the repository under `docs/tr/`.)
 - **Check a tool before assuming it.** `backlog_to_tracker.py` and
   `progress.py` need **openpyxl**. If it is missing: **say so**, and offer an
   explicit alternative (a CSV tracker, or waiting for the install and

@@ -66,6 +66,11 @@ Two levels:
   *actually execute the acceptance criterion*. The existence of a comment, a
   button, or a log line is not the existence of the behaviour.
 - **Phase go/no-go** — concrete items verified one by one at the gate.
+- **Recovery ramps** — piece `09`, the counterpart of the gates: what to do
+  when a task will not close, a passed gate stops holding, or the intent moves
+  mid-build. Adapt the template rather than pasting it; the ramps and the
+  procedure are in
+  [`references/recovery.md`](../../skill/iskele/references/recovery.md).
 
 ### 6. Set up tracking and the generator
 

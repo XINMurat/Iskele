@@ -7,6 +7,7 @@
 > dilinde yanıt verir ve **kit kullanıcının dilinde üretilir.**
 >
 > Referansların Türkçe asılları: [`alan-modeli.md`](alan-modeli.md) ·
+> [`kurtarma.md`](kurtarma.md) ·
 > [`kit-manifesti.md`](kit-manifesti.md) · [`takip.md`](takip.md)
 
 
@@ -51,6 +52,13 @@ Mimariyi kısıtlar belirler, tercihler değil. En az şunları netleştir:
 
 Cevap belirsizse **tek turda sor**; üçten fazla soru sorma. Kullanıcı zaten
 söylediyse tekrar sorma — konuşmadan çıkar.
+
+**Boş elle soru sorma.** Her soru kendi önerini ve gerekçesini taşır: durum,
+seçenekler, öneri, gerekçe, yanılırsan bedeli. Öneri bir kelimeyle
+reddedilebilir; çıplak soru, plan için gelen kişinin sırtına işi geri yükler.
+Karar yine onundur — **öneri onay değildir, cevapsız öneri rıza değildir.** Aynı
+kural sonraki her açık konu için de geçerlidir: tıkanan adım, belirsizlik,
+yanlış çıkan kısıt ([`kurtarma.md`](kurtarma.md) RR-10).
 
 ### 2. Alan modelini bul — ayrımı ara (en kritik adım)
 
@@ -108,6 +116,14 @@ Her görev: `ID` · epik · katman · **tahmin (S/M/L)** · **bağımlılık** �
   satırının varlığı davranışın varlığı değildir) ve *üretilen her bilginin bir
   okuma yüzeyi vardır* (üretim tarafı tek başına yetmez).
 - **Faz go/no-go** — kapıda tek tek doğrulanacak somut maddeler.
+
+- **Kurtarma rampaları** — aynı adım, ters yöne bakan hâli. DoD ve go/no-go
+  "bitti"nin ne demek olduğunu söyler; kitte hiçbir şey görev kapanmadığında,
+  geçilmiş kapı bozulduğunda ya da niyet iş ortasında kaydığında ne
+  yapılacağını söylemiyordu. O boşluğu planı uygulayan miras alır. `09`
+  parçasını burada üret (şablon `assets/templates/` altında), yapıştırarak
+  değil bu projeye uyarlayarak; rampaların kendisi ve yordamı
+  **[`kurtarma.md`](kurtarma.md)** içinde.
 
 - **Senaryo provası** — üçüncü seviye, ve kapıların en çok atlanan maddesi.
   DoD ile go/no-go, *yazılmış olanı* denetler: kabul kriteri tuttu mu, uç
@@ -201,7 +217,7 @@ Döngü kapanır: **iskele kurar → mizan tartar → kiyas üretir → iskele'y
 
 ## Çıktı manifesti
 
-Tam kit on parçadır. Küçük projede kısaltabilirsin ama **hangi parçayı neden
+Tam kit on bir parçadır. Küçük projede kısaltabilirsin ama **hangi parçayı neden
 atladığını söyle** — sessizce atlama.
 
 | # | Dosya | Zorunlu? | İşlev |
@@ -216,6 +232,7 @@ atladığını söyle** — sessizce atlama.
 | 07 | `07-ilerleme-raporu.html` | ✓ | Üst düzey rapor (GEN işaretli) |
 | 08 | `tracker.xlsx` | ✓ | Canlı takip çizelgesi |
 | 09 | `08-onboarding.md` | — | Ekip için tek sayfalık bağlam |
+| 10 | `09-kurtarma-rampalari.md` | ✓ | Kurtarma rampaları: görev, kapı veya plan tutmadığında ne yapılır |
 
 ### Okuma yüzeyi — kit büyür, devir maliyeti büyümemeli
 
@@ -287,7 +304,8 @@ Bunun doğuracağı arıza sessizdir: plan yine *üretilir*, sadece kit olmaktan
   izlenebilir hiçbir şey yoktur. Aynısı alt ajan ve kabuk erişimi için de
   geçerli: yoksa yöntem ona dayanmamalı.
 - **Referansları ihtiyaç anında oku** (`domain-model.md` 2. adımda,
-  `tracking.md` 6. adımda), baştan hepsini değil — baştan okumak, kitin
+  `tracking.md` 6. adımda, `recovery.md` 5. adımda ve bir koşu davranmayı
+  bıraktığı anda yeniden), baştan hepsini değil — baştan okumak, kitin
   kendisine gereken bağlamı harcar.
 - **Taşınan şey betiktir.** `backlog_to_tracker.py` ve `progress.py` modelsiz
   çalışır: kimin `CLAUDE.md`'si ne derse desin aynı backlog aynı çizelgeyi,
@@ -327,6 +345,7 @@ işaretlenmeli. İkisi de değilse yazma.
 - `references/domain-model.md` (Türkçe aslı: [`alan-modeli.md`](alan-modeli.md)) — Adım 2: ayrımı bulma kalıpları ve sorular
 - `references/kit-manifest.md` (Türkçe aslı: [`kit-manifesti.md`](kit-manifesti.md)) — Adım 1–5: her dosyanın içeriği ve gerekçesi
 - `references/tracking.md` (Türkçe aslı: [`takip.md`](takip.md)) — Adım 6: çizelge şeması, GEN işaretleri, üreteç kurulumu
+- `references/recovery.md` (Türkçe aslı: [`kurtarma.md`](kurtarma.md)) — Bir koşu davranmayı bıraktığında rampalar (`RR-00`…`RR-12`), model hata sınıfları, faz kapanış çizelgesi ve kitin `09` parçasının üretimi
 - `assets/templates/` — doldurulacak şablonlar
 - `scripts/backlog_to_tracker.py` — backlog markdown → `tracker.xlsx`
 - `scripts/progress.py` — `tracker.xlsx` → raporun GEN bölgelerini güncelle

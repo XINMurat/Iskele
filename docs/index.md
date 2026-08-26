@@ -38,9 +38,10 @@ context survives regeneration.
 
 > **A note on languages.** The packaged skill body is **English** — like
 > Mizan and Kıyas, for portability across hosts — and the **Turkish
-> originals** of `SKILL.md` and the three references live in
+> originals** of `SKILL.md` and the four references live in
 > [`tr/`](tr/): [metodoloji](tr/metodoloji.md) · [alan modeli](tr/alan-modeli.md)
-> · [kit manifesti](tr/kit-manifesti.md) · [takip](tr/takip.md).
+> · [kit manifesti](tr/kit-manifesti.md) · [takip](tr/takip.md) ·
+> [kurtarma](tr/kurtarma.md).
 > Either way the rule is the same: **the kit is produced in the user's
 > language**, and only the structure is fixed — the same file order, the
 > same fields, the `GEN:` markers, and the column keys the scripts read.

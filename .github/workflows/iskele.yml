@@ -189,7 +189,7 @@ jobs:
           python skill/iskele/scripts/iskele_to_registry.py \
             --backlog /tmp/from-seeds.md --out /tmp/registry-seeds.yaml
 
-      - name: Mizan's own validator is the arbiter (R1–R16, --strict)
+      - name: Mizan's own validator is the arbiter (R1–R17, --strict)
         run: |
           set -e
           cd _mizan

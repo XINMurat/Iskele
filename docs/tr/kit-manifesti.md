@@ -135,6 +135,31 @@ hangi dosyada" tablosu.
 
 ---
 
+## 10 — Kurtarma rampaları (`09-kurtarma-rampalari.md`) · zorunlu
+
+`04`'ün karşı yüzü. Kalite kapıları "bitti"yi tanımlar; bu dosya bitti
+gelmediğinde ne olacağını tanımlar — kapanmayan görev, tutmayı bırakan geçilmiş
+kapı, görevi olmayan bulgu, iş ortasında kayan niyet.
+
+`04` ile aynı sebeple zorunlu: bu dosya yoksa "çalışmıyor"un cevabı klavyedeki
+kişi tarafından doğaçlanır ve en ucuz doğaçlama en yakındakidir — kriteri
+gevşet, bitti işaretle, devam et. Bu bir disiplin sorunu değil, **eksik bir
+dokümandır**.
+
+İçerik: kodlu rampa tablosu (`RR-nn` — bir rampa commit mesajında
+alıntılanabilsin diye; paragraf alıntılanmaz), en sık yanlış uygulanan iki-üç
+tanesinin uzun hâli, ve go/no-go'nun yanında duran faz kapanış süreç çizelgesi.
+
+**Uyarla, yapıştırma.** Bu projede oluşamayacak rampaları çıkar, bu alanın
+zorladıklarını ekle — hangilerini neden çıkardığını yaz; manifestin atlanan
+parçalar için uyguladığı kuralın aynısı. Her rampa bir **çıktı** adlandırır:
+çıktısı olmayan rampa tavsiyedir, bu kit tavsiye dokümanı değildir.
+
+Adım 5'te, kalite kapılarının yanında yazılır. Yordam ve rampaların tamamı:
+[`kurtarma.md`](kurtarma.md).
+
+---
+
 ## Kalite kontrol — kit teslim edilmeden önce
 
 - [ ] Her sayı üç yerde aynı mı? (backlog ↔ çizelge ↔ rapor)
@@ -143,3 +168,5 @@ hangi dosyada" tablosu.
 - [ ] Efor tabanı ve kalibresizlik işaretli mi?
 - [ ] Üreteç bozuk veriyle denendi mi? (yalnız mutlu yol değil)
 - [ ] Atlanan parçalar ve nedeni `00`'da yazılı mı?
+- [ ] `09`'daki her rampa bir çıktı adlandırıyor mu, ve uyarlama notu
+      (hangi rampalar çıkarıldı, neden) dolduruldu mu?

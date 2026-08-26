@@ -146,6 +146,34 @@ rules, the reading order, and a "which question lives in which file" table.
 
 ---
 
+## 10 — Recovery ramps (`09-kurtarma-rampalari.md`) · required
+
+The counterpart of piece `04`. The quality gates define "done"; this defines
+what happens when done does not arrive — a task that will not close, a passed
+gate that stopped holding, a finding with no task, an intent that moved
+mid-build.
+
+It is required for the same reason `04` is: without it, the answer to "it
+isn't working" is improvised by whoever is at the keyboard, and the most
+common improvisation is the cheapest one — loosen the criterion, mark it done,
+move on. That is not a discipline problem, it is a missing document.
+
+Contents: a coded ramp table (`RR-nn`, so a ramp is quotable in a commit
+message rather than being a paragraph nobody cites), long-form entries for the
+two or three most often misapplied, and the phase-close process scorecard that
+sits beside the go/no-go.
+
+**Adapt it; do not paste it.** Drop the ramps that cannot occur on this
+project and add the ones this domain forces — and write down which were
+dropped and why, the same rule the manifest applies to skipped pieces. Every
+ramp names an output artifact: a ramp with no output is advice, and this kit
+is not an advice document.
+
+Written at step 5, next to the quality gates. Procedure and the full ramp set:
+`references/recovery.md`.
+
+---
+
 ## Quality control — before the kit is handed over
 
 - [ ] Is every number the same in all three places? (backlog ↔ tracker ↔ report)
@@ -154,3 +182,5 @@ rules, the reading order, and a "which question lives in which file" table.
 - [ ] Are the effort basis and its lack of calibration marked?
 - [ ] Was the generator tried with broken data? (not only the happy path)
 - [ ] Are the skipped pieces and the reason for skipping them written in `00`?
+- [ ] Does every recovery ramp in `09` name an output artifact, and is the
+      adaptation note (which ramps were dropped, and why) filled in?

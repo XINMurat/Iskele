@@ -56,6 +56,15 @@ If the answers are unclear, ask **in one round**; never more than three
 questions. If the user already said it, do not ask again — derive it from the
 conversation.
 
+**Never ask empty-handed.** Every question carries your own recommendation and
+its reason: situation, options, recommendation, why, and what it costs if the
+recommendation is wrong. A recommendation can be rejected in one word; a bare
+question hands the work back to the person who came for a plan. The decision
+stays theirs — **a recommendation is not approval, and an unanswered
+recommendation is not consent.** The same rule applies to every open item
+later: a blocked step, an ambiguity, a constraint that turned out wrong
+(`references/recovery.md` RR-10).
+
 ### 2. Find the domain model — look for the split (the critical step)
 
 This step cannot be mechanised; but **the question to ask is fixed**: *are
@@ -120,6 +129,14 @@ Two levels:
   *every piece of produced information has a reading surface* (the production
   side alone is not enough).
 - **Phase go/no-go** — concrete items verified one by one at the gate.
+
+- **Recovery ramps** — the same step, pointed the other way. DoD and go/no-go
+  say what "done" means; nothing in the kit yet says what to do when a task
+  will not close, a passed gate stops holding, or the intent moves mid-build.
+  That gap is inherited by whoever executes the plan. Produce piece `09` here
+  (template in `assets/templates/`), adapted to this project rather than
+  pasted; the procedure and the ramps themselves are in
+  **`references/recovery.md`**.
 
 - **Scenario rehearsal** — the third level, and the most skipped item at any
   gate. DoD and go/no-go audit *what was written*: did the criterion hold, is
@@ -237,6 +254,7 @@ which piece you skipped and why** — never silently.
 | 07 | `07-ilerleme-raporu.html` | ✓ | High-level report (GEN-marked) |
 | 08 | `tracker.xlsx` | ✓ | Live tracking sheet |
 | 09 | `08-onboarding.md` | — | One page of context for the team |
+| 10 | `09-kurtarma-rampalari.md` | ✓ | Recovery ramps: what to do when a task, a gate or the plan does not hold |
 
 The file names above come from the templates in `assets/templates/` and are
 **examples**; the **order and the fields** are what must not change (see the
@@ -320,7 +338,8 @@ this skill exists to prevent.
   goes for subagents and shell access: if it is absent, the method must not
   depend on it.
 - **Read the references on demand** (`domain-model.md` at step 2,
-  `tracking.md` at step 6), not all of them up front — reading everything at
+  `tracking.md` at step 6, `recovery.md` at step 5 and again the moment a run
+  stops behaving), not all of them up front — reading everything at
   the start spends the context the kit itself needs.
 - **The scripted part is the part that travels.** `backlog_to_tracker.py` and
   `progress.py` run without a model: whatever anyone's `CLAUDE.md` says, the
@@ -363,6 +382,9 @@ or marked as an estimate. If it is neither, do not write it.
 - `references/domain-model.md` — Step 2: patterns and questions for finding the split
 - `references/kit-manifest.md` — Steps 1–5: what each file contains and why
 - `references/tracking.md` — Step 6: tracker schema, GEN markers, generator setup
+- `references/recovery.md` — the ramps for when a run stops behaving (`RR-00`…`RR-12`),
+  the model failure classes behind them, the phase-close process scorecard, and how to
+  produce the kit's own ramp catalogue (piece `09`). Read when something breaks.
 - `assets/templates/` — templates to fill in
 - `scripts/backlog_to_tracker.py` — backlog markdown → `tracker.xlsx`
 - `scripts/progress.py` — `tracker.xlsx` → update the report's GEN regions

@@ -16,6 +16,7 @@ ve takip araçlarını içerir.
 | 06 | `06-riskler-ve-kararlar.md` | Risk kaydı + ADR | Karar verirken |
 | 07 | `07-ilerleme-raporu.html` | Üst düzey rapor | Haftalık |
 | 08 | `tracker.xlsx` | Canlı takip çizelgesi | Her gün |
+| 09 | `09-kurtarma-rampalari.md` | Bir şey tutmadığında ne yapılacağı | Görev kapanmıyorsa, kapı bozulduysa |
 
 *Atlanan parçalar:* [hangileri, neden]
 
@@ -27,7 +28,8 @@ ve takip araçlarını içerir.
 4. `03`'ten sıradaki görevi al (F0'dan başla).
 5. `tracker.xlsx`'i güncelle → `python progress.py`.
 6. Kalite kapılarını uygula (`04`).
-7. Risk/karar dosyasını canlı tut (`06`).
+7. Bir şey tutmuyorsa **rampaya gir** (`09`) — kodunu yaz, sessizce toparlama.
+8. Risk/karar dosyasını canlı tut (`06`).
 
 ## Çalışma disiplini
 

@@ -288,6 +288,100 @@ jobs:
           print("OK: arbiter class follows the backlog, in both directions.")
           PY
 
+  adr-chain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: The shipped ADR template passes its own checker
+        run: |
+          set -e
+          # A template that fails the check it ships with teaches everyone who
+          # copies it to ignore the check.
+          python skill/iskele/scripts/check_adr.py \
+            --file skill/iskele/assets/templates/06-riskler-ve-kararlar.md
+
+      - name: Self-test - the ADR checker actually fires
+        run: |
+          set -e
+          # The first draft of this checker went GREEN on a broken file and RED
+          # on a clean one: the status line carries a U+2192 arrow that the
+          # pattern did not strip. A checker nobody breaks on purpose is
+          # indistinguishable from one that cannot fire.
+          python - <<'PY'
+          import io, os, subprocess, sys
+
+          CLEAN = """# Riskler ve Kararlar
+
+          ## 2. Mimari Karar Kayitlari (ADR)
+
+          ### ADR-1 — Kimlik dogrulama Keycloak ile
+          - **Durum:** Yerini aldi → ADR-2 · 2026-03-01
+          - **Baglam:** SSO zorunlu
+          - **Degerlendirilen secenekler:**
+            - A) Keycloak — operasyon yuku
+            - B) Kendi implementasyonumuz — guvenlik riski
+          - **Karar:** Keycloak
+          - **Gerekce:** SSO kisiti
+          - **Sonuc:** Ek servis
+
+          ### ADR-2 — Yonetilen saglayiciya tasindi
+          - **Durum:** Kabul edildi · 2026-06-01
+          - **Baglam:** Operasyon ekibi asti
+          - **Degerlendirilen secenekler:**
+            - A) Yonetilen saglayici — maliyet
+            - B) Keycloak'ta kal — operasyon yuku
+            - C) Hicbir sey yapma — mevcut yuk surer
+          - **Karar:** Yonetilen saglayici
+          - **Gerekce:** Ekip buyuklugu kisiti
+          - **Sonuc:** Aylik maliyet kabul edildi
+          """
+          CLEAN = "\n".join(l[10:] if l.startswith("          ") else l
+                             for l in CLEAN.splitlines()) + "\n"
+
+          def run(text, name):
+              p = f"/tmp/adr-{name}.md"
+              io.open(p, "w", encoding="utf-8", newline="").write(text)
+              r = subprocess.run([sys.executable,
+                                  "skill/iskele/scripts/check_adr.py", "--file", p],
+                                 capture_output=True, text=True)
+              return r.returncode, (r.stdout + r.stderr)
+
+          code, out = run(CLEAN, "clean")
+          if code != 0:
+              print("FAIL: the clean fixture did not pass\n" + out); sys.exit(1)
+          print("ok  clean chain passes")
+
+          cases = {
+              "vocab": (CLEAN.replace("- **Durum:** Kabul edildi · 2026-06-01",
+                                      "- **Durum:** onaylandi galiba"),
+                        "sozlugunde yok"),
+              "dangling": (CLEAN.replace("Yerini aldi → ADR-2", "Yerini aldi → ADR-9"),
+                           "o ADR yok"),
+              "nothing-in-force": (
+                  CLEAN.replace("- **Durum:** Kabul edildi · 2026-06-01",
+                                "- **Durum:** Kullanimdan kalkti"),
+                  "yururlukte hicbir karar yok"),
+              "one-option": (
+                  CLEAN.replace("  - B) Keycloak'ta kal — operasyon yuku\n"
+                                "  - C) Hicbir sey yapma — mevcut yuk surer\n", ""),
+                  "tek secenek"),
+          }
+          for name, (text, expect) in cases.items():
+              code, out = run(text, name)
+              if code == 0:
+                  print(f"FAIL: the checker passed a broken chain: {name}"); sys.exit(1)
+              if expect not in out:
+                  print(f"FAIL: {name} fired, but not for the stated reason.\n"
+                        f"expected to see: {expect}\n{out}"); sys.exit(1)
+              print(f"ok  fires on: {name}")
+          print("OK: the ADR checker fires on all four classes.")
+          PY
+
   counts-agree:
     runs-on: ubuntu-latest
     steps:

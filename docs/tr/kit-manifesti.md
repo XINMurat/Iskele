@@ -102,10 +102,29 @@ doğrulama komutu ("şunu çalıştır, şunu görmelisin"), sık sorunlar.
 
 **Risk kaydı:** risk, etki, olasılık, azaltma, durum. Proje boyunca canlı.
 
-**ADR (karar kaydı):** her mimari karar için bağlam → karar → gerekçe → sonuç.
-Kararı değiştirdiğinde eskisini silme, "değiştirildi (→ ADR-x)" diye işaretle.
+**ADR (karar kaydı):** her mimari karar için **durum → bağlam →
+değerlendirilen seçenekler → karar → gerekçe → sonuç.** Kararı değiştirdiğinde
+eskisini silme: yeni ADR açılır, eskisinin durumu `Yerini aldı → ADR-x` olur.
 Bir yol tıkandığında "denedim, olmadı, çünkü…" diye ADR yaz — negatif bulgu
 kaydedilmezse aynı duvara ikinci kez çarpılır.
+
+**Durum sözlüğü sabittir** — Önerildi · Kabul edildi · Reddedildi · Kullanımdan
+kalktı · Yerini aldı → ADR-x. Açık uçlu bir durum alanı, bir süre sonra herkesin
+kendi kelimesini yazdığı ve hiçbir şeyin karşılaştırılamadığı bir alana döner.
+`Kabul edildi` pratikte değişmezdir: yürürlükteki bir ADR sessizce
+düzenlenebiliyorsa, altı ay sonra okuyan kişi hangi kararın ne zaman alındığını
+bilemez — koleksiyonun tek güvenilirlik iddiası da o zaman kalmaz.
+
+**Değerlendirilen seçenekler kendi bölümüdür**, gerekçenin içinde bir yan cümle
+değil. Bir kararın en pahalı kısmı seçilmeyen yoldur ve "gerekçe" alanına
+sıkıştırıldığında ilk kırpılan odur. **Hiçbir şey yapmama da listededir** —
+çoğu zaman gerçek rakip odur.
+
+`scripts/check_adr.py` mekanik yarıyı denetler: sözlük, gerçekten çözülen ileri
+işaretler, döngüye girmeyen ve sonunda yürürlükte bir karar bırakan zincir, ve
+karar başına en az iki seçenek. Kararın **doğru** olup olmadığını söyleyemez —
+hiçbir script söyleyemez — ki bu tam olarak, söyleyebildiği kısmın düzyazıya
+bırakılmaması gerektiğinin sebebidir.
 
 ---
 

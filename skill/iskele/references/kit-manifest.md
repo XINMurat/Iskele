@@ -110,11 +110,30 @@ verification command ("run this, you should see that"), common problems.
 **Risk register:** risk, impact, likelihood, mitigation, status. Live for the
 whole project.
 
-**ADR (decision record):** for each architectural decision, context → decision
-→ rationale → consequence. When you change a decision, do not delete the old
-one; mark it "superseded (→ ADR-x)". When a route is blocked, write an ADR
+**ADR (decision record):** for each architectural decision, **status → context
+→ options considered → decision → rationale → consequence.** When you change a
+decision, do not delete the old one: a new ADR is written and the old one's
+status becomes `superseded → ADR-x`. When a route is blocked, write an ADR
 saying "tried it, it did not work, because…" — an unrecorded negative finding
 means walking into the same wall a second time.
+
+**The status vocabulary is fixed** — proposed · accepted · rejected ·
+deprecated · superseded → ADR-x. An open-ended status field becomes a field
+where everyone writes their own word and nothing can be compared. `accepted` is
+immutable in practice: if a live ADR can be quietly edited, the reader six
+months from now cannot tell which decision was taken when, and the collection's
+only claim to trustworthiness is gone.
+
+**Options considered is its own section**, not a clause inside the rationale.
+The most expensive part of a decision is the road not taken, and folded into
+"rationale" it is the first thing trimmed. **Doing nothing is on the list** —
+it is often the real competitor.
+
+`scripts/check_adr.py` enforces the mechanical half: the vocabulary, forward
+pointers that actually resolve, a superseded chain that does not loop or end
+with nothing in force, and at least two options per decision. It cannot tell
+whether a decision was *right* — no script can — which is exactly why the parts
+it can check should not be left to prose.
 
 ---
 

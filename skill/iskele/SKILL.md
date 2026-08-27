@@ -129,6 +129,9 @@ Two levels:
   *every piece of produced information has a reading surface* (the production
   side alone is not enough).
 - **Phase go/no-go** — concrete items verified one by one at the gate.
+  Include `python check_adr.py` here: an ADR log is written for six months
+  from now, and a forward pointer that resolves to nothing is worse than no
+  pointer, because it reads like a trail.
 
 - **Recovery ramps** — the same step, pointed the other way. DoD and go/no-go
   say what "done" means; nothing in the kit yet says what to do when a task
@@ -390,3 +393,6 @@ or marked as an estimate. If it is neither, do not write it.
 - `scripts/progress.py` — `tracker.xlsx` → update the report's GEN regions
 - `scripts/iskele_to_registry.py` — Step 7: backlog → Mizan registry (preregistration)
 - `scripts/kiyas_to_backlog.py` — Step 7: Kiyas seeds → backlog tasks
+- `scripts/check_adr.py` — validates the ADR chain in piece `06`: status
+  vocabulary, forward pointers that resolve, supersede consistency, and that
+  each decision lists the options it weighed

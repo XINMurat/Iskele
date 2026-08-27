@@ -203,6 +203,30 @@ def build(tasks, out_path, phases):
     for col, w in zip("ABCDEFG", [16, 10, 3, 8, 10, 12, 8]):
         wo.column_dimensions[col].width = w
 
+    # ---- Skorkart
+    # Faz kapanisinda ELLE doldurulur; hicbir sutunu backlog'dan uretilemez.
+    # Sebebi de bu: olculen sey isin kendisi degil, PLANIN nerede sizdirdigi --
+    # ve bunu yalnizca kapida duran insan bilir. Bos birakilan hucre "sifir"
+    # degil "doldurulmadi" demektir, rapor ikisini ayri basar.
+    wk = wb.create_sheet("Skorkart")
+    score_headers = ["Faz", "BacklogRevizyon", "YenidenTur", "KriterYenidenYazilan",
+                     "IkizBoslugu", "IkizKapida", "SenaryoProvali",
+                     "SenaryoTesadufi", "KapsamDisi", "Rampalar", "Kacan",
+                     "Cikarim"]
+    for col, name in enumerate(score_headers, start=1):
+        c = wk.cell(row=1, column=col, value=name)
+        c.font = Font(name=FONT, bold=True, color="FFFFFF")
+        c.fill = PatternFill("solid", fgColor="1F3864")
+        c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    # Faz sutunu onceden yazilir: bos bir tablo doldurulmaz, yarim dolu bir
+    # tablo doldurulur. Geri kalan her hucre kasten bostur.
+    for i, ph in enumerate(phases, start=2):
+        wk.cell(row=i, column=1, value=ph).font = Font(name=FONT, bold=True)
+    for col, w in zip("ABCDEFGHIJKL",
+                      [8, 16, 13, 20, 13, 11, 14, 15, 12, 16, 9, 60]):
+        wk.column_dimensions[col].width = w
+    wk.freeze_panes = "B2"
+
     # ---- Aciklama
     wl = wb.create_sheet("Aciklama")
     wl.sheet_view.showGridLines = False
@@ -222,6 +246,13 @@ def build(tasks, out_path, phases):
         ("- Kabul kriterindeki '**Hakem:**' satirindan gelir; bos olmasi normaldir.", False, 10),
         ("- Bos = o gorevin 'Tamamlandi'si oz-beyandir (kimse disaridan dogrulamadi).", False, 10),
         ("- Rapor bunu ayri bir gosterge olarak basar; ilerleme yuzdesini DEGISTIRMEZ.", False, 10),
+        ("", False, 10),
+        ("Skorkart sekmesi:", True, 11),
+        ("- Faz KAPANISINDA elle doldurulur; go/no-go ile ayni anda.", False, 10),
+        ("- Amaci ekibi notlamak degil, planin nereden sizdigini gormek.", False, 10),
+        ("- Bos hucre = doldurulmadi. Sifir DEGIL; rapor ikisini ayri basar.", False, 10),
+        ("- IkizKapida <= IkizBoslugu olmali; tersi gostergeyi ters cevirir.", False, 10),
+        ("- Her sayi oz-beyandir (hakem = yazar). Rapor bunu her defasinda yazar.", False, 10),
         ("", False, 10),
         ("Ozet sekmesi formullerle hesaplanir; elle sayi girme.", False, 10),
         ("Rapor icin: python progress.py", False, 10),

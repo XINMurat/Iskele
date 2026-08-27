@@ -415,6 +415,15 @@ honestly. A high number is not a failure; a hidden number is.
 **Reading:** two or three sentences. Not "the phase went well" — what changes
 in the next phase, and which number says so.
 
+**It has a home in the tracker.** `backlog_to_tracker.py` emits a `Skorkart`
+sheet with a row per phase; `progress.py` reads it and renders it beside the
+progress bars (`GEN:SKORKART`), so the scorecard is filled in where the work is
+tracked rather than in a document nobody opens again. The generator refuses the
+two mistakes that would make it lie: a missing sheet reads *not kept* rather
+than zeros, and `IkizKapida` above `IkizBoslugu` is a validation error, because
+a subset larger than its set inverts the indicator instead of merely breaking
+it. Schema: `references/tracking.md`.
+
 The scorecard is a claim like any other. Filled in by whoever did the work,
 its arbiter is `author` and it is self-reported. Say so; the same sentence
 step 7 makes about the tracker's status column applies here.

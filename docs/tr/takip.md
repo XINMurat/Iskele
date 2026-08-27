@@ -59,6 +59,53 @@ basar. Ölçülmemiş bir şeyi sıfır göstermek, sessiz varsayımın en pahal
 **Sekme `Ozet`** — `COUNTIF`/`COUNTIFS` formülleriyle durum ve faz kırılımı.
 Elle sayı girme; formül bozulur.
 
+**`Skorkart` sekmesi** — faz kapanış skorkartı. **Opsiyonel, elle doldurulur ve
+içindeki her sayı öz-beyandır.** Faz başına bir satır; kapıda, go/no-go'nun
+yanında yazılır.
+
+| Sütun | Dolduran | Anlamı |
+|---|---|---|
+| `Faz` | ✓ önceden yazılı | yapılandırmadaki faz kodları |
+| `BacklogRevizyon` | **elle** | faz açıldıktan sonra değişen görev sayısı |
+| `YenidenTur` | **elle** | birden fazla kez geri dönen görev |
+| `KriterYenidenYazilan` | **elle** | işten **sonra** yeniden yazılan kabul kriteri |
+| `IkizBoslugu` | **elle** | tüketen-ikiz boşlukları (RR-03) |
+| `IkizKapida` | **elle** | bunların kaçı **kapıda** yakalandı |
+| `SenaryoProvali` / `SenaryoTesadufi` | **elle** | senaryo bulgusu: provalı / tesadüfi |
+| `KapsamDisi` | **elle** | faz dışına çıkma sayısı (RR-07) |
+| `Rampalar` | **elle** | hangi `RR-nn` kullanıldı, serbest metin |
+| `Kacan` | **elle** | kapıdan sonra bulunan, bu fazın kriterlerinin kapsadığı hata |
+| `Cikarim` | **elle** | bir iki cümle |
+
+Hiçbiri backlog'dan üretilemez, ve mesele de bu: ölçülen şey işin kendisi değil
+**planın nereden sızdırdığı** — bunu yalnızca kapıda duran insan bilir.
+
+**Üretecin zorladığı üç kural:**
+
+- **Sekme yok ≠ sıfır.** Sekmesi olmayan bir çizelge *"ölçülmedi"* basar.
+  Sıfırlar dizisi, mümkün olan en pohpohlayıcı yalan olurdu: yeniden çalışma
+  yok, yeniden yazılan kriter yok, kaçan yok.
+- **Boş hücre ≠ sıfır.** `Faz` sütunu önceden yazılır ki tablo boş değil yarım
+  dolu olsun; yani "satır var" ile "faz kapandı" aynı şey değildir. Hiçbir alanı
+  doldurulmamış satır atlanır, kısmen doldurulmuş bir sütun ise kaç fazın
+  cevapladığını basar (`3 (2/4 faz)`).
+- **`IkizKapida` ≤ `IkizBoslugu`.** Bu bir alt kümedir: bulunanların kaçı kapıda
+  yakalandı. Ters yazıldığında "kapıda yakalandı" oranı 1'i aşar ve tablo iyi
+  haber gibi okunur — gösterge yanlışlaşmakla kalmaz, **ters döner**. Bu bir
+  doğrulama hatasıdır (çıkış 2), sayı değil.
+
+**İlerleme yüzdesine dokunmaz.** Bir faz %100 kapanıp skorkartında dört yeniden
+yazılmış kriter taşıyabilir; bu çelişki değil, bilginin ta kendisidir. İkisini
+tek göstergeye eritmek ikisini de okunmaz yapardı — `Hakem` sütunuyla aynı
+gerekçe.
+
+Rapor bunu kendi bölgesi olarak basar (`GEN:SKORKART`) ve her üretimde sayıların
+öz-beyan olduğunu yazar. Skorkart da bir iddiadır: işi yapan doldurur, hakem =
+yazar.
+
+Ölçütlerin nereden geldiği ve nasıl okunduğu:
+[`kurtarma.md`](kurtarma.md) — faz kapanış çizelgesi.
+
 **Sekme `Aciklama`** — hangi sütun elle doldurulur, hangisi üretilir.
 
 > ASCII not: sekme ve sütun adlarını ASCII tut (`Aciklama`, `Gorev`). Türkçe

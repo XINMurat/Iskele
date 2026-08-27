@@ -104,6 +104,10 @@ değişecek ve **hangi sayı** bunu söylüyor.
 
 > Bu çizelgeyi işi yapan doldurur; yani **hakem = yazar**, öz-beyandır.
 > `tracker.xlsx`'in durum sütunu için geçerli olan cümle burada da geçerli.
+>
+> Doldurma yeri: `tracker.xlsx` → **`Skorkart`** sekmesi, faz başına bir satır.
+> `python progress.py` bunu rapora basar. Boş bırakılan hücre "sıfır" değil
+> "doldurulmadı" sayılır; `IkizKapida`, `IkizBoslugu`'nun alt kümesidir.
 
 ---
 

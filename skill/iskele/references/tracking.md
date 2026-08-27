@@ -64,6 +64,54 @@ kind of silent assumption: it looks like a measurement.
 **Sheet `Ozet`** — status and phase breakdown via `COUNTIF`/`COUNTIFS`. Do not
 type numbers; you will break the formulas.
 
+**Sheet `Skorkart`** — the phase-close scorecard. **Optional, hand-filled, and
+every number in it is self-reported.** One row per phase, written at the gate,
+next to the go/no-go.
+
+| Column | Filled | Meaning |
+|---|---|---|
+| `Faz` | ✓ pre-written | the phase codes from the config |
+| `BacklogRevizyon` | **by hand** | tasks that changed after the phase opened |
+| `YenidenTur` | **by hand** | tasks that came back more than once |
+| `KriterYenidenYazilan` | **by hand** | acceptance criteria rewritten *after* the work |
+| `IkizBoslugu` | **by hand** | consuming-twin gaps found (RR-03) |
+| `IkizKapida` | **by hand** | how many of those were caught **at the gate** |
+| `SenaryoProvali` / `SenaryoTesadufi` | **by hand** | scenario findings: rehearsed vs. noticed by luck |
+| `KapsamDisi` | **by hand** | times work left the phase (RR-07) |
+| `Rampalar` | **by hand** | which `RR-nn` fired, free text |
+| `Kacan` | **by hand** | defects found after the gate that this phase's criteria covered |
+| `Cikarim` | **by hand** | one or two sentences |
+
+Nothing here can be generated from the backlog, and that is the point: what is
+being measured is not the work but **where the plan leaked**, and only the
+person standing at the gate knows that.
+
+**Three rules the generator enforces, for the same reason the rest of §6 exists:**
+
+- **No sheet ≠ zeros.** A tracker without the sheet prints *"olculmedi"* — not
+  kept. A row of zeros would be the most flattering possible lie: no rework, no
+  rewritten criteria, nothing escaped.
+- **An empty cell ≠ zero.** The `Faz` column is pre-written so the table is
+  half-filled rather than blank, so "a row exists" is not "a phase closed". A
+  row with nothing filled in is skipped, and a partly filled column prints how
+  many phases actually answered it (`3 (2/4 faz)`).
+- **`IkizKapida` ≤ `IkizBoslugu`.** It is a subset: gaps caught at the gate, out
+  of gaps found. Reversed, the "caught at the gate" ratio exceeds 1 and the
+  table reads as good news — the indicator does not merely go wrong, it points
+  the other way. That is a validation error (exit 2), not a number.
+
+**It does not touch the progress percentage.** A phase can close at 100% and
+carry four rewritten criteria; that is not a contradiction, it is the
+information. Melting the two into one indicator would make both unreadable —
+the same argument as the `Hakem` column.
+
+The report prints it as its own region (`GEN:SKORKART`), and prints on every
+render that the numbers are self-reported. The scorecard is a claim like any
+other: filled in by whoever did the work, its arbiter is `author`.
+
+Where the measures come from and how to read them:
+[`references/recovery.md`](recovery.md) — the phase-close scorecard.
+
 **Sheet `Aciklama`** — which column is filled by hand and which is generated.
 
 > ASCII note: keep sheet and column names ASCII (`Aciklama`, `Gorev`).

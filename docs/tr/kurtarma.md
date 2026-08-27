@@ -402,6 +402,14 @@ sızdırdığını** bulur. Yüksek sayı kötü değildir, gizlenen sayı köt�
 **Çıkarım:** 1–2 cümle. "Faz iyi geçti" değil: sonraki fazda ne değişecek ve
 **hangi sayı** bunu söylüyor.
 
+**Çizelgede bir yeri var.** `backlog_to_tracker.py` faz başına bir satırlık
+`Skorkart` sekmesi üretir; `progress.py` onu okuyup ilerleme çubuklarının
+yanında basar (`GEN:SKORKART`). Böylece skorkart, kimsenin bir daha açmadığı bir
+belgede değil, işin takip edildiği yerde doldurulur. Üreteç, onu yalancı yapacak
+iki hatayı reddeder: sekme yoksa *tutulmuyor* yazar, sıfır yazmaz; ve
+`IkizKapida > IkizBoslugu` bir doğrulama hatasıdır — kümesinden büyük bir alt
+küme göstergeyi bozmakla kalmaz, ters çevirir. Şema: [`takip.md`](takip.md).
+
 Çizelge de bir iddiadır. İşi yapan doldurduğunda hakem `author`'dır ve
 öz-beyandır. Söyle; adım 7'nin çizelgenin durum sütunu için kurduğu cümle
 burada da geçerlidir.

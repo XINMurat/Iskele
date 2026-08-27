@@ -32,6 +32,28 @@ COL = dict(id="ID", faz="Faz", epik="Epik", tahmin="Tahmin", durum="Durum")
 # "sessiz varsayim" kirmizi cizgisinin ta kendisidir.
 OPT_COL = dict(hakem="Hakem")
 
+# Faz kapanis skorkarti: OPSIYONEL bir sekme, elle doldurulur. Buradaki her
+# sayi OZ-BEYANDIR -- hakem = yazar -- ve rapor bunu her seferinde soyler.
+# Sekme yoksa gosterge "olculmedi" basar, sifir basmaz. Skorkartin isi
+# ekibi notlamak degil, PLANIN nereden sizdirdigini gostermek.
+SCORE_SHEET = "Skorkart"
+SCORE_COL = dict(
+    faz="Faz",
+    revizyon="BacklogRevizyon",           # faz acildiktan sonra degisen gorev
+    tur="YenidenTur",                     # birden fazla kez geri donen gorev
+    kriter="KriterYenidenYazilan",        # isten SONRA yeniden yazilan kriter
+    ikiz="IkizBoslugu",                   # tuketen-ikiz boslugu (RR-03)
+    ikiz_kapida="IkizKapida",             # ...kacinin KAPIDA bulundugu
+    senaryo="SenaryoProvali",             # senaryo listesinin yakaladigi
+    senaryo_tesadufi="SenaryoTesadufi",   # tesaduffen fark edilen
+    kapsam="KapsamDisi",                  # faz disina cikma (RR-07)
+    rampa="Rampalar",                     # kullanilan RR kodlari (metin)
+    kacan="Kacan",                        # kapidan sonra bulunan, kapsanan hata
+    cikarim="Cikarim",                    # 1-2 cumle
+)
+SCORE_NUM = ("revizyon", "tur", "kriter", "ikiz", "ikiz_kapida",
+             "senaryo", "senaryo_tesadufi", "kapsam", "kacan")
+
 DEFAULTS = {
     "phases": [],
     "effort_weights": {"S": 0.75, "M": 1.5, "L": 4.0},
@@ -148,12 +170,107 @@ def load_tasks(xlsx, cfg):
     return tasks, issues
 
 
+def load_scorecard(xlsx, cfg):
+    """xlsx -> (satirlar | None, issues). None = sekme yok = OLCULMEDI.
+
+    Bos hucre ile hic olmayan sekme ayri seylerdir: bos hucre "bu faz icin
+    doldurulmadi" der, olmayan sekme "bu proje skorkart tutmuyor" der. Ikisini
+    de sifir basmak, olculmemis seyi olcum gibi gostermek olurdu.
+    """
+    wb = load_workbook(xlsx, data_only=True)
+    if SCORE_SHEET not in wb.sheetnames:
+        return None, []
+    ws = wb[SCORE_SHEET]
+    headers = {c.value: i for i, c in enumerate(ws[1])}
+    missing = [v for v in SCORE_COL.values() if v not in headers]
+    if missing:
+        return None, [("ERROR", f"'{SCORE_SHEET}' sekmesinde eksik sutun: "
+                                f"{', '.join(missing)} -- sekmeyi "
+                                f"backlog_to_tracker.py ile yeniden uret")]
+
+    ph_alias = {norm(p): p for p in cfg["phases"]}
+    rows, issues, seen = [], [], {}
+    for rno, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+        raw_faz = str(row[headers[SCORE_COL["faz"]]] or "").strip()
+        if not raw_faz:
+            continue
+        faz = ph_alias.get(norm(raw_faz))
+        if faz is None:
+            # Takip sekmesindeki degismez mantiginin aynisi: tanimsiz faz,
+            # tabloda gorunup hicbir toplama girmeyen bir satir uretir.
+            issues.append(("ERROR", f"{SCORE_SHEET} satir {rno}: '{raw_faz}' "
+                                    f"faz listesinde yok {cfg['phases']}"))
+            continue
+        if faz in seen:
+            issues.append(("ERROR", f"{SCORE_SHEET} satir {rno}: '{faz}' icin "
+                                    f"ikinci satir (ilk: satir {seen[faz]})"))
+            continue
+        seen[faz] = rno
+
+        rec, bad = dict(faz=faz), False
+        for key in SCORE_NUM:
+            cell = row[headers[SCORE_COL[key]]]
+            if cell is None or str(cell).strip() == "":
+                rec[key] = None          # doldurulmadi != sifir
+                continue
+            try:
+                val = int(str(cell).strip())
+            except ValueError:
+                issues.append(("ERROR", f"{SCORE_SHEET} satir {rno}: "
+                                        f"{SCORE_COL[key]} sayi degil: {cell!r}"))
+                bad = True
+                continue
+            if val < 0:
+                issues.append(("ERROR", f"{SCORE_SHEET} satir {rno}: "
+                                        f"{SCORE_COL[key]} negatif: {val}"))
+                bad = True
+                continue
+            rec[key] = val
+        for key in ("rampa", "cikarim"):
+            rec[key] = str(row[headers[SCORE_COL[key]]] or "").strip()
+
+        # Alt kume kontrolu: kapida bulunanlar, bulunanlarin bir parcasidir.
+        # Tersi yalnizca yazim hatasi degil, gostergeyi TERS CEVIRIR: "kapida
+        # yakalandi" orani 1'i asar ve tablo iyi haber gibi okunur.
+        if (rec.get("ikiz") is not None and rec.get("ikiz_kapida") is not None
+                and rec["ikiz_kapida"] > rec["ikiz"]):
+            issues.append(("ERROR", f"{SCORE_SHEET} satir {rno}: "
+                                    f"{SCORE_COL['ikiz_kapida']} "
+                                    f"({rec['ikiz_kapida']}) > "
+                                    f"{SCORE_COL['ikiz']} ({rec['ikiz']})"))
+            bad = True
+        # Faz sutunu cizelge uretilirken ONCEDEN yazilir, cunku bos bir tablo
+        # doldurulmaz. Yani "satir var" ile "faz kapandi" ayni sey degildir:
+        # hicbir alani doldurulmamis satir, kapanmamis fazdir ve tabloya
+        # girmez. Girseydi rapor, olculmemis fazlari "olculdu, hepsi bos"
+        # diye basardi.
+        if (all(rec.get(k) is None for k in SCORE_NUM)
+                and not rec["rampa"] and not rec["cikarim"]):
+            continue
+        if not bad:
+            rows.append(rec)
+    return rows, issues
+
+
+def score_totals(rows):
+    """Doldurulmus alanlarin toplami + kac fazin o alani doldurdugu.
+
+    Sayac ayri tasinir: uc fazdan birinin doldurdugu bir toplam ile ucunun
+    doldurdugu ayni toplam farkli seylerdir; rapor ikisini ayri basar.
+    """
+    out = {}
+    for key in SCORE_NUM:
+        vals = [r[key] for r in rows if r.get(key) is not None]
+        out[key] = (sum(vals), len(vals)) if vals else (None, 0)
+    return out
+
+
 def epic_code(epik):
     parts = str(epik or "").split()
     return parts[0] if parts else "(epik yok)"
 
 
-def compute(tasks, cfg):
+def compute(tasks, cfg, score_rows=None):
     W, CR, phases = cfg["effort_weights"], cfg["status_credit"], cfg["phases"]
     epics = {}
     ph = {p: dict(eff=0.0, done=0.0, n=0, dn=0) for p in phases}
@@ -191,6 +308,8 @@ def compute(tasks, cfg):
     total_dn = sum(p["dn"] for p in ph.values())
 
     return dict(epics=epics, phases=ph, total_eff=total_eff,
+                score_rows=score_rows,
+                score_totals=score_totals(score_rows) if score_rows else None,
                 arbiter_col=has_col,
                 arbiter_done=arb_done, arbiter_dn=arb_n,
                 arbiter_pct=(round(100 * arb_done / total_done)
@@ -377,8 +496,106 @@ def r_hakem(C, cfg):
             '    </div>')
 
 
+def r_skorkart(C, cfg):
+    """Faz kapanis skorkarti -- surecin nereden sizdirdigi, ilerlemenin YANINDA.
+
+    Ilerleme yuzdesi "ne kadari bitti"yi olcer; bu tablo "plan ne kadar
+    tutuyordu"yu. Ikisi ayri gostergedir: bir faz %100 kapanip skorkartinda
+    dort yeniden-yazilmis kriter tasiyabilir.
+    """
+    rows = C.get("score_rows")
+    if rows is None:
+        return ('<div class="note">\n'
+                '      <b>Skorkart: olculmedi.</b> Cizelgede <code>Skorkart</code>\n'
+                '      sekmesi yok. Bu <em>sifir</em> demek degildir -- tutulmuyor\n'
+                '      demektir. Sekmeyi <code>backlog_to_tracker.py</code> ile\n'
+                '      uret, kapida elle doldur.\n'
+                '    </div>')
+    if not rows:
+        return ('<div class="note">\n'
+                '      <b>Skorkart: henuz kapanmis faz yok.</b> Tablo ilk kapida\n'
+                '      anlam kazanir; faz acilirken doldurulmaz.\n'
+                '    </div>')
+
+    T = C["score_totals"]
+
+    def cell(key):
+        total, n = T[key]
+        if total is None:
+            return '<span class="l2">olculmedi</span>'
+        suffix = "" if n == len(rows) else f' <span class="l2">({n}/{len(rows)} faz)</span>'
+        return f'<b class="num">{total}</b>{suffix}'
+
+    lines = [
+        ("Faz acildiktan sonraki backlog revizyonu", "revizyon",
+         "Yuksek: faz, girdileri hazir olmadan acildi."),
+        ("Yeniden calisma turu", "tur",
+         "Tek epikte topluyorsa supheyi kiside degil bolunmede ara."),
+        ("Isten sonra yeniden yazilan kriter", "kriter",
+         "Her biri, onkayit olmaktan cikmis bir kriterdir."),
+        ("Faz disina cikma", "kapsam",
+         "Kapsam disi listesinin neyi tutmadigi."),
+        ("Kacan", "kacan",
+         "Kapidan sonra bulunan, bu fazin kriterlerinin kapsadigi hata. "
+         "Surec disindan gelen tek sayi."),
+    ]
+    body = "".join(
+        f'      <div class="row"><span>{lab}</span>{cell(key)}</div>\n'
+        f'      <p class="l2">{note}</p>\n'
+        for lab, key, note in lines)
+
+    ikiz, _ = T["ikiz"]
+    kapida, _ = T["ikiz_kapida"]
+    if ikiz is None or kapida is None:
+        ratio = ('      <div class="row"><span>Tuketen-ikiz boslugu</span>'
+                 '<span class="l2">olculmedi</span></div>\n')
+    elif ikiz == 0:
+        ratio = ('      <div class="row"><span>Tuketen-ikiz boslugu</span>'
+                 '<b class="num">0</b></div>\n'
+                 '      <p class="l2">Sifir, taramanin temiz oldugunu degil, bu\n'
+                 '      fazda hic bulunmadigini soyler.</p>\n')
+    else:
+        pct = round(100 * kapida / ikiz)
+        ratio = (f'      <div class="row"><span>Tuketen-ikiz boslugu: kapida bulunan</span>'
+                 f'<b class="num">{kapida}/{ikiz} (%{pct})</b></div>\n'
+                 f'      <p class="l2">Asil sayi bu: kapida degil <em>tesadufen</em>\n'
+                 f'      bulunanlar, kapinin o bosluga bakmadigini gosterir.</p>\n')
+
+    prov, _ = T["senaryo"]
+    tes, _ = T["senaryo_tesadufi"]
+    if prov is None or tes is None:
+        senaryo = ('      <div class="row"><span>Senaryo bulgusu: provali / tesadufi</span>'
+                   '<span class="l2">olculmedi</span></div>\n')
+    else:
+        senaryo = (f'      <div class="row"><span>Senaryo bulgusu: provali / tesadufi</span>'
+                   f'<b class="num">{prov} / {tes}</b></div>\n'
+                   '      <p class="l2">Hic bulgu vermeyen bir prova listesi temiz\n'
+                   '      proje degil, calistirilmamis listedir.</p>\n')
+
+    kodlar = sorted({k for row in rows
+                     for k in re.findall(r"RR-\d{2}", row.get("rampa", ""))})
+    ramp = (f'      <div class="row"><span>Kullanilan rampalar</span>'
+            f'<b class="num">{esc(", ".join(kodlar))}</b></div>\n'
+            if kodlar else
+            '      <div class="row"><span>Kullanilan rampalar</span>'
+            '<span class="l2">yok</span></div>\n'
+            '      <p class="l2">Hicbiri kullanilmadiysa ya kusursuz gecti ya\n'
+            '      da fark edilmedi.</p>\n')
+
+    return ('<div class="note">\n'
+            f'      <div class="row"><span>Kapanmis faz</span>'
+            f'<b class="num">{esc(", ".join(r["faz"] for r in rows))}</b></div>\n'
+            + body + ratio + senaryo + ramp +
+            '      <p class="l2"><b>Bu tablodaki her sayi oz-beyandir</b> -- isi\n'
+            '      yapan doldurur, hakem = yazar. Olctugu sey ekibin performansi\n'
+            '      degil, planin nerede sizdirdigi: yuksek sayi kotu degildir,\n'
+            '      gizlenen sayi kotudur.</p>\n'
+            '    </div>')
+
+
 RENDERERS = dict(CHIPS=r_chips, KPI=r_kpi, CARDS=r_cards,
-                 BARS=r_bars, TIMELINE=r_timeline, HAKEM=r_hakem)
+                 BARS=r_bars, TIMELINE=r_timeline, HAKEM=r_hakem,
+                 SKORKART=r_skorkart)
 
 
 def patch(html, key, block):
@@ -468,6 +685,74 @@ def self_test():
     check("hakemli kapanan gorev sayisi 1", C["arbiter_dn"] == 1)
     check("hakem orani ilerleme yuzdesini degistirmez", C["overall_pct"] == 76)
 
+    # ---- Skorkart: opsiyonel sekme, elle doldurulur, her sayisi oz-beyan ----
+    def make_s(score_rows, headers=None):
+        """Takip + (varsa) Skorkart. headers=None -> hic Skorkart sekmesi yok."""
+        wb = Workbook(); ws = wb.active; ws.title = "Takip"
+        ws.append(["ID", "Faz", "Epik", "Tahmin", "Durum"])
+        ws.append(["A-1", "F0", "F0.1 Bir", "M", "Tamamlandi"])
+        if headers is not None:
+            wk = wb.create_sheet("Skorkart")
+            wk.append(headers)
+            for r in score_rows:
+                wk.append(r)
+        p = tmp / "ts.xlsx"; wb.save(p); return p
+
+    SH = [SCORE_COL[k] for k in ("faz", "revizyon", "tur", "kriter", "ikiz",
+                                 "ikiz_kapida", "senaryo", "senaryo_tesadufi",
+                                 "kapsam", "rampa", "kacan", "cikarim")]
+
+    # 7) Sekme YOKSA gosterge sifir degil "olculmedi" olmali. Bu, Hakem
+    #    sutunuyla ayni kirmizi cizgi: olculmemis seyi sifir basmak, olcum
+    #    gibi gorunur ve en pahali sessiz varsayimdir.
+    rows, iss = load_scorecard(make_s([], headers=None), cfg)
+    check("Skorkart sekmesi yoksa None (bos liste degil)", rows is None)
+    check("Skorkart sekmesi yoksa hata da uretmez", not iss)
+
+    # 8) Faz sutunu onceden yazili ama hicbir alan dolu degil -> KAPANMAMIS.
+    #    Satir sayilsaydi rapor, acilmamis fazlari "olculdu, hepsi bos" diye
+    #    basardi.
+    rows, iss = load_scorecard(
+        make_s([["F0"] + [None] * 11, ["F1"] + [None] * 11], headers=SH), cfg)
+    check("doldurulmamis satir kapanmis faz sayilmaz", rows == [])
+
+    # 9) Mutlu yol: bir faz dolu, toplamlar ve doldurulmus-alan sayaci.
+    rows, iss = load_scorecard(
+        make_s([["F0", 2, 3, 1, 4, 1, 2, 5, 1, "RR-03, RR-06", 1, "Not"],
+                ["F1"] + [None] * 11], headers=SH), cfg)
+    T = score_totals(rows)
+    check("dolu faz sayisi 1", len(rows) == 1)
+    check("yeniden tur toplami 3", T["tur"] == (3, 1))
+    check("skorkart hatasiz okunur", not [m for l, m in iss if l == "ERROR"])
+
+    # 10) IkizKapida > IkizBoslugu -> ERROR. Bu yalnizca yazim hatasi degil:
+    #     "kapida yakalandi" orani 1'i asar ve tablo iyi haber gibi okunur.
+    rows, iss = load_scorecard(
+        make_s([["F0", 0, 0, 0, 2, 9, 0, 0, 0, "", 0, ""]], headers=SH), cfg)
+    check("IkizKapida > IkizBoslugu ERROR uretir",
+          any(l == "ERROR" and "IkizKapida" in m for l, m in iss))
+
+    # 11) Faz listesi disi satir -> ERROR (Takip sekmesindeki degismezle ayni).
+    rows, iss = load_scorecard(
+        make_s([["F9", 1, 1, 1, 1, 1, 1, 1, 1, "", 1, ""]], headers=SH), cfg)
+    check("faz listesi disi skorkart satiri ERROR uretir",
+          any(l == "ERROR" and "F9" in m for l, m in iss))
+
+    # 12) Sayi olmayan deger -> ERROR (sessizce 0 sayilmaz).
+    rows, iss = load_scorecard(
+        make_s([["F0", "cok", 1, 1, 1, 1, 1, 1, 1, "", 1, ""]], headers=SH), cfg)
+    check("sayi olmayan skorkart degeri ERROR uretir",
+          any(l == "ERROR" and "sayi degil" in m for l, m in iss))
+
+    # 13) Skorkart ilerleme yuzdesine DOKUNMAZ. Iki gosterge ayri kalmali:
+    #     bir faz %100 kapanip skorkartinda dort yeniden-yazilmis kriter
+    #     tasiyabilir, ve bu bir celiski degil bilgidir.
+    t, _ = load_tasks(make_s([], headers=None), cfg)
+    rows, _ = load_scorecard(
+        make_s([["F0", 9, 9, 9, 9, 9, 9, 9, 9, "RR-02", 9, ""]], headers=SH), cfg)
+    check("skorkart ilerleme yuzdesini degistirmez",
+          compute(t, cfg, rows)["overall_pct"] == compute(t, cfg)["overall_pct"])
+
     print("SELF-TEST:", "BASARILI" if ok else "BASARISIZ")
     return 0 if ok else 1
 
@@ -492,6 +777,8 @@ def main():
                  "(iskele.config.json olustur; ornek: assets/iskele.config.example.json)")
 
     tasks, issues = load_tasks(a.xlsx, cfg)
+    score_rows, score_issues = load_scorecard(a.xlsx, cfg)
+    issues = issues + score_issues
     errors = [m for l, m in issues if l == "ERROR"]
     for l, m in issues:
         print(f"  {'HATA ' if l == 'ERROR' else 'UYARI'}: {m}", file=sys.stderr)
@@ -501,7 +788,7 @@ def main():
         sys.exit(2)
 
     try:
-        C = compute(tasks, cfg)
+        C = compute(tasks, cfg, score_rows)
     except ValueError as e:
         print(f"\n{e}", file=sys.stderr)
         sys.exit(3)
@@ -522,6 +809,19 @@ def main():
         print(f"  Hakem: tamamlanan eforun %{C['arbiter_pct']}'i hakemli · "
               f"%{100 - C['arbiter_pct']}'i oz-beyan "
               f"({C['arbiter_dn']}/{C['total_dn']} gorev)")
+
+    if score_rows is None:
+        print("  Skorkart: olculmedi ('Skorkart' sekmesi yok) -- SIFIR DEGIL")
+    elif not score_rows:
+        print("  Skorkart: henuz kapanmis faz yok")
+    else:
+        T = C["score_totals"]
+        parts = [f"{lab} {T[key][0] if T[key][0] is not None else 'olculmedi'}"
+                 for key, lab in (("tur", "yeniden tur"),
+                                  ("kriter", "yeniden yazilan kriter"),
+                                  ("kacan", "kacan"))]
+        print(f"  Skorkart ({len(score_rows)} faz, oz-beyan): "
+              + " · ".join(parts))
 
     if a.check:
         return

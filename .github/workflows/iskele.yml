@@ -94,6 +94,76 @@ jobs:
             || { echo "FAIL: the report did not say the indicator is unmeasured" >&2; exit 1; }
           echo "OK: unmeasured stays unmeasured."
 
+      - name: Self-test — a missing Skorkart sheet reads "olculmedi", never 0
+        run: |
+          set -e
+          # Same red line as the Hakem column, one artifact further out: a
+          # scorecard nobody keeps must read "not kept", never a row of zeros.
+          # Zeros here would be the most flattering possible lie -- no rework,
+          # no rewritten criteria, nothing escaped.
+          cp examples/07-ilerleme-raporu.example.html /tmp/report-noscore.html
+          python skill/iskele/scripts/progress.py \
+            --xlsx /tmp/tracker.xlsx --html /tmp/report-noscore.html \
+            --config examples/iskele.config.example.json | tee /tmp/noscore.log
+          python - <<'PY'
+          import sys
+          from openpyxl import load_workbook
+          wb = load_workbook("/tmp/tracker.xlsx")
+          if "Skorkart" not in wb.sheetnames:
+              print("FAIL: backlog_to_tracker.py stopped emitting the Skorkart sheet")
+              sys.exit(1)
+          PY
+          grep -q 'Skorkart: henuz kapanmis faz yok' /tmp/noscore.log \
+            || { echo "FAIL: an untouched scorecard was not reported as unclosed" >&2; exit 1; }
+          # And with the sheet removed entirely -- an older tracker.
+          python - <<'PY'
+          from openpyxl import load_workbook
+          wb = load_workbook("/tmp/tracker.xlsx")
+          del wb["Skorkart"]
+          wb.save("/tmp/tracker-noscore.xlsx")
+          PY
+          python skill/iskele/scripts/progress.py \
+            --xlsx /tmp/tracker-noscore.xlsx --html /tmp/report-noscore.html \
+            --config examples/iskele.config.example.json | tee /tmp/noscore2.log
+          grep -q 'olculmedi' /tmp/noscore2.log \
+            || { echo "FAIL: a missing sheet was not reported as unmeasured" >&2; exit 1; }
+          grep -q 'Skorkart: olculmedi' /tmp/report-noscore.html \
+            || { echo "FAIL: the report did not say the scorecard is unmeasured" >&2; exit 1; }
+          if grep -q 'Skorkart.*<b class="num">0</b>' /tmp/report-noscore.html; then
+            echo "FAIL: an unkept scorecard rendered as zeros" >&2; exit 1
+          fi
+          echo "OK: an unkept scorecard stays unkept."
+
+      - name: Self-test — a scorecard that inverts its own ratio is REJECTED
+        run: |
+          set -e
+          # IkizKapida counts a SUBSET of IkizBoslugu: gaps caught at the gate,
+          # out of gaps found. Reversed, the "caught at the gate" ratio exceeds
+          # 1 and the table reads as good news -- the indicator does not just
+          # go wrong, it points the other way.
+          python - <<'PY'
+          from openpyxl import load_workbook
+          wb = load_workbook("/tmp/tracker.xlsx")
+          ws = wb["Skorkart"]
+          head = [c.value for c in ws[1]]
+          row = 2
+          ws.cell(row=row, column=1, value="F0")
+          ws.cell(row=row, column=head.index("IkizBoslugu") + 1, value=2)
+          ws.cell(row=row, column=head.index("IkizKapida") + 1, value=9)
+          wb.save("/tmp/tracker-inverted.xlsx")
+          PY
+          set +e
+          python skill/iskele/scripts/progress.py \
+            --xlsx /tmp/tracker-inverted.xlsx --html /tmp/report-noscore.html \
+            --config examples/iskele.config.example.json > /tmp/inv.log 2>&1
+          code=$?
+          set -e
+          test "$code" = "2" \
+            || { echo "FAIL: expected exit 2 (validation), got $code" >&2; cat /tmp/inv.log; exit 1; }
+          grep -q 'IkizKapida' /tmp/inv.log \
+            || { echo "FAIL: the error did not name the column" >&2; exit 1; }
+          echo "OK: an inverted subset is a validation error, not a number."
+
       - name: Self-test — a malformed estimate must be REJECTED
         run: |
           set -e

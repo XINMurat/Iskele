@@ -37,6 +37,7 @@ for what each contains.
 | 08 | `tracker.xlsx` | ✓ |
 | 09 | `08-onboarding.md` | — |
 | 10 | `09-kurtarma-rampalari.md` | ✓ |
+| 11 | `AGENTS.md` | ✓ |
 
 If a piece is skipped, the skill must say **which one and why** — never
 silently.
@@ -106,7 +107,7 @@ değil.
 
 ### 3. Kiti teslim al
 
-On bir parça, dokuzu zorunlu. Her parçanın içeriği için bkz.
+On iki parça, onu zorunlu. Her parçanın içeriği için bkz.
 [`skill/iskele/references/kit-manifest.md`](../skill/iskele/references/kit-manifest.md).
 Bir parça atlanıyorsa skill **hangisini ve neden** atladığını söylemek
 zorundadır — sessizce atlamaz.

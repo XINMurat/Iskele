@@ -17,6 +17,7 @@ ve takip araçlarını içerir.
 | 07 | `07-ilerleme-raporu.html` | Üst düzey rapor | Haftalık |
 | 08 | `tracker.xlsx` | Canlı takip çizelgesi | Her gün |
 | 09 | `09-kurtarma-rampalari.md` | Bir şey tutmadığında ne yapılacağı | Görev kapanmıyorsa, kapı bozulduysa |
+| 10 | `AGENTS.md` | Ajanlar için yön tabelası | Bir ajan projeye ilk girdiğinde |
 
 *Atlanan parçalar:* [hangileri, neden]
 

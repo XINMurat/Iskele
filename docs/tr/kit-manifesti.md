@@ -179,6 +179,31 @@ Adım 5'te, kalite kapılarının yanında yazılır. Yordam ve rampaların tama
 
 ---
 
+## 11 — Ajan yön tabelası (`AGENTS.md`) · zorunlu
+
+Makineye bakan giriş noktası. `00` insanın kit haritası, bu ajanınki — ve ikisi
+aynı belge değil: ajanın ihtiyacı okuma sırası değil, çalıştırma komutu,
+sınırlar ve "bitti"nin tanımı.
+
+**Yön tabelasıdır, kural deposu değil.** Her kural zaten bir kit dosyasında
+yaşıyor; bu dosya oraya işaret eder. Önemi şu: bir kuralın ikinci kopyası,
+bayatlayabilecek ikinci kopyadır — ve ajanın önce okuduğu kopya kazanır. O
+yüzden çelişki kuralı dosyanın içinde açıkça yazılıdır: *kit ile çelişirse kit
+kazanır — ve çelişkiyi bildir.* Çelişen iki kaynaktan birine sessizce uymak,
+ikisini de yanlış yapar.
+
+`AGENTS.md` bu projenin icadı değil, araçlar arası bir yakınsama: biçim birkaç
+ajan aracı ekibinin ortak çalışmasından çıktı ve şimdi Agentic AI Foundation
+tarafından yürütülüyor. Üretmek, kiti ekibin **fiilen kullandığı** ajana okunur
+yapar — yalnız onu üretene değil. Monorepoda en yakın `AGENTS.md` kazanır, yani
+farklı kural isteyen alt paket kendi dosyasını alır.
+
+Kısa tut — 30-50 satırla başla, bir bölümü ancak bir ajan aynı hatayı tekrar
+tekrar yaptığında ekle. Uzun bir yön tabelası, adı değişmiş bir kural deposudur
+ve işaret etmesi gereken kitten kayar.
+
+---
+
 ## Kalite kontrol — kit teslim edilmeden önce
 
 - [ ] Her sayı üç yerde aynı mı? (backlog ↔ çizelge ↔ rapor)

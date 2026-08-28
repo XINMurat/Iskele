@@ -81,12 +81,30 @@ TR_WORDS = {
 }
 
 
+# Turkish "bir" is both the numeral one AND the indefinite article, and in this
+# document set it is always the article: "bir kit dosyasinda yasiyor" means "in
+# a kit file", not "in one kit file". A real count of one would be written
+# "tek". So a bare "bir" is not a count claim -- it is prose the checker has no
+# business reading. It stays in TR_WORDS because "on bir" is looked up whole.
+TR_ARTICLE = {"bir"}
+
+
 def to_int(word: str) -> int | None:
-    """A number as digits or as an English/Turkish word. None = unreadable."""
+    """A number as digits or as an English/Turkish word.
+
+    None means unreadable, which the caller reports rather than skips.
+    SKIP means "this is not a numeric claim at all" -- currently only the
+    Turkish indefinite article, which collides with the numeral.
+    """
     w = word.strip().lower()
+    if w in TR_ARTICLE:
+        return SKIP
     if w.isdigit():
         return int(w)
     return EN_WORDS.get(w) or TR_WORDS.get(w)
+
+
+SKIP = object()   # "not a numeric claim", distinct from "unreadable number"
 
 
 def read(path: str) -> str:
@@ -189,6 +207,8 @@ def check() -> tuple[list[str], list[str]]:
                     wanted = [expect] if expect is not None else [total, required]
                     for word, exp in zip(words, wanted):
                         got = to_int(word)
+                        if got is SKIP:
+                            continue
                         if got is None:
                             problems.append(
                                 f"{path}:{lineno}: cannot read the number in "

@@ -193,6 +193,32 @@ Written at step 5, next to the quality gates. Procedure and the full ramp set:
 
 ---
 
+## 11 — Agent signpost (`AGENTS.md`) · required
+
+The machine-facing entry point. `00` is the human's map of the kit; this is the
+agent's, and they are not the same document — an agent needs the build command,
+the boundaries and the definition of done, not a reading order.
+
+It is a **signpost, not a rule store.** Every rule already lives in a kit file;
+this points at it. That matters because a second copy of a rule is a second
+copy that can go stale, and the one an agent reads first is the one that wins.
+So the file carries the conflict rule explicitly: *if this contradicts the kit,
+the kit wins — and report the contradiction.* Silently obeying one of two
+conflicting sources makes both wrong.
+
+`AGENTS.md` is a cross-tool convention rather than this project's invention:
+the format came out of work by several agent-tool teams and is now stewarded by
+the Agentic AI Foundation. Emitting it means the kit is legible to whichever
+agent the team actually uses, not only the one that produced it. In a monorepo
+the closest `AGENTS.md` wins, so a sub-package that needs different rules gets
+its own.
+
+Keep it short — start at 30-50 lines and add a section only when an agent
+repeatedly makes the same mistake. A long signpost is a rule store wearing a
+different name, and it will drift from the kit it was supposed to point at.
+
+---
+
 ## Quality control — before the kit is handed over
 
 - [ ] Is every number the same in all three places? (backlog ↔ tracker ↔ report)

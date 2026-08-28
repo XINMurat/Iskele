@@ -217,7 +217,7 @@ Döngü kapanır: **iskele kurar → mizan tartar → kiyas üretir → iskele'y
 
 ## Çıktı manifesti
 
-Tam kit on bir parçadır. Küçük projede kısaltabilirsin ama **hangi parçayı neden
+Tam kit on iki parçadır. Küçük projede kısaltabilirsin ama **hangi parçayı neden
 atladığını söyle** — sessizce atlama.
 
 | # | Dosya | Zorunlu? | İşlev |
@@ -233,6 +233,7 @@ atladığını söyle** — sessizce atlama.
 | 08 | `tracker.xlsx` | ✓ | Canlı takip çizelgesi |
 | 09 | `08-onboarding.md` | — | Ekip için tek sayfalık bağlam |
 | 10 | `09-kurtarma-rampalari.md` | ✓ | Kurtarma rampaları: görev, kapı veya plan tutmadığında ne yapılır |
+| 11 | `AGENTS.md` | ✓ | Makineye bakan yön tabelası: proje nedir, hangi kural nerede, ne yasak |
 
 ### Okuma yüzeyi — kit büyür, devir maliyeti büyümemeli
 

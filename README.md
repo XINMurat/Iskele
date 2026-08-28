@@ -58,7 +58,7 @@ built before this column existed, the indicator reads **"unmeasured", not 0%**.
 |---|---|
 | `skill/iskele/SKILL.md` | The skill itself — the seven-step loop, the output manifest, the red lines |
 | `skill/iskele/references/domain-model.md` | Step 2: how to find the distinction the schema rests on |
-| `skill/iskele/references/kit-manifest.md` | What each of the eleven kit files contains and why |
+| `skill/iskele/references/kit-manifest.md` | What each of the twelve kit files contains and why |
 | `skill/iskele/references/recovery.md` | Recovery ramps: what to do when a task, a gate or the plan does not hold |
 | `skill/iskele/references/tracking.md` | Tracker schema, GEN markers, generator setup |
 | `skill/iskele/assets/templates/` | The fillable templates (00–08) |
@@ -268,7 +268,7 @@ basar.
 |---|---|
 | `skill/iskele/SKILL.md` | Skill'in kendisi — yedi adımlı döngü, çıktı manifesti, kırmızı çizgiler |
 | `skill/iskele/references/domain-model.md` | Adım 2: şemanın dayandığı ayrım nasıl bulunur |
-| `skill/iskele/references/kit-manifest.md` | On bir kit dosyasının her biri ne içerir, neden var |
+| `skill/iskele/references/kit-manifest.md` | On iki kit dosyasının her biri ne içerir, neden var |
 | `skill/iskele/references/recovery.md` | Kurtarma rampaları: görev, kapı veya plan tutmadığında ne yapılır |
 | `skill/iskele/references/tracking.md` | Çizelge şeması, GEN işaretleri, üreteç kurulumu |
 | `skill/iskele/assets/templates/` | Doldurulacak şablonlar (00–08) |

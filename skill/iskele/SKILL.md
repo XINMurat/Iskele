@@ -242,7 +242,7 @@ iskele.**
 
 ## The output manifest
 
-The full kit is eleven pieces. On a small project you may shorten it, but **say
+The full kit is twelve pieces. On a small project you may shorten it, but **say
 which piece you skipped and why** — never silently.
 
 | # | File | Required | Function |
@@ -258,6 +258,7 @@ which piece you skipped and why** — never silently.
 | 08 | `tracker.xlsx` | ✓ | Live tracking sheet |
 | 09 | `08-onboarding.md` | — | One page of context for the team |
 | 10 | `09-kurtarma-rampalari.md` | ✓ | Recovery ramps: what to do when a task, a gate or the plan does not hold |
+| 11 | `AGENTS.md` | ✓ | The machine-facing signpost: what this project is, where each rule lives, what is forbidden |
 
 The file names above come from the templates in `assets/templates/` and are
 **examples**; the **order and the fields** are what must not change (see the

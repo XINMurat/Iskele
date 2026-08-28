@@ -54,7 +54,10 @@ python skill/iskele/scripts/progress.py --xlsx /tmp/tracker.xlsx \
 #    manifest in skill/iskele/SKILL.md and the files in references/:
 python tools/check_counts.py --verbose
 
-# 5. the packaged skill must match its source:
+# 5. every documented claim about the generator must match the code:
+python tools/check_doc_claims.py --verbose
+
+# 6. the packaged skill must match its source:
 python - <<'PY'
 import zipfile, os, sys
 n = lambda b: b.replace(b"\r\n", b"\n"); z = zipfile.ZipFile("iskele.skill")
@@ -143,7 +146,7 @@ göstermek zorundadır.
 
 ### PR açmadan önce
 
-Yukarıdaki İngilizce bölümdeki beş komutu çalıştır. `skill/iskele/` altında
+Yukarıdaki İngilizce bölümdeki altı komutu çalıştır. `skill/iskele/` altında
 **herhangi bir** dosyayı değiştirdiysen tek-dosya paketi yeniden üret (aynı
 bölümdeki script). CI bunu kontrol eder. Bayat paket kozmetik bir sorun
 değildir: kullanıcı kaynağı değil paketi kurar, yani kaymış bir `iskele.skill`

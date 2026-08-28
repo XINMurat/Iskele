@@ -492,6 +492,94 @@ jobs:
           print("OK: the guard fires on all four classes, and the tree is clean.")
           PY
 
+      - name: Documented claims about the generator match the code
+        run: |
+          set -e
+          # check_counts.py binds numbers that describe the repository. This
+          # binds sentences that describe the CODE -- which report regions the
+          # generator writes, the default effort weights, the columns it reads.
+          # The region list had been wrong through two additions in both
+          # languages, which is how long a list in prose can disagree with the
+          # dict it describes without anything noticing.
+          python tools/check_doc_claims.py --verbose
+
+      - name: Self-test - the doc-claim guard actually fires
+        run: |
+          set -e
+          # Same rule as everywhere else here: a guard nobody breaks on purpose
+          # is indistinguishable from one that cannot fire. Each fixture derives
+          # its edit from the current text and asserts the pattern matched, so a
+          # fixture that silently stops matching is a loud failure rather than a
+          # green run.
+          python - <<'PY'
+          import io, re, subprocess, sys
+
+          FILES = ["skill/iskele/references/tracking.md", "docs/tr/takip.md",
+                   "skill/iskele/scripts/progress.py"]
+          ORIG = {p: io.open(p, encoding="utf-8").read() for p in FILES}
+
+          def restore():
+              for p, t in ORIG.items():
+                  io.open(p, "w", encoding="utf-8", newline="").write(t)
+
+          def guard():
+              return subprocess.run([sys.executable, "tools/check_doc_claims.py"],
+                                    capture_output=True, text=True)
+
+          r = guard()
+          if r.returncode != 0:
+              print("FAIL: the tree is not clean before the self-test starts")
+              print(r.stdout + r.stderr)
+              sys.exit(1)
+          print("ok  clean tree passes")
+
+          cases = [
+              ("a new report region the docs do not mention",
+               "skill/iskele/scripts/progress.py",
+               r"RENDERERS = dict\(", "RENDERERS = dict(NEWONE=r_kpi, ",
+               "not documented"),
+              ("a default weight changed in code only",
+               "skill/iskele/scripts/progress.py",
+               r'"effort_weights": \{"S": 0\.75', '"effort_weights": {"S": 0.9',
+               "the code uses"),
+              ("the Turkish mirror falling behind",
+               "docs/tr/takip.md",
+               r"`SKORKART` \(faz kapanış çizelgesi\)", "(removed)",
+               "not documented"),
+              ("an exit code that does not exist",
+               "skill/iskele/references/tracking.md",
+               r"exit codes: `0`", "exit codes: `9` nope, `0`",
+               "never returns"),
+          ]
+          for label, path, pattern, replacement, expect in cases:
+              new, n = re.subn(pattern, replacement, ORIG[path], count=1)
+              if n != 1:
+                  print("FAIL: fixture for '" + label + "' matched nothing in "
+                        + path + " -- the self-test would have tested nothing")
+                  restore()
+                  sys.exit(1)
+              io.open(path, "w", encoding="utf-8", newline="").write(new)
+              r = guard()
+              restore()
+              if r.returncode == 0:
+                  print("FAIL: the guard passed after: " + label)
+                  sys.exit(1)
+              if expect not in (r.stdout + r.stderr):
+                  print("FAIL: " + label + " fired, but not for the stated reason.")
+                  print("expected to see: " + expect)
+                  print(r.stdout + r.stderr)
+                  sys.exit(1)
+              print("ok  fires on: " + label)
+
+          r = subprocess.run(["git", "diff", "--exit-code"],
+                             capture_output=True, text=True)
+          if r.returncode != 0:
+              print("FAIL: the self-test left the tree dirty")
+              print(r.stdout)
+              sys.exit(1)
+          print("OK: the doc-claim guard fires on all four classes.")
+          PY
+
   examples-in-sync:
     runs-on: ubuntu-latest
     steps:

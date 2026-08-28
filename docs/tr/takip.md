@@ -143,7 +143,13 @@ listesi, dipnot) elle düzenlenebilir ve korunur. Bu ayrım önemli: rapor hem
 otomatik hem yazılabilir kalır.
 
 Varsayılan bölge anahtarları: `CHIPS` (üst rozetler), `KPI` (özet göstergeler),
-`CARDS` (faz kartları), `BARS` (epik çubukları), `TIMELINE` (kapı/faz akışı).
+`CARDS` (faz kartları), `BARS` (epik çubukları), `TIMELINE` (kapı/faz akışı),
+`HAKEM` (tamamlanan eforun ne kadarı yazardan başka bir hakem adı taşıyor) ve
+`SKORKART` (faz kapanış çizelgesi).
+
+`tools/check_doc_claims.py` bu listeyi üretecin `RENDERERS` sözlüğüne bağlar:
+iki kez bayatladı — önce `HAKEM`, sonra `SKORKART` eklendi, bu cümle iki dilde
+de beş demeye devam etti.
 
 ## Yapılandırma (`iskele.config.json`)
 

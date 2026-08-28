@@ -153,7 +153,13 @@ preserved. That separation matters: the report stays both automatic and
 writable.
 
 Default region keys: `CHIPS` (top badges), `KPI` (summary indicators), `CARDS`
-(phase cards), `BARS` (epic bars), `TIMELINE` (gate/phase flow).
+(phase cards), `BARS` (epic bars), `TIMELINE` (gate/phase flow), `HAKEM`
+(how much of the completed effort names an arbiter other than the author) and
+`SKORKART` (the phase-close scorecard).
+
+`tools/check_doc_claims.py` binds this list to the generator's `RENDERERS`
+dict, because it went stale twice: `HAKEM` shipped, then `SKORKART` shipped,
+and this sentence kept saying five in both languages.
 
 ## Configuration (`iskele.config.json`)
 

@@ -196,6 +196,17 @@ templates and methodology text → CC-BY-4.0**
 
 ### Version
 
+**v1.2** — the phase-close scorecard gets a home in the tracker (a `Skorkart`
+sheet the generator emits and the progress report reads, where an empty cell
+prints as "not filled in" rather than as zero), an ADR log with a status
+vocabulary and a checker that refuses dangling forward pointers, an `AGENTS.md`
+so the kit is legible to whichever agent the team uses, and the recovery ramps
+`RR-00`…`RR-13` — with a copy the kit hands over as piece `09`. **RR-13** closes
+the loop the scorecard was missing: `Kacan` counted defects that escaped the
+gate and nothing consumed the count, so the new optional `KacanSinifi` column
+names the check that should have fired or the one that now exists. Old trackers
+keep loading; a filled count with an empty class prints as *sinifsiz kacak*.
+
 **v1.1** — Mizan 1.5 compatibility: the generated registry declares schema
 1.5 and answers R10 explicitly instead of opting out of the newer rules on a
 version pin. A task's threshold is genuinely categorical (the acceptance
@@ -364,6 +375,17 @@ Bilinçli olarak ikili: **kod ve şemalar → MIT** ([`LICENSE`](LICENSE)); **d�
 ([`LICENSE-docs.md`](LICENSE-docs.md)).
 
 ### Sürüm
+
+**v1.2** — faz-kapanış çizelgesi çizelge dosyasında bir yer kazanır (üretecin
+yazdığı, ilerleme raporunun okuduğu `Skorkart` sekmesi; boş hücre "sıfır" değil
+"doldurulmadı" diye basılır), durum sözlüğü olan bir ADR defteri ve boşa düşen
+ileri işaretçileri reddeden denetleyicisi, ekibin hangi ajanı kullandığından
+bağımsız okunabilir olsun diye bir `AGENTS.md`, ve `RR-00`…`RR-13` kurtarma
+rampaları — kitin devrettiği `09` parçasıyla birlikte. **RR-13**, çizelgenin
+eksik olan döngüsünü kapatır: `Kacan` kapıdan kaçan hataları sayıyordu ve sayıyı
+hiçbir şey tüketmiyordu; yeni ve opsiyonel `KacanSinifi` sütunu, ateşlemesi
+gereken kontrolü ya da artık var olanı adlandırır. Eski çizelgeler okunmaya
+devam eder; sayısı dolu, sınıfı boş satır *sınıfsız kaçak* diye basılır.
 
 **v1.1** — Mizan 1.5 uyumu: üretilen registry artık şema 1.5 beyan ediyor ve
 yeni kuralların dışında kalmak için sürüm sabitlemek yerine R10'u açıkça

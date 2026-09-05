@@ -209,10 +209,14 @@ def build(tasks, out_path, phases):
     # ve bunu yalnizca kapida duran insan bilir. Bos birakilan hucre "sifir"
     # degil "doldurulmadi" demektir, rapor ikisini ayri basar.
     wk = wb.create_sheet("Skorkart")
+    # KacanSinifi, Kacan'in yanindaki zorunlu ikinci hucre: kacagi yakalamasi
+    # gereken kontrol, ya da bu kacak sayesinde artik var olan kontrol (RR-13).
+    # Sayi tek basina dongu degildir -- sinifa donusmeyen kacak plana hicbir sey
+    # ogretmez, ve bu sutun olmadan "ogretti mi" sorusu sorulamiyordu.
     score_headers = ["Faz", "BacklogRevizyon", "YenidenTur", "KriterYenidenYazilan",
                      "IkizBoslugu", "IkizKapida", "SenaryoProvali",
                      "SenaryoTesadufi", "KapsamDisi", "Rampalar", "Kacan",
-                     "Cikarim"]
+                     "KacanSinifi", "Cikarim"]
     for col, name in enumerate(score_headers, start=1):
         c = wk.cell(row=1, column=col, value=name)
         c.font = Font(name=FONT, bold=True, color="FFFFFF")
@@ -222,8 +226,8 @@ def build(tasks, out_path, phases):
     # tablo doldurulur. Geri kalan her hucre kasten bostur.
     for i, ph in enumerate(phases, start=2):
         wk.cell(row=i, column=1, value=ph).font = Font(name=FONT, bold=True)
-    for col, w in zip("ABCDEFGHIJKL",
-                      [8, 16, 13, 20, 13, 11, 14, 15, 12, 16, 9, 60]):
+    for col, w in zip("ABCDEFGHIJKLM",
+                      [8, 16, 13, 20, 13, 11, 14, 15, 12, 16, 9, 34, 60]):
         wk.column_dimensions[col].width = w
     wk.freeze_panes = "B2"
 

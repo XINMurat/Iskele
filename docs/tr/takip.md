@@ -75,6 +75,7 @@ yanında yazılır.
 | `KapsamDisi` | **elle** | faz dışına çıkma sayısı (RR-07) |
 | `Rampalar` | **elle** | hangi `RR-nn` kullanıldı, serbest metin |
 | `Kacan` | **elle** | kapıdan sonra bulunan, bu fazın kriterlerinin kapsadığı hata |
+| `KacanSinifi` | **elle**, opsiyonel | her kaçak için: ateşlemesi gereken kontrol ya da bu kaçak sayesinde artık var olan kontrol (RR-13). Opsiyonel, çünkü mevcut çizelgeler kırılmadan okunmaya devam etmeli; sayı dolu ve bu hücre boşsa rapor *sınıfsız kaçak* basar — döngü kapanmamıştır |
 | `Cikarim` | **elle** | bir iki cümle |
 
 Hiçbiri backlog'dan üretilemez, ve mesele de bu: ölçülen şey işin kendisi değil

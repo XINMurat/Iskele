@@ -80,6 +80,7 @@ next to the go/no-go.
 | `KapsamDisi` | **by hand** | times work left the phase (RR-07) |
 | `Rampalar` | **by hand** | which `RR-nn` fired, free text |
 | `Kacan` | **by hand** | defects found after the gate that this phase's criteria covered |
+| `KacanSinifi` | **by hand**, optional | for each escape: the check that should have fired, or the check that now exists because of it (RR-13). Optional so existing trackers keep loading; an escape count with this cell empty prints as *sinifsiz kacak* — the loop did not close |
 | `Cikarim` | **by hand** | one or two sentences |
 
 Nothing here can be generated from the backlog, and that is the point: what is

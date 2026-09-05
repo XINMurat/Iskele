@@ -53,6 +53,7 @@ are what a producer that is also the judge does under pressure to look useful.
 | **Confirming your own kit** | The run that wrote the acceptance criteria decides whether they were met | RR-00 |
 | **False precision** | "~78.5 days" from uncalibrated weights, presented as a schedule | RR-12 |
 | **Context decay** | Hour three: still producing tasks, no longer checking them against the model | RR-09 |
+| **Escape without a class** | It got out, the fix went in, and nothing changed about what the next gate checks. The scorecard counts it; a count is not a loop | RR-13 |
 
 ---
 
@@ -395,6 +396,58 @@ estimate that says it is uncalibrated for anything beyond that phase.
 
 ---
 
+## RR-13 — Something escaped the gate, and the plan has not moved
+
+**TRIGGER.** A defect turned up after the gate closed — a user hit it, it broke
+in production, the next phase tripped over it — and it stands on ground this
+phase's criteria covered. Also fires on the quieter version: a lesson written
+down as "worth adding to the DoD" that no checklist ever received.
+
+**FIRST MOVE.** Put it in the scorecard's `Kacan` cell **before** diagnosing
+it. The pull is to fix the bug and carry on; the fix belongs to the product,
+the escape belongs to the plan, and only the first of the two normally gets
+written down anywhere.
+
+Then answer one question, in writing, in `KacanSinifi`: **which check should
+have caught this?**
+
+- **A check exists and did not fire.** Name it — a DoD item, a go/no-go line,
+  an acceptance criterion, a rehearsal scenario. Then the finding is about this
+  phase, not about the kit: the item was skipped, or scoped out, or run and
+  misread. *"We never rehearsed the two-people-on-one-step scenario for this
+  phase"* is a real answer, and a better one than a new rule nobody needs.
+- **No check covers it.** Then write the one that now does — as a question the
+  next gate can ask, not as a description of this bug. *"Can two people work
+  the same step at once?"* is a scenario. *"We should think about concurrency"*
+  is a mood. New scenarios go into the **next** phase's list when that phase
+  opens (step 5), never backdated into the closed one.
+
+**FORBIDDEN.** Closing an escape with the fix alone. Filling `Kacan` and
+leaving `KacanSinifi` empty — the count exists to be consumed by this ramp,
+not to be admired. Backdating the new scenario into the phase that missed it:
+the escape is evidence that the phase's coverage claim was wrong, and saying
+so plainly is the honest move.
+
+**OUTPUT.** One escape recorded with a class beside it, and — when the class
+is new — the DoD item, go/no-go line or scenario it became, added to the phase
+that is open now.
+
+**WHY IT MATTERS MORE HERE THAN ANYWHERE.** The kit's other measures all come
+from inside the plan: the plan judges whether the plan was followed. This one
+number comes from outside it, which is why the scorecard calls it the only
+measure that cannot be gamed from inside. The two scenario classes in step 5
+were themselves born from escapes — the consuming-twin gap and the conjunction
+defect were both noticed by accident, four times and five times respectively,
+before anyone wrote them down as classes. That is the evidence for this ramp
+and also the indictment.
+
+**BACKED BY.** The scorecard's `Kacan` / `KacanSinifi` pair, step 5 (DoD,
+go/no-go, scenario rehearsal), RR-03 (the consuming-twin gap), the
+`SenaryoProvali` / `SenaryoTesadufi` ratio — rehearsed beats lucky, and an
+escape is the third category the ratio cannot see.
+
+---
+
 ## Closing a phase: the process scorecard
 
 Fill this in at each gate, next to the go/no-go. It does not grade the team —
@@ -411,6 +464,7 @@ honestly. A high number is not a failure; a hidden number is.
 | **Out-of-scope entries** | | How often work left the phase (RR-07). |
 | **Ramps used** | | Which `RR-nn` fired. A phase that used none either went perfectly or did not notice. |
 | **Escaped** | | Defects found after the gate that this phase's criteria covered. The only measure from outside the process, and the only one that cannot be gamed from inside it. |
+| **Escape class** | | For each escape: the check that should have fired, or the check that now exists because of it (RR-13). An escape with no class beside it taught the plan nothing. |
 
 **Reading:** two or three sentences. Not "the phase went well" — what changes
 in the next phase, and which number says so.

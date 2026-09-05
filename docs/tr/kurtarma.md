@@ -10,7 +10,7 @@ kapanmıyor, çizelge ile gerçek uyuşmuyor, niyet kaydı, oturum bulanıklaşt
 Bu skill'in geri kalanı kitin **kurulmasını** anlatır. Bu dosyanın iki işi var
 ve ikisi farklı:
 
-1. **Kiti üreten koşu için rampalar** — aşağıdaki `RR-00`…`RR-12`.
+1. **Kiti üreten koşu için rampalar** — aşağıdaki `RR-00`…`RR-13`.
 2. **Kitin devrettiği rampa kataloğu** — manifestin `09` parçası, şablonu
    `assets/templates/09-kurtarma-rampalari.md`. Adım 3 ve 5, işler **yolunda
    giderken** ne demek olduğunu üretir. Kitte hiçbir şey bozulduğunda ne
@@ -52,6 +52,7 @@ işe yarar görünme baskısı altındaki davranışıdır.
 | **Plan esareti** | Niyet değişti, backlog yamandı, alan modeli eski bölünmeyi korudu | RR-08 |
 | **Kendi kitini onaylama** | Kabul kriterlerini yazan koşu, karşılanıp karşılanmadığına da karar veriyor | RR-00 |
 | **Sahte kesinlik** | Kalibre edilmemiş ağırlıklardan "~78,5 gün", takvim gibi sunulur | RR-12 |
+| **Sınıfsız kaçak** | Kaçtı, düzeltme girdi, bir sonraki kapının neye baktığı değişmedi. Çizelge sayar; sayı döngü değildir | RR-13 |
 | **Bağlam çürümesi** | Üçüncü saat: görev üretilmeye devam ediyor, modele karşı kontrol edilmiyor | RR-09 |
 
 ---
@@ -383,6 +384,56 @@ ağırlıklı ilerleme).
 
 ---
 
+## RR-13 — Kapıdan bir şey kaçtı, plan kıpırdamadı
+
+**DURUM.** Kapı kapandıktan sonra bir kusur ortaya çıktı — kullanıcı çarptı,
+üretimde patladı, bir sonraki faz üstüne bastı — ve durduğu zemin bu fazın
+kriterlerinin kapsadığı zemin. Sessiz hâli de aynı rampayı tetikler: "bir
+dahaki sefere DoD'ye eklemeli" diye yazılmış, hiçbir listeye girmemiş bir ders.
+
+**İLK HAMLE.** Teşhis etmeden **önce** çizelgedeki `Kacan` hücresine yaz.
+Çekim, hatayı düzeltip devam etmektir; düzeltme ürüne, kaçak plana aittir ve
+ikisinden yalnızca birincisi normalde bir yere yazılır.
+
+Sonra tek soruyu `KacanSinifi` hücresinde yazılı olarak cevapla: **bunu hangi
+kontrol yakalamalıydı?**
+
+- **Kontrol var ve ateşlemedi.** Adını yaz — bir DoD maddesi, bir go/no-go
+  satırı, bir kabul kriteri, bir prova senaryosu. O zaman bulgu bu faz
+  hakkındadır, kit hakkında değil: madde atlandı, kapsam dışı bırakıldı ya da
+  koşulup yanlış okundu. *"Bu fazda aynı-adımda-iki-kişi senaryosunu hiç prova
+  etmedik"* gerçek bir cevaptır ve kimsenin ihtiyaç duymadığı yeni bir kuraldan
+  iyidir.
+- **Hiçbir kontrol kapsamıyor.** O zaman artık kapsayanı yaz — bir sonraki
+  kapının sorabileceği bir soru olarak, bu hatanın tarifi olarak değil. *"Aynı
+  adımda iki kişi çalışabilir mi?"* bir senaryodur; *"eşzamanlılığı düşünmek
+  lazım"* bir ruh hâlidir. Yeni senaryolar **açılan** fazın listesine girer
+  (adım 5), kapanmış olana geriye dönük yazılmaz.
+
+**YASAK.** Kaçağı yalnız düzeltmeyle kapatmak. `Kacan`'ı doldurup
+`KacanSinifi`'ni boş bırakmak — sayı, bu rampa tarafından tüketilmek için var,
+seyredilmek için değil. Yeni senaryoyu, onu kaçıran fazın içine geriye dönük
+yazmak: kaçak, o fazın kapsam iddiasının yanlış olduğunun kanıtıdır ve bunu
+açıkça söylemek dürüst hamledir.
+
+**ÇIKTI.** Yanında sınıfıyla kaydedilmiş bir kaçak, ve sınıf yeniyse — şu an
+açık olan faza eklenmiş DoD maddesi, go/no-go satırı ya da senaryo.
+
+**NEDEN BURADA HER YERDEN ÖNEMLİ.** Kitin diğer bütün ölçüleri planın
+içinden gelir: plana uyulup uyulmadığına plan karar verir. Bu tek sayı
+dışarıdan gelir; çizelgenin onu "içeriden manipüle edilemeyen tek ölçü" diye
+adlandırmasının sebebi bu. Adım 5'teki iki senaryo sınıfı da birer kaçaktan
+doğdu — tüketen-ikiz boşluğu dört kez, bileşim kusuru beş kez tesadüfen fark
+edildi, ve ancak ondan sonra sınıf olarak yazıldı. Bu rampanın hem kanıtı hem
+iddianamesi budur.
+
+**DAYANAK.** Çizelgenin `Kacan` / `KacanSinifi` çifti, adım 5 (DoD, go/no-go,
+senaryo provası), RR-03 (tüketen-ikiz boşluğu), `SenaryoProvali` /
+`SenaryoTesadufi` oranı — provalı, tesadüfiyi yener; kaçak ise o oranın
+göremediği üçüncü kategoridir.
+
+---
+
 ## Faz kapanışı — süreç çizelgesi
 
 Her kapıda, go/no-go'nun yanında doldurulur. Ekibi notlamaz; **planın nereden
@@ -398,6 +449,7 @@ sızdırdığını** bulur. Yüksek sayı kötü değildir, gizlenen sayı köt�
 | Faz dışına çıkma | | RR-07 kaç kez |
 | Kullanılan rampalar | | Hangi `RR-nn`. Hiçbiri kullanılmadıysa ya kusursuzdu ya fark edilmedi. |
 | **Kaçan** | | Kapıdan sonra bulunan, bu fazın kriterlerinin kapsadığı hata. Süreç dışından gelen tek sayı ve içeriden manipüle edilemeyen tek ölçü. |
+| **Kaçağın sınıfı** | | Her kaçak için: ateşlemesi gereken kontrol, ya da bu kaçak sayesinde artık var olan kontrol (RR-13). Yanında sınıf olmayan kaçak plana hiçbir şey öğretmemiştir. |
 
 **Çıkarım:** 1–2 cümle. "Faz iyi geçti" değil: sonraki fazda ne değişecek ve
 **hangi sayı** bunu söylüyor.

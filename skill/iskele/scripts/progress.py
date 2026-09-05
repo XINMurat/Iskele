@@ -53,6 +53,11 @@ SCORE_COL = dict(
 )
 SCORE_NUM = ("revizyon", "tur", "kriter", "ikiz", "ikiz_kapida",
              "senaryo", "senaryo_tesadufi", "kapsam", "kacan")
+# OPSIYONEL sutun: eski cizelgelerde yok, ve yoklugu hata degildir -- zorunlu
+# yapsaydik her mevcut kit "sekmeyi yeniden uret" hatasiyla kirilirdi. Kacagin
+# yanindaki sinif (RR-13): onu yakalamasi gereken kontrol, ya da bu kacak
+# sayesinde artik var olan kontrol. Sayi tek basina dongu degildir.
+SCORE_COL_OPT = dict(kacan_sinifi="KacanSinifi")
 
 DEFAULTS = {
     "phases": [],
@@ -228,6 +233,9 @@ def load_scorecard(xlsx, cfg):
             rec[key] = val
         for key in ("rampa", "cikarim"):
             rec[key] = str(row[headers[SCORE_COL[key]]] or "").strip()
+        for key, col in SCORE_COL_OPT.items():
+            rec[key] = (str(row[headers[col]] or "").strip()
+                        if col in headers else "")
 
         # Alt kume kontrolu: kapida bulunanlar, bulunanlarin bir parcasidir.
         # Tersi yalnizca yazim hatasi degil, gostergeyi TERS CEVIRIR: "kapida
@@ -245,7 +253,8 @@ def load_scorecard(xlsx, cfg):
         # girmez. Girseydi rapor, olculmemis fazlari "olculdu, hepsi bos"
         # diye basardi.
         if (all(rec.get(k) is None for k in SCORE_NUM)
-                and not rec["rampa"] and not rec["cikarim"]):
+                and not rec["rampa"] and not rec["cikarim"]
+                and not any(rec.get(k) for k in SCORE_COL_OPT)):
             continue
         if not bad:
             rows.append(rec)
@@ -582,10 +591,35 @@ def r_skorkart(C, cfg):
             '      <p class="l2">Hicbiri kullanilmadiysa ya kusursuz gecti ya\n'
             '      da fark edilmedi.</p>\n')
 
+    # Kacan, cizelgenin surec DISINDAN gelen tek sayisi. Sayinin yaninda sinif
+    # yoksa dongu kapanmamistir: hata cikti, duzeltme girdi, bir sonraki
+    # kapinin neye baktigi degismedi. Rapor bunu ayri basar, cunku "3 kacan"
+    # ile "3 kacan, hicbiri siniflanmamis" ayni cizelge degildir (RR-13).
+    kc, _ = T["kacan"]
+    sinif = " ".join(r.get("kacan_sinifi", "") for r in rows).strip()
+    if kc is None:
+        kacan_blok = ('      <div class="row"><span>Kacan</span>'
+                      '<span class="l2">olculmedi</span></div>\n')
+    elif kc == 0:
+        kacan_blok = ('      <div class="row"><span>Kacan</span>'
+                      '<b class="num">0</b></div>\n'
+                      '      <p class="l2">Sifir, kapinin siki oldugunu degil, bu\n'
+                      '      fazdan sonra hic bulunmadigini soyler.</p>\n')
+    elif sinif:
+        kacan_blok = (f'      <div class="row"><span>Kacan / siniflanmis</span>'
+                      f'<b class="num">{kc} / var</b></div>\n'
+                      f'      <p class="l2">{esc(sinif)}</p>\n')
+    else:
+        kacan_blok = (f'      <div class="row"><span>Kacan / siniflanmis</span>'
+                      f'<b class="num">{kc} / yok</b></div>\n'
+                      '      <p class="l2">Sinifsiz kacak: hangi kontrolun bunu\n'
+                      '      yakalamasi gerektigi yazilmamis. RR-13 tam olarak bu\n'
+                      '      hucre icin var -- sayi, dongu degildir.</p>\n')
+
     return ('<div class="note">\n'
             f'      <div class="row"><span>Kapanmis faz</span>'
             f'<b class="num">{esc(", ".join(r["faz"] for r in rows))}</b></div>\n'
-            + body + ratio + senaryo + ramp +
+            + body + ratio + senaryo + ramp + kacan_blok +
             '      <p class="l2"><b>Bu tablodaki her sayi oz-beyandir</b> -- isi\n'
             '      yapan doldurur, hakem = yazar. Olctugu sey ekibin performansi\n'
             '      degil, planin nerede sizdirdigi: yuksek sayi kotu degildir,\n'
@@ -752,6 +786,34 @@ def self_test():
         make_s([["F0", 9, 9, 9, 9, 9, 9, 9, 9, "RR-02", 9, ""]], headers=SH), cfg)
     check("skorkart ilerleme yuzdesini degistirmez",
           compute(t, cfg, rows)["overall_pct"] == compute(t, cfg)["overall_pct"])
+
+    # 14) KacanSinifi OPSIYONELDIR: sutunu olmayan eski bir cizelge hatasiz
+    #     okunur. Zorunlu olsaydi her mevcut kit yukseltmede kirilirdi -- ve
+    #     kirilan bir kural, ogrenilecek bir kural degil atlanacak bir kuraldir.
+    rows, iss = load_scorecard(
+        make_s([["F0", 1, 1, 1, 1, 1, 1, 1, 1, "", 2, "Not"]], headers=SH), cfg)
+    check("KacanSinifi sutunu yoksa skorkart yine okunur",
+          len(rows) == 1 and not [m for l, m in iss if l == "ERROR"])
+    check("sutun yoksa sinif bos string", rows[0]["kacan_sinifi"] == "")
+
+    # 15) Sayi var, sinif yok -> rapor bunu AYRI basar. "3 kacan" ile "3 kacan,
+    #     hicbiri siniflanmamis" ayni cizelge degildir: ilki bir olcum, ikincisi
+    #     kapanmamis bir dongudur (RR-13).
+    SH2 = SH[:-1] + [SCORE_COL_OPT["kacan_sinifi"], SH[-1]]
+    rows, _ = load_scorecard(
+        make_s([["F0", 0, 0, 0, 0, 0, 0, 0, 0, "", 2, "", "Not"]], headers=SH2), cfg)
+    html = r_skorkart(compute(load_tasks(make_s([], headers=None), cfg)[0],
+                              cfg, rows), cfg)
+    check("sinifsiz kacak raporda isaretlenir", "Sinifsiz kacak" in html)
+
+    # 16) ...ve sinif yazilmissa metni basilir, uyari degil.
+    rows, _ = load_scorecard(
+        make_s([["F0", 0, 0, 0, 0, 0, 0, 0, 0, "", 2, "DoD: okuma yuzeyi", "Not"]],
+               headers=SH2), cfg)
+    html = r_skorkart(compute(load_tasks(make_s([], headers=None), cfg)[0],
+                              cfg, rows), cfg)
+    check("siniflanmis kacak metniyle basilir",
+          "DoD: okuma yuzeyi" in html and "Sinifsiz kacak" not in html)
 
     print("SELF-TEST:", "BASARILI" if ok else "BASARISIZ")
     return 0 if ok else 1

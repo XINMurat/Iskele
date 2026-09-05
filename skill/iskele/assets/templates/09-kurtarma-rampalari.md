@@ -30,6 +30,7 @@ rampa kullanılmamıştır; paragraf kimse alıntılamaz.
 | **RR-10** | Belirsizlik / plan-kod çelişkisi | **Varsayma, boş elle de sorma**: öneri + gerekçe | ADR veya işaretlenmiş varsayım |
 | **RR-11** | Yayına girmiş işi geri alma | İleri sar, silme: kayıt kalır, kaldırma yeni görevdir | Kaldırma görevi + ADR + düşen ilerleme yüzdesi |
 | **RR-12** | Tahmin tutmadı | Veriden yeniden kalibre et; **tek** şeyi değiştir | Yeni ağırlıklar + hangi fazda kalibre edildiği |
+| **RR-13** | Kapıdan bir şey kaçtı, plan kıpırdamadı | Önce `Kacan`'a yaz, sonra teşhis et; "hangi kontrol bunu yakalamalıydı?" | `KacanSinifi`: susan kontrolün adı ya da artık var olan kontrol |
 
 ---
 
@@ -98,6 +99,7 @@ sayı kötüdür.
 | Faz dışına çıkma | | RR-07 kaç kez |
 | Kullanılan rampalar | | Hangi `RR-nn`. Hiçbiri kullanılmadıysa ya kusursuzdu ya fark edilmedi. |
 | **Kaçan** | | Kapıdan sonra bulunan, bu fazın kriterlerinin kapsadığı hata. Dışarıdan gelen tek sayı — içeriden manipüle edilemeyen tek ölçü. |
+| **Kaçağın sınıfı** | | Her kaçak için: ateşlemesi gereken kontrol, ya da bu kaçak sayesinde artık var olan kontrol (RR-13). Yanında sınıf olmayan kaçak plana hiçbir şey öğretmemiştir. |
 
 **Çıkarım:** 1–2 cümle. "Faz iyi geçti" değil: bir sonraki fazda ne
 değişecek ve **hangi sayı** bunu söylüyor.

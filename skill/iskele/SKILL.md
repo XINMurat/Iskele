@@ -386,7 +386,7 @@ or marked as an estimate. If it is neither, do not write it.
 - `references/domain-model.md` — Step 2: patterns and questions for finding the split
 - `references/kit-manifest.md` — Steps 1–5: what each file contains and why
 - `references/tracking.md` — Step 6: tracker schema, GEN markers, generator setup
-- `references/recovery.md` — the ramps for when a run stops behaving (`RR-00`…`RR-12`),
+- `references/recovery.md` — the ramps for when a run stops behaving (`RR-00`…`RR-13`),
   the model failure classes behind them, the phase-close process scorecard, and how to
   produce the kit's own ramp catalogue (piece `09`). Read when something breaks.
 - `assets/templates/` — templates to fill in

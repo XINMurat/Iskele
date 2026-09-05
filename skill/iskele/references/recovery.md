@@ -465,6 +465,7 @@ honestly. A high number is not a failure; a hidden number is.
 | **Ramps used** | | Which `RR-nn` fired. A phase that used none either went perfectly or did not notice. |
 | **Escaped** | | Defects found after the gate that this phase's criteria covered. The only measure from outside the process, and the only one that cannot be gamed from inside it. |
 | **Escape class** | | For each escape: the check that should have fired, or the check that now exists because of it (RR-13). An escape with no class beside it taught the plan nothing. |
+| **Pairs checked / broken** | / | From the tracker's `Cift` sheet: how many feature x guarantee pairs the gate actually re-assembled, and how many broke. A phase with zero pairs did not run the pass -- atomising the backlog destroys exactly this class, so nothing else in the plan can find it. |
 
 **Reading:** two or three sentences. Not "the phase went well" — what changes
 in the next phase, and which number says so.

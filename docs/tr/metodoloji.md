@@ -157,6 +157,14 @@ Her görev: `ID` · epik · katman · **tahmin (S/M/L)** · **bağımlılık** �
   Yeşil test süiti burada karşı-kanıt değildir: testler özellik başına
   yazılır, yani parçalar hakkında konuşur ve çift hakkında susar.
 
+  **İkinci sorunun cevabı nerede durur:** çizelgenin `Cift` sekmesinde, her
+  çift bir satır — özellik, dokunabildiği garanti, çift asimetrikse güvenli
+  sıra, ve sonuç (`tutuyor` / `kiriliyor` / `bakilmadi`). O sekme var olana
+  kadar pas hiçbir iz bırakmıyordu: pası koşan fazla atlayan faz aynı çizelgeyi
+  üretiyordu. Rapor bunu `GEN:CIFT` bölgesinde basar ve `bakilmadi` sayısını
+  ayrı tutar: listelenip sınanmamış bir çift, kimsenin listelemediği bir çift
+  kadar korur.
+
 ### 6. Takip + üreteci kur
 
 - **Çizelge** (`tracker.xlsx`): backlog'un satır satır hâli + Durum/Sorumluluk/Tarih.

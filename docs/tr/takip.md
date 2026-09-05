@@ -107,6 +107,32 @@ yazar.
 Ölçütlerin nereden geldiği ve nasıl okunduğu:
 [`kurtarma.md`](kurtarma.md) — faz kapanış çizelgesi.
 
+**Sekme `Cift`** — çift pası; her satır bir çift, **elle** doldurulur.
+
+| sütun | dolduran | ne tutar |
+|---|---|---|
+| `Faz` | önceden yazılı | çiftin ait olduğu kapının fazı |
+| `Ozellik` | **elle** | sınanan özellik (ya da görev ID'si) |
+| `Garanti` | **elle** | onun dokunabildiği MEVCUT garanti |
+| `SiraOnemli` | **elle** | çift yalnız tek yönde güvenliyse `evet` |
+| `GerekliSira` | **elle** | o yön, açıkça yazılmış. `SiraOnemli` işaretliyse zorunlu — tek yönde güvenli bir çift, hangi yön olduğu yazılmadan bulgu değildir |
+| `Sonuc` | **elle** | `tutuyor` · `kiriliyor` · `bakilmadi` |
+| `Not` | **elle** | `kiriliyor` için zorunlu: hangi garanti, nasıl bozuluyor |
+
+**Neden üretilemez.** Backlog'u atomize etmek (adım 4) tam olarak, yalnızca
+**iki** özellik aynı anda etkinken var olan kusuru yok eden işlemdir. Onları
+geri birleştiren pas, adım 5'in ikinci sorusudur ve bu sekme var olana kadar
+hiçbir iz bırakmıyordu: pası koşan fazla atlayan faz birbirinin aynı çizelgeyi
+üretiyordu. Yeni bir özelliğin hangi mevcut garantiye dokunabildiği görev
+listesinden türetilemez; yalnızca modeli bilen insan bilir.
+
+`bakilmadi` sıfır değildir. Listelenip hiç sınanmamış bir çift, kimsenin
+listelemediği bir çift kadar korur; rapor bu yüzden iki sayıyı ayrı basar.
+**Sekme opsiyoneldir**: o yokken üretilmiş bir çizelge değişmeden okunur ve
+rapor `0` değil *ölçülmedi* basar.
+
+Rapor bunu kendi bölgesi olarak basar (`GEN:CIFT`).
+
 **Sekme `Aciklama`** — hangi sütun elle doldurulur, hangisi üretilir.
 
 > ASCII not: sekme ve sütun adlarını ASCII tut (`Aciklama`, `Gorev`). Türkçe
@@ -145,8 +171,9 @@ otomatik hem yazılabilir kalır.
 
 Varsayılan bölge anahtarları: `CHIPS` (üst rozetler), `KPI` (özet göstergeler),
 `CARDS` (faz kartları), `BARS` (epik çubukları), `TIMELINE` (kapı/faz akışı),
-`HAKEM` (tamamlanan eforun ne kadarı yazardan başka bir hakem adı taşıyor) ve
-`SKORKART` (faz kapanış çizelgesi).
+`HAKEM` (tamamlanan eforun ne kadarı yazardan başka bir hakem adı taşıyor),
+`SKORKART` (faz kapanış çizelgesi) ve `CIFT` (çift pası — parçalara ayrılan iş
+geri birleştirildi mi).
 
 `tools/check_doc_claims.py` bu listeyi üretecin `RENDERERS` sözlüğüne bağlar:
 iki kez bayatladı — önce `HAKEM`, sonra `SKORKART` eklendi, bu cümle iki dilde

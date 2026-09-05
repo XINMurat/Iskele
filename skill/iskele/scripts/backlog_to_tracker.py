@@ -231,6 +231,29 @@ def build(tasks, out_path, phases):
         wk.column_dimensions[col].width = w
     wk.freeze_panes = "B2"
 
+    # ---- Cift (G13'un iskele karsiligi: yeniden birlestirme pasinin kaydi)
+    # Backlog'u atomize etmek (adim 4) tam olarak, yalnizca IKI ozellik ayni
+    # anda etkinken var olan kusuru yok eden islemdir. Adim 5'in senaryo
+    # provasi bu pasi tarif ediyordu ve sonucunu yazacak yer yoktu: kosuldugu
+    # ile atlandigi ayirt edilemiyordu. Burasi o yer.
+    #
+    # Skorkart gibi ELLE doldurulur ve backlog'dan uretilemez -- hangi mevcut
+    # garantiye dokunuldugunu yalnizca modeli bilen insan bilir. Faz sutunu
+    # onceden yazilir; gerisi kasten bostur.
+    wc = wb.create_sheet("Cift")
+    pair_headers = ["Faz", "Ozellik", "Garanti", "SiraOnemli", "GerekliSira",
+                    "Sonuc", "Not"]
+    for col, name in enumerate(pair_headers, start=1):
+        c = wc.cell(row=1, column=col, value=name)
+        c.font = Font(name=FONT, bold=True, color="FFFFFF")
+        c.fill = PatternFill("solid", fgColor="1F3864")
+        c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    for i, ph in enumerate(phases, start=2):
+        wc.cell(row=i, column=1, value=ph).font = Font(name=FONT, bold=True)
+    for col, w in zip("ABCDEFG", [8, 26, 34, 12, 26, 12, 46]):
+        wc.column_dimensions[col].width = w
+    wc.freeze_panes = "B2"
+
     # ---- Aciklama
     wl = wb.create_sheet("Aciklama")
     wl.sheet_view.showGridLines = False

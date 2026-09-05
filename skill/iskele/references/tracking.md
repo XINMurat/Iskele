@@ -113,6 +113,32 @@ other: filled in by whoever did the work, its arbiter is `author`.
 Where the measures come from and how to read them:
 [`references/recovery.md`](recovery.md) — the phase-close scorecard.
 
+**Sheet `Cift`** — the pair pass, one row per pair, filled **by hand**.
+
+| column | filled | what it holds |
+|---|---|---|
+| `Faz` | pre-written | the phase whose gate this pair belongs to |
+| `Ozellik` | **by hand** | the feature (or task ID) under test |
+| `Garanti` | **by hand** | the EXISTING guarantee it can reach |
+| `SiraOnemli` | **by hand** | `evet` when the pair is safe in one direction only |
+| `GerekliSira` | **by hand** | that direction, spelled out. Mandatory when `SiraOnemli` is set — a pair that is safe one way round is not a finding until the way round is written |
+| `Sonuc` | **by hand** | `tutuyor` · `kiriliyor` · `bakilmadi` |
+| `Not` | **by hand** | mandatory for `kiriliyor`: which guarantee breaks and how |
+
+**Why it cannot be generated.** Atomising the backlog (step 4) is precisely the
+act that destroys a defect existing only while **two** features are active at
+once. The pass that puts them back is step 5's second question, and until this
+sheet existed it left no trace — a phase that ran it and a phase that skipped it
+produced identical trackers. Which existing guarantee a new feature can reach is
+not derivable from a task list; only the person who knows the model knows it.
+
+`bakilmadi` is not zero. A pair that was listed and never tested protects
+exactly as much as a pair nobody listed, and the report prints the two counts
+separately for that reason. **The sheet is optional**: a tracker generated
+before it existed loads unchanged and the report prints *olculmedi*, never `0`.
+
+The report prints it as its own region (`GEN:CIFT`).
+
 **Sheet `Aciklama`** — which column is filled by hand and which is generated.
 
 > ASCII note: keep sheet and column names ASCII (`Aciklama`, `Gorev`).
@@ -155,8 +181,9 @@ writable.
 
 Default region keys: `CHIPS` (top badges), `KPI` (summary indicators), `CARDS`
 (phase cards), `BARS` (epic bars), `TIMELINE` (gate/phase flow), `HAKEM`
-(how much of the completed effort names an arbiter other than the author) and
-`SKORKART` (the phase-close scorecard).
+(how much of the completed effort names an arbiter other than the author),
+`SKORKART` (the phase-close scorecard) and `CIFT` (the pair pass — whether the
+work that was taken apart was put back together).
 
 `tools/check_doc_claims.py` binds this list to the generator's `RENDERERS`
 dict, because it went stale twice: `HAKEM` shipped, then `SKORKART` shipped,

@@ -176,6 +176,14 @@ Two levels:
   A green test suite is not counter-evidence here: tests are written per
   feature, so they speak about the parts and stay silent about the pair.
 
+  **Where the second question's answer lives:** the tracker's `Cift` sheet,
+  one row per pair — the feature, the guarantee it can reach, the safe order
+  when the pair is asymmetric, and the outcome (`tutuyor` / `kiriliyor` /
+  `bakilmadi`). Until that sheet existed the pass left no trace, so a phase
+  that ran it and a phase that skipped it produced identical trackers. The
+  report prints it as `GEN:CIFT`, with `bakilmadi` counted separately: a pair
+  listed and never tested protects exactly as much as a pair nobody listed.
+
 ### 6. Set up tracking and the generator
 
 - **Tracker** (`tracker.xlsx`): the backlog row by row, plus

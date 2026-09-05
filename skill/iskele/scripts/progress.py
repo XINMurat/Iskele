@@ -37,6 +37,18 @@ OPT_COL = dict(hakem="Hakem")
 # Sekme yoksa gosterge "olculmedi" basar, sifir basmaz. Skorkartin isi
 # ekibi notlamak degil, PLANIN nereden sizdirdigini gostermek.
 SCORE_SHEET = "Skorkart"
+# Cift sekmesi: yeniden birlestirme pasinin kaydi. Backlog'u atomize etmek,
+# yalnizca IKI ozellik ayni anda etkinken var olan kusuru yok eden islemdir;
+# bu sekme o pasin sonucunun yasadigi yerdir. OPSIYONELDIR -- sekmesi olmayan
+# eski bir cizelge hatasiz okunur ve rapor "olculmedi" basar, "0 cift" degil.
+PAIR_SHEET = "Cift"
+PAIR_COL = dict(faz="Faz", ozellik="Ozellik", garanti="Garanti",
+                sira="SiraOnemli", gerekli_sira="GerekliSira",
+                sonuc="Sonuc", not_="Not")
+# tutuyor  = ozellik etkinken garanti hala gecerli
+# kiriliyor = cift garantiyi bozuyor -- bulgu
+# bakilmadi = cift listelendi ama sinanmadi; sifir DEGIL, acik is
+PAIR_RESULTS = ("tutuyor", "kiriliyor", "bakilmadi")
 SCORE_COL = dict(
     faz="Faz",
     revizyon="BacklogRevizyon",           # faz acildiktan sonra degisen gorev
@@ -279,7 +291,90 @@ def epic_code(epik):
     return parts[0] if parts else "(epik yok)"
 
 
-def compute(tasks, cfg, score_rows=None):
+def load_pairs(xlsx, cfg):
+    """xlsx -> (satirlar | None, issues). None = sekme yok = OLCULMEDI.
+
+    Skorkart ile ayni sozlesme: olmayan sekme "bu proje cift pasi tutmuyor"
+    der, bos satir "bu faz icin doldurulmadi" der, ve ikisini de sifir basmak
+    olculmemis seyi olcum gibi gostermek olurdu. Sekme opsiyoneldir: zorunlu
+    olsaydi sahadaki her cizelge yukseltmede kirilirdi.
+    """
+    wb = load_workbook(xlsx, data_only=True)
+    if PAIR_SHEET not in wb.sheetnames:
+        return None, []
+    ws = wb[PAIR_SHEET]
+    headers = {c.value: i for i, c in enumerate(ws[1])}
+    missing = [v for v in PAIR_COL.values() if v not in headers]
+    if missing:
+        return None, [("ERROR", f"'{PAIR_SHEET}' sekmesinde eksik sutun: "
+                                f"{', '.join(missing)} -- sekmeyi "
+                                f"backlog_to_tracker.py ile yeniden uret")]
+
+    ph_alias = {norm(p): p for p in cfg["phases"]}
+    rows, issues = [], []
+    for rno, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+        cell = lambda key: str(row[headers[PAIR_COL[key]]] or "").strip()
+        raw_faz = cell("faz")
+        if not raw_faz:
+            continue
+        faz = ph_alias.get(norm(raw_faz))
+        if faz is None:
+            issues.append(("ERROR", f"{PAIR_SHEET} satir {rno}: '{raw_faz}' "
+                                    f"faz listesinde yok: {cfg['phases']}"))
+            continue
+        rec = {k: cell(k) for k in PAIR_COL}
+        rec["faz"] = faz
+        # Faz sutunu onceden yazilidir, yani "satir var" ile "cift kaydedildi"
+        # ayni sey degildir. Hicbir alani dolu olmayan satir atlanir.
+        if not any(rec[k] for k in ("ozellik", "garanti", "sonuc", "not_")):
+            continue
+        if not rec["ozellik"] or not rec["garanti"]:
+            issues.append(("ERROR", f"{PAIR_SHEET} satir {rno}: bir cift, "
+                                    f"OZELLIK ve dokundugu GARANTI ile tanimlanir; "
+                                    f"biri eksik"))
+            continue
+        sonuc = rec["sonuc"].lower()
+        if sonuc not in PAIR_RESULTS:
+            issues.append(("ERROR", f"{PAIR_SHEET} satir {rno}: Sonuc "
+                                    f"'{rec['sonuc']}' -- gecerli degerler: "
+                                    f"{', '.join(PAIR_RESULTS)}"))
+            continue
+        rec["sonuc"] = sonuc
+        # Sira duyarli bir cift guvenli yonu tasimazsa, bulgunun yarisi
+        # eksiktir: "bu ikisi tek sirada guvenli" cumlesi, hangi sira oldugunu
+        # soylemedikce uygulanabilir degildir.
+        if rec["sira"].lower() in ("evet", "true", "1", "x") and not rec["gerekli_sira"]:
+            issues.append(("ERROR", f"{PAIR_SHEET} satir {rno}: SiraOnemli "
+                                    f"isaretli ama GerekliSira bos -- guvenli "
+                                    f"yon bulgunun parcasidir"))
+            continue
+        # Kirilan bir cift, ne oldugunu soylemeden kayda gecemez.
+        if rec["sonuc"] == "kiriliyor" and not rec["not_"]:
+            issues.append(("ERROR", f"{PAIR_SHEET} satir {rno}: 'kiriliyor' "
+                                    f"ama Not bos -- hangi garantinin nasil "
+                                    f"bozuldugu yazilmadan bulgu devredilemez"))
+            continue
+        rows.append(rec)
+    return rows, issues
+
+
+def pair_totals(rows):
+    """Faz basina (toplam, kirik, bakilmadi) -- ve genel toplam."""
+    per = {}
+    for r in rows or []:
+        d = per.setdefault(r["faz"], dict(n=0, kirik=0, bakilmadi=0))
+        d["n"] += 1
+        if r["sonuc"] == "kiriliyor":
+            d["kirik"] += 1
+        elif r["sonuc"] == "bakilmadi":
+            d["bakilmadi"] += 1
+    tot = dict(n=sum(d["n"] for d in per.values()),
+               kirik=sum(d["kirik"] for d in per.values()),
+               bakilmadi=sum(d["bakilmadi"] for d in per.values()))
+    return per, tot
+
+
+def compute(tasks, cfg, score_rows=None, pair_rows=None):
     W, CR, phases = cfg["effort_weights"], cfg["status_credit"], cfg["phases"]
     epics = {}
     ph = {p: dict(eff=0.0, done=0.0, n=0, dn=0) for p in phases}
@@ -316,7 +411,9 @@ def compute(tasks, cfg, score_rows=None):
     total_done = sum(p["done"] for p in ph.values())
     total_dn = sum(p["dn"] for p in ph.values())
 
+    pair_per, pair_tot = pair_totals(pair_rows)
     return dict(epics=epics, phases=ph, total_eff=total_eff,
+                pair_rows=pair_rows, pair_per=pair_per, pair_tot=pair_tot,
                 score_rows=score_rows,
                 score_totals=score_totals(score_rows) if score_rows else None,
                 arbiter_col=has_col,
@@ -627,9 +724,67 @@ def r_skorkart(C, cfg):
             '    </div>')
 
 
+def r_cift(C, cfg):
+    """GEN:CIFT -- yeniden birlestirme pasinin sonucu.
+
+    Ilerleme yuzdesi "bitti denen is"i olcer. Bu bolge baska bir seyi olcer:
+    parcalara ayrilmis isin YENIDEN BIRLESTIRILIP birlestirilmedigini. Bir faz
+    %100 kapanip tek cift bakilmamis olabilir, ve bu bir celiski degil bilgidir
+    -- kusur zaten parcalarin arasinda yasar.
+    """
+    rows = C.get("pair_rows")
+    if rows is None:
+        return ('<div class="note">\n'
+                '      <div class="row"><span>Cift pasi</span>'
+                '<span class="l2">olculmedi (&quot;Cift&quot; sekmesi yok)</span></div>\n'
+                '      <p class="l2">Sifir cift DEGIL: bu proje pasi tutmuyor.\n'
+                '      Sekmeyi backlog_to_tracker.py uretir.</p>\n'
+                '    </div>')
+    if not rows:
+        return ('<div class="note">\n'
+                '      <div class="row"><span>Cift pasi</span>'
+                '<span class="l2">sekme var, hic cift yazilmamis</span></div>\n'
+                '      <p class="l2">Backlog\'i atomize etmek, yalnizca iki\n'
+                '      ozellik ayni anda etkinken var olan kusuru yok eder. Bos\n'
+                '      bir liste, temiz bir model degil kosulmamis bir pastir.</p>\n'
+                '    </div>')
+
+    per, tot = C["pair_per"], C["pair_tot"]
+    satirlar = "".join(
+        f'      <div class="row"><span>{esc(faz)}</span>'
+        f'<b class="num">{d["n"]} cift · {d["kirik"]} kirik'
+        + (f' · {d["bakilmadi"]} bakilmadi' if d["bakilmadi"] else '')
+        + '</b></div>\n'
+        for faz, d in ((p, per[p]) for p in cfg["phases"] if p in per))
+
+    kirik_satir = "".join(
+        f'      <p class="l2"><b>{esc(r["faz"])} · {esc(r["ozellik"])}</b> × '
+        f'{esc(r["garanti"])}'
+        + (f' — sira: {esc(r["gerekli_sira"])}' if r["gerekli_sira"] else '')
+        + f'<br>{esc(r["not_"])}</p>\n'
+        for r in rows if r["sonuc"] == "kiriliyor")
+
+    if tot["bakilmadi"]:
+        acik = (f'      <p class="l2"><b>{tot["bakilmadi"]} cift listelendi ve\n'
+                f'      sinanmadi.</b> Bu sifir degil, acik istir: listelenmis ama\n'
+                f'      bakilmamis cift, hic listelenmemis cift kadar korur.</p>\n')
+    else:
+        acik = ''
+
+    return ('<div class="note">\n'
+            f'      <div class="row"><span>Cift pasi</span>'
+            f'<b class="num">{tot["n"]} cift · {tot["kirik"]} kirik</b></div>\n'
+            + satirlar + acik + kirik_satir +
+            '      <p class="l2">Her satir elle yazilir: hangi mevcut garantiye\n'
+            '      dokunuldugunu backlog\'dan uretmek mumkun degil, modeli bilen\n'
+            '      insan bilir. Yesil test paketi burada karsi kanit degildir --\n'
+            '      testler ozellik basina yazilir, cift hakkinda susar.</p>\n'
+            '    </div>')
+
+
 RENDERERS = dict(CHIPS=r_chips, KPI=r_kpi, CARDS=r_cards,
                  BARS=r_bars, TIMELINE=r_timeline, HAKEM=r_hakem,
-                 SKORKART=r_skorkart)
+                 SKORKART=r_skorkart, CIFT=r_cift)
 
 
 def patch(html, key, block):
@@ -815,6 +970,84 @@ def self_test():
     check("siniflanmis kacak metniyle basilir",
           "DoD: okuma yuzeyi" in html and "Sinifsiz kacak" not in html)
 
+    # ---- Cift sekmesi: yeniden birlestirme pasinin kaydi -------------------
+    PH = [PAIR_COL[k] for k in ("faz", "ozellik", "garanti", "sira",
+                                "gerekli_sira", "sonuc", "not_")]
+
+    def make_p(rows, headers=PH):
+        wb = Workbook(); ws = wb.active; ws.title = "Takip"
+        ws.append(["ID", "Epik", "Faz", "Katman", "Tahmin", "Durum"])
+        if headers is not None:
+            wc = wb.create_sheet(PAIR_SHEET); wc.append(headers)
+            for r in rows:
+                wc.append(r)
+        p = tmp / "tp.xlsx"; wb.save(p); return p
+
+    # 17) Sekme YOKSA gosterge sifir degil "olculmedi". Skorkart ile ayni
+    #     kirmizi cizgi: kosulmamis bir pasi "0 kirik cift" diye basmak, en
+    #     pahali sessiz varsayimdir -- rapor temiz gorunur.
+    rows, iss = load_pairs(make_p([], headers=None), cfg)
+    check("Cift sekmesi yoksa None (bos liste degil)", rows is None)
+    check("Cift sekmesi yoksa hata da uretmez", not iss)
+    html = r_cift(compute(load_tasks(make_p([], headers=None), cfg)[0], cfg,
+                          None, None), cfg)
+    check("sekme yoksa rapor 'olculmedi' basar", "olculmedi" in html)
+
+    # 18) Faz sutunu onceden yazilidir: hicbir alani dolu olmayan satir
+    #     kaydedilmis bir cift degildir.
+    rows, iss = load_pairs(make_p([["F0", None, None, None, None, None, None]]), cfg)
+    check("bos cift satiri kaydedilmis sayilmaz", rows == [])
+
+    # 19) Bir cift, OZELLIK ve dokundugu GARANTI ile tanimlanir; tek basina
+    #     ozellik, ozellik incelemesidir -- pasin tamami budur.
+    rows, iss = load_pairs(make_p([["F0", "duraklatma", "", "", "", "tutuyor", ""]]), cfg)
+    check("garantisiz cift ERROR uretir",
+          any(l == "ERROR" and "GARANTI" in m for l, m in iss))
+
+    # 20) Sonuc sozlugu kapali: "belki" bir sonuc degildir.
+    rows, iss = load_pairs(make_p([["F0", "duraklatma", "bayatlama bayragi",
+                                    "", "", "belki", ""]]), cfg)
+    check("gecersiz Sonuc ERROR uretir",
+          any(l == "ERROR" and "Sonuc" in m for l, m in iss))
+
+    # 21) Sira duyarli cift, guvenli yonu tasimazsa bulgunun yarisi eksiktir.
+    rows, iss = load_pairs(make_p([["F0", "anonimlestirme", "yeniden atama",
+                                    "evet", "", "kiriliyor", "n"]]), cfg)
+    check("SiraOnemli ama GerekliSira bos -> ERROR",
+          any(l == "ERROR" and "GerekliSira" in m for l, m in iss))
+
+    # 22) Kirilan cift, ne oldugunu soylemeden devredilemez.
+    rows, iss = load_pairs(make_p([["F0", "duraklatma", "bayatlama bayragi",
+                                    "", "", "kiriliyor", ""]]), cfg)
+    check("notsuz 'kiriliyor' ERROR uretir",
+          any(l == "ERROR" and "Not bos" in m for l, m in iss))
+
+    # 23) Mutlu yol: sayilar ve raporun ayri bastigi iki sey -- kirik cift ve
+    #     LISTELENIP BAKILMAMIS cift. Ikincisi sifir degil acik istir.
+    rows, iss = load_pairs(make_p([
+        ["F0", "duraklatma", "bayatlama bayragi", "", "", "kiriliyor",
+         "Duraklatma, tikanmis isi saklamanin ucuz yolu olur; bayrak gurultuden olur."],
+        ["F0", "toplu disa aktarim", "not bazinda gizlilik", "", "", "tutuyor", ""],
+        ["F1", "anonimlestirme", "acik islerin yeniden atanmasi", "evet",
+         "once yeniden ata, sonra anonimlestir", "bakilmadi", ""],
+    ]), cfg)
+    check("cift satirlari hatasiz okunur", not [m for l, m in iss if l == "ERROR"])
+    per, tot = pair_totals(rows)
+    check("cift toplami 3", tot["n"] == 3)
+    check("kirik cift 1", tot["kirik"] == 1)
+    check("bakilmamis cift 1", tot["bakilmadi"] == 1)
+    C = compute(load_tasks(make_s([], headers=None), cfg)[0], cfg, None, rows)
+    html = r_cift(C, cfg)
+    check("kirik cift raporda metniyle gorunur", "gurultuden olur" in html)
+    check("bakilmamis cift ayri basilir", "sinanmadi" in html)
+
+    # 24) Cift pasi ilerleme yuzdesine DOKUNMAZ. Iki gosterge ayri kalmali: bir
+    #     faz %100 kapanip tek cift bakilmamis olabilir, ve bu bir celiski
+    #     degil bilgidir -- kusur zaten parcalarin arasinda yasar.
+    t, _ = load_tasks(make_s([], headers=None), cfg)
+    check("cift pasi ilerleme yuzdesini degistirmez",
+          compute(t, cfg, None, rows)["overall_pct"] == compute(t, cfg)["overall_pct"])
+
     print("SELF-TEST:", "BASARILI" if ok else "BASARISIZ")
     return 0 if ok else 1
 
@@ -840,7 +1073,8 @@ def main():
 
     tasks, issues = load_tasks(a.xlsx, cfg)
     score_rows, score_issues = load_scorecard(a.xlsx, cfg)
-    issues = issues + score_issues
+    pair_rows, pair_issues = load_pairs(a.xlsx, cfg)
+    issues = issues + score_issues + pair_issues
     errors = [m for l, m in issues if l == "ERROR"]
     for l, m in issues:
         print(f"  {'HATA ' if l == 'ERROR' else 'UYARI'}: {m}", file=sys.stderr)
@@ -850,7 +1084,7 @@ def main():
         sys.exit(2)
 
     try:
-        C = compute(tasks, cfg, score_rows)
+        C = compute(tasks, cfg, score_rows, pair_rows)
     except ValueError as e:
         print(f"\n{e}", file=sys.stderr)
         sys.exit(3)
@@ -884,6 +1118,15 @@ def main():
                                   ("kacan", "kacan"))]
         print(f"  Skorkart ({len(score_rows)} faz, oz-beyan): "
               + " · ".join(parts))
+
+    if pair_rows is None:
+        print("  Cift pasi: olculmedi ('Cift' sekmesi yok) -- SIFIR DEGIL")
+    elif not pair_rows:
+        print("  Cift pasi: sekme var, hic cift yazilmamis")
+    else:
+        T = C["pair_tot"]
+        print(f"  Cift pasi: {T['n']} cift · {T['kirik']} kirik"
+              + (f" · {T['bakilmadi']} bakilmadi" if T["bakilmadi"] else ""))
 
     if a.check:
         return

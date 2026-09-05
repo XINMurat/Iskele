@@ -196,6 +196,18 @@ templates and methodology text → CC-BY-4.0**
 
 ### Version
 
+**v1.3** — the **pair pass** gets a home: a `Cift` sheet in the tracker, one
+row per feature × existing guarantee, with the safe order when the pair is
+asymmetric and an outcome of `tutuyor` / `kiriliyor` / `bakilmadi`. Atomising
+the backlog (step 4) is precisely the act that destroys a defect existing only
+while two features are active at once; step 5 already described the pass that
+puts them back, and it left no trace — a phase that ran it and a phase that
+skipped it produced identical trackers. `bakilmadi` is counted separately
+because a pair listed and never tested protects exactly as much as a pair
+nobody listed, and the sheet is optional so existing trackers keep loading.
+The report prints it as `GEN:CIFT`; the gate template asks for it before its
+own checklist.
+
 **v1.2** — the phase-close scorecard gets a home in the tracker (a `Skorkart`
 sheet the generator emits and the progress report reads, where an empty cell
 prints as "not filled in" rather than as zero), an ADR log with a status
@@ -375,6 +387,17 @@ Bilinçli olarak ikili: **kod ve şemalar → MIT** ([`LICENSE`](LICENSE)); **d�
 ([`LICENSE-docs.md`](LICENSE-docs.md)).
 
 ### Sürüm
+
+**v1.3** — **çift pası** bir yer kazanır: çizelgede `Cift` sekmesi, her satır
+bir özellik × mevcut garanti çifti; çift asimetrikse güvenli sıra ve sonuç
+(`tutuyor` / `kiriliyor` / `bakilmadi`). Backlog'u atomize etmek (adım 4) tam
+olarak, yalnızca iki özellik aynı anda etkinken var olan kusuru yok eden
+işlemdir; adım 5 onları geri birleştiren pası zaten tarif ediyordu ve pas
+hiçbir iz bırakmıyordu — koşan fazla atlayan faz aynı çizelgeyi üretiyordu.
+`bakilmadi` ayrı sayılır, çünkü listelenip sınanmamış çift kimsenin
+listelemediği çift kadar korur; sekme opsiyoneldir, mevcut çizelgeler okunmaya
+devam eder. Rapor bunu `GEN:CIFT` bölgesinde basar; kapı şablonu kendi
+listesinden önce bunu ister.
 
 **v1.2** — faz-kapanış çizelgesi çizelge dosyasında bir yer kazanır (üretecin
 yazdığı, ilerleme raporunun okuduğu `Skorkart` sekmesi; boş hücre "sıfır" değil

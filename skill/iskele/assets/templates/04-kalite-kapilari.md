@@ -27,6 +27,27 @@ değildir. Kabul kriterini gerçek veriyle bir kez daha çalıştırmadan done d
 
 ## 2. Go/No-Go — faz geçişi
 
+**Her kapıda, listedeki maddelerden önce: çift pası.** DoD ve go/no-go
+*yazılmış olanı* denetler. Yalnızca **iki özellik aynı anda etkinken** var olan
+kusuru ikisi de göremez — çünkü backlog'u atomize etmek tam olarak o kusuru yok
+eden işlemdir. Bu yüzden kapıda bilerek geri birleştirilir: bu fazın her yeni
+özelliği için, dokunabildiği mevcut garantiler; ve her çift için tek soru —
+*bu garanti, o özellik etkinken hâlâ geçerli mi?*
+
+En kırılgan iki sınıf: bir **yokluktan** hesaplanan sinyaller ("3 gündür
+dokunulmadı", "atanmamış") ve tek tek çağrı yerinde uygulanan garantiler (beş
+ekranda doğru uygulanan kural, altıncı toplu yüzeyle toptan geçersizleşir).
+**Sıra da sayılır:** bazı çiftler yalnız tek yönde güvenlidir ve o yön bulgunun
+parçasıdır. Yeşil test paketi burada karşı kanıt değildir.
+
+- [ ] Bu fazın çiftleri çizelgenin `Cift` sekmesine yazıldı.
+- [ ] `bakilmadi` kalan çift yok — ya da kalanı kapıda **açıkça** kabul edildi
+      ve gerekçesi yazıldı. (Listelenip sınanmamış çift, kimsenin listelemediği
+      çift kadar korur; bu yüzden rapor iki sayıyı ayrı basar.)
+- [ ] `kiriliyor` çıkan her çift ya kapatıldı ya da bir görev olarak backlog'a
+      girdi.
+
+
 ### M0 — F0 → F1
 - [ ] Altyapı servisleri healthy.
 - [ ] **Dikey dilim:** tek akış DB'den ekrana çalışıyor.

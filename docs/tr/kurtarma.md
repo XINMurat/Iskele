@@ -450,6 +450,7 @@ sızdırdığını** bulur. Yüksek sayı kötü değildir, gizlenen sayı köt�
 | Kullanılan rampalar | | Hangi `RR-nn`. Hiçbiri kullanılmadıysa ya kusursuzdu ya fark edilmedi. |
 | **Kaçan** | | Kapıdan sonra bulunan, bu fazın kriterlerinin kapsadığı hata. Süreç dışından gelen tek sayı ve içeriden manipüle edilemeyen tek ölçü. |
 | **Kaçağın sınıfı** | | Her kaçak için: ateşlemesi gereken kontrol, ya da bu kaçak sayesinde artık var olan kontrol (RR-13). Yanında sınıf olmayan kaçak plana hiçbir şey öğretmemiştir. |
+| **Bakılan / kırılan çift** | / | Çizelgenin `Cift` sekmesinden: kapı kaç özellik × garanti çiftini gerçekten geri birleştirdi, kaçı kırıldı. Sıfır çiftli faz pası koşmamıştır — backlog'u atomize etmek tam olarak bu sınıfı yok eder, yani planda başka hiçbir şey onu bulamaz. |
 
 **Çıkarım:** 1–2 cümle. "Faz iyi geçti" değil: sonraki fazda ne değişecek ve
 **hangi sayı** bunu söylüyor.

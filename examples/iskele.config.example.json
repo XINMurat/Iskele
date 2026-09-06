@@ -1,5 +1,6 @@
 {
   "phases": ["F0", "F1", "F2"],
+  "estimate_basis": "unknown",
   "effort_weights": {"S": 0.75, "M": 1.5, "L": 4.0},
   "status_credit": {"Tamamlandi": 1.0, "Devam": 0.0, "Bloke": 0.0, "Yapilacak": 0.0},
   "workdays_per_month": 21,

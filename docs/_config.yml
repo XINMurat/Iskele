@@ -1,4 +1,43 @@
 title: "İskele — From a Vague Project Intent to an Executable Delivery Kit"
-description: "A Claude skill that turns a vague project intent into a domain model, a phased roadmap with gates, an atomic backlog with acceptance criteria, quality gates, a tracker and a self-regenerating progress report. Bilingual TR/EN."
-theme: jekyll-theme-minimal
+description: "A Claude skill that turns a vague project intent into a domain model, a phased roadmap with gates, an atomic backlog with acceptance criteria, quality gates, a tracker and a self-regenerating progress report. Bilingual EN/TR."
 lang: en
+
+# --- what this site is, for the shared layout ---
+skill: "İskele"
+emoji: "🏗️"
+accent: "#7a5c2e"
+accent_dark: "#c8a468"
+repo: "https://github.com/XINMurat/Iskele"
+family_label: "the family"
+family_note: "Four skills that keep each other honest."
+license_note: "Code MIT · prose CC BY 4.0."
+
+nav_main:
+  - { name: "Overview", url: "/" }
+  - { name: "Quickstart", url: "/QUICKSTART.html" }
+
+nav_en:
+  - { name: "Usage guide", url: "/en/usage-guide.html" }
+
+nav_tr:
+  - { name: "Kullanım kılavuzu", url: "/tr/kullanim-kilavuzu.html" }
+  - { name: "Metodoloji", url: "/tr/metodoloji.html" }
+  - { name: "Alan modeli", url: "/tr/alan-modeli.html" }
+  - { name: "Kit manifesti", url: "/tr/kit-manifesti.html" }
+  - { name: "Takip", url: "/tr/takip.html" }
+  - { name: "Kurtarma", url: "/tr/kurtarma.html" }
+
+# The layout lives in docs/_layouts/default.html and is byte-identical in all
+# four repositories. Everything that differs between them is here, in data --
+# four copies of a stylesheet drifting one at a time is the failure this family
+# names in its own documentation.
+#
+# NOTE: no `plugins:` key. Setting it would REPLACE the GitHub Pages default
+# plugin set, and two of those defaults are load-bearing here:
+# jekyll-optional-front-matter (most pages in docs/ carry none, and without it
+# they stop being pages at all) and jekyll-relative-links (the .md links between
+# them resolve on github.com and on the site because of it).
+
+defaults:
+  - scope: { path: "" }
+    values: { layout: "default" }

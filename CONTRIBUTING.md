@@ -69,6 +69,21 @@ sys.exit(1 if bad else 0)
 PY
 ```
 
+### The context budget
+
+```bash
+python tools/token_budget.py     # tiers + per-run load sets vs. their ceilings
+```
+
+A skill costs tokens the way a dependency costs bytes: to everyone who installs
+it, on every cold start. The ceilings in `tools/token-budget.json` are
+**preregistered** — `T0` (the frontmatter description, in context in every
+session), `T1` (the SKILL.md body) and the per-run sets a mode actually loads.
+Raising one is a deliberate commit with the reason in the message
+(`--update` writes the current numbers); doing it to turn a red build green,
+without reading what moved, is threshold shopping. CI runs the check and a
+self-test that proves the gate can fail.
+
 ### Rebuilding the packaged skill
 
 If you change **any** file under `skill/iskele/`, rebuild the one-file package
@@ -157,6 +172,21 @@ tools/check_counts.py` koş. Manifest beş yerde ve üç dilde anlatılıyor; he
 biri bir sayı söylüyor ve düzyazıdaki sayı hiçbir şeye bağlı değil. Kaynak:
 `skill/iskele/SKILL.md`'deki manifest tablosu ve `references/` içindeki
 dosyalar. Düzyazıyı düzelt, kontrolü değil.
+
+### Bağlam bütçesi
+
+```bash
+python tools/token_budget.py     # katmanlar + koşu başına yük, tavanlarıyla
+```
+
+Bir skill, bir bağımlılığın bayt harcadığı gibi token harcar: kuran herkese,
+her soğuk başlangıçta. `tools/token-budget.json` içindeki tavanlar
+**önkayıtlıdır** — `T0` (her oturumda bağlamda olan frontmatter açıklaması),
+`T1` (SKILL.md gövdesi) ve bir modun fiilen yüklediği koşu kümeleri. Bir tavanı
+yükseltmek, gerekçesi mesajda olan bilinçli bir commit'tir (`--update` mevcut
+sayıları yazar); kırmızı build'i neyin büyüdüğünü okumadan yeşile çevirmek için
+yapmak eşik alışverişidir. CI hem kontrolü hem de kapının kırılabildiğini
+gösteren öz-testi koşar.
 
 ### Kapsam disiplini
 

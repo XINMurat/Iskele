@@ -1,0 +1,35 @@
+{
+  "_note": "Ceilings are PREREGISTERED: written before the next change, not fitted to it. Raising one is a deliberate commit with a reason.",
+  "_runs_note": "The file lists under `runs` are a reading of SKILL.md's procedure, not a measurement of a live session. Templates under assets/ are handed to the user as files rather than read for reasoning, so they are not counted here.",
+  "skill_root": "skill/iskele",
+  "chars_per_token": 3.6,
+  "budgets": {
+    "T0": 306,
+    "T1": 6070,
+    "T2": 20875
+  },
+  "runs": {
+    "kit": {
+      "files": [
+        "skill/iskele/SKILL.md",
+        "skill/iskele/references/domain-model.md",
+        "skill/iskele/references/kit-manifest.md"
+      ],
+      "ceiling": 10210
+    },
+    "tracking": {
+      "files": [
+        "skill/iskele/SKILL.md",
+        "skill/iskele/references/tracking.md"
+      ],
+      "ceiling": 9672
+    },
+    "recovery": {
+      "files": [
+        "skill/iskele/SKILL.md",
+        "skill/iskele/references/recovery.md"
+      ],
+      "ceiling": 13235
+    }
+  }
+}

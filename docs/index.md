@@ -42,6 +42,11 @@ context survives regeneration.
 
 - [Quickstart](QUICKSTART.md) — install, produce one kit, read the report
 - [Usage guide](en/usage-guide.md) — the seven steps, the gates, the tracker
+- [Methodology](en/methodology.md) — the core skill in full
+- [Domain model](en/domain-model.md) — step 2, the one step that cannot be mechanised
+- [Kit manifest](en/kit-manifest.md) — what each piece contains and why
+- [Tracking](en/tracking.md) — step 6, the tracker and the generator
+- [Recovery](en/recovery.md) — the ramps for when the build goes wrong
 
 > **A note on languages.** The packaged skill body is **English** — like
 > Mizan and Kıyas, for portability across hosts — and the **Turkish

@@ -1,0 +1,20 @@
+{
+  "_comment": "Pages mirrored from the skill package by tools/sync_en_docs.py. The skill files are the source of truth; these entries only say where each one is published and what to call it.",
+  "pages": [
+    { "out": "methodology.md", "title": "Methodology — the core skill",
+      "tr": "docs/tr/metodoloji.md",
+      "sources": ["skill/iskele/SKILL.md"] },
+    { "out": "domain-model.md", "title": "Step 2 — finding the domain model",
+      "tr": "docs/tr/alan-modeli.md",
+      "sources": ["skill/iskele/references/domain-model.md"] },
+    { "out": "kit-manifest.md", "title": "Kit manifest — what each piece contains",
+      "tr": "docs/tr/kit-manifesti.md",
+      "sources": ["skill/iskele/references/kit-manifest.md"] },
+    { "out": "tracking.md", "title": "Step 6 — tracking and the generator",
+      "tr": "docs/tr/takip.md",
+      "sources": ["skill/iskele/references/tracking.md"] },
+    { "out": "recovery.md", "title": "Recovery — when the build goes wrong",
+      "tr": "docs/tr/kurtarma.md",
+      "sources": ["skill/iskele/references/recovery.md"] }
+  ]
+}

@@ -34,6 +34,7 @@ görünümdür. İkisini elle senkron tutma — üreteci çalıştır.
 | `Sorumlu` `Baslangic` `Bitis` `Not` | **elle** | serbest |
 | `Hakem` | ✓ kabul kriterinden | boş olabilir |
 | `Maliyet` | — | **elle**, opsiyonel: bu görevi ilerleten oturum(lar)ın maliyeti. Birim serbest ama tutarlı olsun — rapor oranı hesaplar, tutarı yorumlamaz. İKİ ayrı paydaya bölünür: tamamlanan **tahmini** efor-günü (çubukların kullandığı S/M/L ağırlıkları) ve kapanan görev **sayısı**. İlki tahmin hatasını miras alır, ikincisi almaz; ikisini birden basmak bunu görünür kılar |
+| `GercekEfor` | — | **elle**, opsiyonel: görevin gerçekten aldığı efor (gün). Geçen süre DEĞİLDİR — geçen süre görevin ne kadar açık kaldığını, bu ne kadar çalışıldığını ölçer. Tahminle birlikte **beklenti sapmasını** verir (gerçek / tahmini efor) ve o sapmanın ne olarak adlandırılabileceğine config'teki `estimate_basis` karar verir |
 
 > `Hakem` sütunu **sona** eklenir, araya değil: `Durum` H sütununda kalmalı,
 > çünkü `Ozet` formülleri ve açılır liste doğrulaması ona bağlı.

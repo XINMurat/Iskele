@@ -32,7 +32,12 @@ COL = dict(id="ID", faz="Faz", epik="Epik", tahmin="Tahmin", durum="Durum")
 # "veri yok" yazilir — %0 yazilmaz. Veri yoklugunu sifir olarak gostermek,
 # "sessiz varsayim" kirmizi cizgisinin ta kendisidir.
 OPT_COL = dict(hakem="Hakem", maliyet="Maliyet",
-               baslangic="Baslangic", bitis="Bitis")
+               baslangic="Baslangic", bitis="Bitis",
+               gercek_efor="GercekEfor")
+# GercekEfor: gorevin GERCEKTEN aldigi efor (gun), elle yazilir. Gecen sureden
+# farklidir ve onun yerine gecmez -- gecen sure gorevin ne kadar ACIK KALDIGINI
+# olcer, bu ise ne kadar CALISILDIGINI. Ikisini ayirmak, bu dosyadaki her
+# gostergenin uzerine kuruldugu ayrimin aynisi.
 # Maliyet: bu gorevi ilerleten oturum(lar)in maliyeti, elle yazilir. Birim
 # projeye kalmis (token ya da para) ve rapor birimi BILMEZ -- orani hesaplar,
 # tutari yorumlamaz. tools/session_cost.py oturum toplamini olcer; hangi goreve
@@ -82,6 +87,17 @@ SCORE_COL_OPT = dict(kacan_sinifi="KacanSinifi")
 
 DEFAULTS = {
     "phases": [],
+    # Tahminin NEYE gore yapildigi. Sapmanin ne olarak okunacagina bu karar
+    # verir, ve varsayilan "unknown"dir cunku bilinmiyorsa bilinmiyordur:
+    #   unaided        tahmin, araci hesaba katmadan yapildi. Ancak bu durumda
+    #                  sapma, aracin etkisi hakkinda BIR SEY soyler -- ve yine
+    #                  de karsi-olgu degil, onkayitli bir beklentidir.
+    #   tool-assisted  tahmin araci bilerek yapildi. Sapma o zaman ekibin
+    #                  KALIBRASYONUNU olcer, aracin etkisini degil. Bu da
+    #                  degerlidir, ama baska bir seydir.
+    #   unknown        beyan edilmedi. Rapor sapmayi basar ve ne oldugunu
+    #                  soyleyemedigini soyler.
+    "estimate_basis": "unknown",
     "effort_weights": {"S": 0.75, "M": 1.5, "L": 4.0},
     "status_credit": {"Tamamlandi": 1.0, "Devam": 0.0,
                       "Bloke": 0.0, "Yapilacak": 0.0},
@@ -190,7 +206,7 @@ def load_tasks(xlsx, cfg):
         tasks.append(dict(id=tid, faz=faz, epik=raw["epik"],
                           tahmin=tahmin, durum=durum, hakem=raw["hakem"],
                           maliyet=raw["maliyet"], baslangic=raw["baslangic"],
-                          bitis=raw["bitis"],
+                          bitis=raw["bitis"], gercek_efor=raw["gercek_efor"],
                           _cols={k: (v in headers) for k, v in OPT_COL.items()}))
 
     if not tasks:
@@ -431,6 +447,7 @@ def cost_and_duration(tasks, cfg):
     has_cost = bool(tasks) and tasks[0].get("_cols", {}).get("maliyet", False)
     has_dates = bool(tasks) and (tasks[0].get("_cols", {}).get("baslangic", False)
                                  and tasks[0].get("_cols", {}).get("bitis", False))
+    has_effort = bool(tasks) and tasks[0].get("_cols", {}).get("gercek_efor", False)
 
     per = {p: dict(cost=0.0, cost_n=0, done_eff=0.0, done_n=0, days=[], est=[])
            for p in phases}
@@ -468,10 +485,28 @@ def cost_and_duration(tasks, cfg):
     # secimiydi -- tahmin yanlissa birim maliyet ayni yonde yanlis olur.
     # Ikisini yan yana basmak, tahminin sayiyi ne kadar tasidigini gorunur
     # kilar: ikisi ayni yone gitmiyorsa guvenilecek olan sayidir, agirlik degil.
+    # --- beklenti sapmasi: gercek efor / tahmini efor -----------------------
+    # Onkayitli bir insan hukmuyle olcumun karsilastirilmasi. KARSI-OLGU DEGIL:
+    # "aracsiz ne olurdu" sorusunu cevaplamaz, "beklenen ne kadardi" sorusunu
+    # cevaplar. Gecerliligi estimate_basis'e baglidir ve rapor bunu her
+    # seferinde soyler.
+    dev = []
+    for t in tasks:
+        if CR.get(t["durum"], 0.0) < 1:
+            continue
+        est = W.get(t["tahmin"], 0.0)
+        act = _as_num(t.get("gercek_efor")) if has_effort else None
+        if est and act:
+            dev.append(act / est)
+
     def unit_task(bucket):
         return (bucket["cost"] / bucket["done_n"]) if bucket["done_n"] else None
 
-    return dict(has_cost=has_cost, has_dates=has_dates, per=per, total=total,
+    dev_med = sorted(dev)[len(dev) // 2] if dev else None
+    return dict(has_cost=has_cost, has_dates=has_dates, has_effort=has_effort,
+                deviation=dev, deviation_median=dev_med,
+                estimate_basis=str(cfg.get("estimate_basis", "unknown")).lower(),
+                per=per, total=total,
                 by_size=by_size, unit_total=unit(total),
                 unit_task_total=unit_task(total),
                 unit_per={p: unit(per[p]) for p in phases},
@@ -982,6 +1017,51 @@ def r_maliyet(C, cfg):
                          'duran gorev 2 saatlik is olabilir; olculen sey gorevin '
                          'ne kadar ACIK KALDIGIDIR.</p>\n')
 
+    # --- beklenti sapmasi: ikinci metrik, geri bildirimin YERINE degil YANINDA
+    basis = cd.get("estimate_basis", "unknown")
+    if not cd.get("has_effort"):
+        parts.append('      <div class="row"><span>Beklenti sapmasi</span>'
+                     '<span class="l2">olculmedi (&quot;GercekEfor&quot; sutunu yok)'
+                     '</span></div>\n')
+    elif not cd.get("deviation"):
+        parts.append('      <div class="row"><span>Beklenti sapmasi</span>'
+                     '<span class="l2">sutun var, tahmini VE gercegi olan '
+                     'tamamlanmis gorev yok</span></div>\n')
+    else:
+        med = cd["deviation_median"]
+        yon = ("tahminin ALTINDA" if med < 1 else
+               ("tahminin USTUNDE" if med > 1 else "tahminle ayni"))
+        parts.append(f'      <div class="row"><span>Beklenti sapmasi '
+                     f'(gercek efor / tahmini efor, medyan)</span>'
+                     f'<b class="num">{med:.2f}x · {len(cd["deviation"])} gorev'
+                     f'</b></div>\n')
+        okuma = {
+            "unaided": (
+                'Tahminler <b>araci hesaba katmadan</b> yapildigi beyan edilmis. '
+                'O zaman bu sapma, aracin etkisi hakkinda bir sey <b>soyler</b> '
+                '— ama karsi-olgu degil, <b>onkayitli bir beklentidir</b>: '
+                'is baslamadan once, sonucu gormeden, bir insan tarafindan '
+                'yazilmis bir sayi. Tahmin edenin iyimserligi hala olculmedi.'),
+            "tool-assisted": (
+                'Tahminler <b>arac bilinerek</b> yapildigi beyan edilmis. O zaman '
+                'bu sapma ekibin <b>KALIBRASYONUNU</b> olcer, aracin etkisini '
+                'degil — daha kucuk tahmin edip tutturmak, hizlanmak degildir. '
+                'Yine de degerlidir: kalibrasyon duzeldikce plan guvenilirlesir.'),
+            "unknown": (
+                '<b>Tahminlerin neye gore yapildigi beyan edilmemis</b> '
+                '(<code>estimate_basis</code>). O yuzden bu sayinin neyi olctugu '
+                'soylenemez: araci hesaba katmayan bir tahminse aracin etkisine '
+                'dair bir isarettir, katan bir tahminse yalnizca kalibrasyondur. '
+                'Ikisi ayni sayiyi uretir ve ayni sey degildir.'),
+        }.get(basis, '')
+        parts.append(f'      <p class="l2">Medyan gorev {yon} kapandi. '
+                     f'{okuma}</p>\n')
+        parts.append('      <p class="l2"><b>Bu, insan geri bildiriminin yerine '
+                     'gecmez.</b> Ikinci bir metriktir ve birincinin goremedigi '
+                     'yerde ise yarar: geri bildirim <em>neden</em> daha hizli '
+                     'ya da yavas oldugunu soyler, bu sayi <em>ne kadar</em> '
+                     'saptigini — ve ikisi celisirse asil bulgu odur.</p>\n')
+
     return ('<div class="note">\n' + "".join(parts) +
             '      <p class="l2"><b>Bu bolge ROI degildir.</b> ROI\'nin paydasi '
             'burada; payi projenin kendi deger metriginde. Ve "arac %X '
@@ -1335,6 +1415,50 @@ def self_test():
     check("maliyet ilerleme yuzdesini degistirmez",
           compute(t, cfg)["overall_pct"] == compute(t, cfg, None, None)["overall_pct"])
 
+    # ---- Beklenti sapmasi ---------------------------------------------------
+    TE = ["ID", "Epik", "Faz", "Katman", "Tahmin", "Durum", "GercekEfor"]
+
+    def make_e(rows, headers=TE):
+        wb = Workbook(); ws = wb.active; ws.title = "Takip"
+        ws.append(headers)
+        for r in rows:
+            ws.append(r)
+        p = tmp / "te.xlsx"; wb.save(p); return p
+
+    # 31) Sutun yoksa gosterge yok -- ve "1.0x" gibi masum bir sayi UYDURULMAZ.
+    t, _ = load_tasks(make_e([["F0-BE-01", "E1", "F0", "BE", "M", "Tamamlandi"]],
+                             headers=TE[:6]), cfg)
+    C = compute(t, cfg)
+    check("GercekEfor yoksa sapma hesaplanmaz", C["cost"]["deviation"] == [])
+    check("sapma yoksa rapor 'olculmedi' der", "olculmedi" in r_maliyet(C, cfg))
+
+    # 32) Sapma = gercek / tahmini efor, ve YALNIZ tamamlanmis gorevlerden.
+    #     Yarim kalan bir gorevin "gercek eforu" henuz bir sayi degildir.
+    t, _ = load_tasks(make_e([
+        ["F0-BE-01", "E1", "F0", "BE", "M", "Tamamlandi", "0.75"],   # 0.75/1.5
+        ["F0-BE-02", "E1", "F0", "BE", "M", "Devam", "9"],
+    ]), cfg)
+    C = compute(t, cfg)
+    check("sapma yalniz tamamlanmis gorevden", C["cost"]["deviation"] == [0.5])
+
+    # 33) estimate_basis, sayinin NE OLDUGUNA karar verir. Ayni 0.5x, tahmin
+    #     araci bilerek yapildiysa kalibrasyondur, bilmeden yapildiysa aracin
+    #     etkisine dair bir isarettir -- ve beyan yoksa rapor hangisi oldugunu
+    #     soyleyemedigini soyler. Bu, R18'in veri-durumu alaninin ayni sekli:
+    #     olcum ayni, iddia farkli.
+    cfg_u = dict(cfg); cfg_u["estimate_basis"] = "unaided"
+    cfg_t = dict(cfg); cfg_t["estimate_basis"] = "tool-assisted"
+    html_u = r_maliyet(compute(t, cfg_u), cfg_u)
+    html_t = r_maliyet(compute(t, cfg_t), cfg_t)
+    html_k = r_maliyet(compute(t, cfg), cfg)
+    check("unaided: aracin etkisi hakkinda bir sey soyler",
+          "aracin etkisi hakkinda bir sey" in html_u)
+    check("tool-assisted: kalibrasyon oldugunu soyler", "KALIBRASYONUNU" in html_t)
+    check("unknown: ne oldugunu soyleyemedigini soyler",
+          "beyan edilmemis" in html_k)
+    check("her durumda geri bildirimin yerine gecmedigini yazar",
+          all("yerine gecmez" in h for h in (html_u, html_t, html_k)))
+
     print("SELF-TEST:", "BASARILI" if ok else "BASARISIZ")
     return 0 if ok else 1
 
@@ -1425,6 +1549,10 @@ def main():
         print(f"  Birim maliyet: {fmt(u) if u else '—'} / tamamlanan TAHMINI "
               f"efor-gunu · {fmt(ut) if ut else '—'} / kapanan gorev "
               f"({cd['total']['cost_n']} gorevde maliyet yazili)")
+    if cd.get("has_effort") and cd.get("deviation"):
+        print(f"  Beklenti sapmasi: {cd['deviation_median']:.2f}x "
+              f"(gercek/tahmini efor, medyan, {len(cd['deviation'])} gorev) "
+              f"· estimate_basis={cd.get('estimate_basis')}")
     if cd["has_dates"] and cd["total"]["days"]:
         days = sorted(cd["total"]["days"])
         print(f"  Gecen sure: medyan {days[len(days)//2]} gun "

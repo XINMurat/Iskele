@@ -36,7 +36,7 @@ FONT = "Arial"
 # bos sutunu "olculmedi" diye basar, sifir diye degil.
 HEADERS = ["ID", "Faz", "Epik", "Gorev", "Katman", "Tahmin",
            "Bagimlilik", "Durum", "Sorumlu", "Baslangic", "Bitis", "Not",
-           "Hakem", "Maliyet"]
+           "Hakem", "Maliyet", "GercekEfor"]
 STATUSES = ["Yapilacak", "Devam", "Bloke", "Tamamlandi"]
 PALETTE = ["E2EFDA", "DEEBF7", "FCE4D6", "EDEDED", "FFF2CC", "E4DFEC"]
 
@@ -162,10 +162,10 @@ def build(tasks, out_path, phases):
     ws.add_data_validation(dv)
     dv.add(f"H2:H{last}")
 
-    for i, w in enumerate([12, 6, 26, 42, 8, 8, 24, 13, 14, 13, 13, 30, 34, 12], start=1):
+    for i, w in enumerate([12, 6, 26, 42, 8, 8, 24, 13, 14, 13, 13, 30, 34, 12, 12], start=1):
         ws.column_dimensions[get_column_letter(i)].width = w
     ws.freeze_panes = "A2"
-    ws.auto_filter.ref = f"A1:N{last}"
+    ws.auto_filter.ref = f"A1:O{last}"
     ws.sheet_view.showGridLines = False
 
     # ---- Ozet
@@ -285,6 +285,14 @@ def build(tasks, out_path, phases):
         ("- Oturum toplamini tools/session_cost.py OLCER; hangi goreve yazilacagi ATIFTIR", False, 10),
         ("  ve o hukmu yalnizca oturumu kosan kisi verebilir. Bu yuzden [H].", False, 10),
         ("- Bos birakmak normaldir; rapor bos sutunu 'olculmedi' basar, sifir basmaz.", False, 10),
+        ("", False, 10),
+        ("GercekEfor sutunu (opsiyonel, elle):", True, 11),
+        ("- Gorevin GERCEKTEN aldigi efor (gun). Gecen sureden farklidir: gecen sure", False, 10),
+        ("  gorevin ne kadar ACIK KALDIGINI, bu ne kadar CALISILDIGINI olcer.", False, 10),
+        ("- Tahminle birlikte 'beklenti sapmasi'ni verir: gercek/tahmini efor. Tahmin,", False, 10),
+        ("  is baslamadan once yazilmis bir insan hukmudur -- onkayitli bir beklenti.", False, 10),
+        ("- Bunun neyi olctugune iskele.config.json'daki estimate_basis karar verir:", False, 10),
+        ("  unaided (araci hesaba katmayan tahmin) / tool-assisted (katan) / unknown.", False, 10),
         ("", False, 10),
         ("Baslangic / Bitis:", True, 11),
         ("- Ikisi de doluysa rapor GECEN SURE'yi hesaplar (takvim gunu).", False, 10),

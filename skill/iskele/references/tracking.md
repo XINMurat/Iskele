@@ -31,6 +31,7 @@ the generator.
 | `Sorumlu` `Baslangic` `Bitis` `Not` | **by hand** | free text |
 | `Hakem` (arbiter) | ✓ from the acceptance criterion | may be empty |
 | `Maliyet` (cost) | — | **by hand**, optional: what the session(s) that advanced this task cost. Any unit, kept consistent — the report computes the ratio, it does not interpret the amount. It is divided TWO ways: by completed **estimated** effort-days (the S/M/L weights, same numbers the bars use) and by completed task **count**. The first inherits the estimate error, the second does not; printing both is what makes that visible |
+| `GercekEfor` (actual effort) | — | **by hand**, optional: the effort the task really took, in days. NOT elapsed time — elapsed measures how long the task stayed open, this measures how much was worked. With the estimate it yields the **expectation delta** (actual / estimated effort), and `estimate_basis` in the config decides what that delta may be called |
 
 > The `Hakem` column is appended **at the end**, never inserted: `Durum` must
 > stay in column H, because the `Ozet` formulas and the dropdown validation

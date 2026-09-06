@@ -123,7 +123,7 @@ behaviour and the shipped behaviour disagree.
 ideas. Proposals that move evidence tiering or hypothesis registries here belong
 in [Mizan](https://github.com/XINMurat/Mizan); proposals about idea generation
 or analogical inference belong in [Kıyas](https://github.com/XINMurat/Kiyas).
-Keeping the three verbs in three tools is not a packaging accident — a builder
+Keeping the four verbs in four tools is not a packaging accident — a builder
 that also grades its own output is an author acting as its own arbiter.
 
 ---
@@ -193,6 +193,6 @@ gösteren öz-testi koşar.
 İskele yapı kurar; iddia yargılamaz, fikir üretmez. Kanıt katmanlamayı veya
 hipotez registry'sini buraya taşıyan öneriler
 [Mizan](https://github.com/XINMurat/Mizan)'a; fikir üretimi ve analojik çıkarımla
-ilgili öneriler [Kıyas](https://github.com/XINMurat/Kiyas)'a aittir. Üç fiili üç
-araçta tutmak paketleme kazası değildir — kendi çıktısını kendi notlandıran bir
+ilgili öneriler [Kıyas](https://github.com/XINMurat/Kiyas)'a aittir. Dört fiili
+dört araçta tutmak paketleme kazası değildir — kendi çıktısını kendi notlandıran bir
 kurucu, yazarın hakem olduğu durumdur.

@@ -92,8 +92,10 @@ Contracts and setup:
 - **Kıyas** → generate missing feature and risk candidates; they re-enter the
   backlog.
 
-The loop closes: **İskele builds → Mizan weighs → Kıyas generates → back into
-İskele.**
+The loop closes — and it is two loops, not one ring: **Mizan ⇄ Kıyas** can turn
+between themselves for as long as the thinking needs, with nothing being built,
+while **İskele** is the branch taken when something survives and is worth
+building. Its criteria then return to Mizan as preregistered entries.
 
 ## Red lines
 

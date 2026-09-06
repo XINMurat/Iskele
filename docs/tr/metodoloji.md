@@ -221,7 +221,10 @@ gereken satırları aç), **geniş taramayı alt ajana ver** (ham çıktı deği
 dönsün), ve **bulguyu üretildiği anda dosyaya yaz** — sona saklanan bulgu, hem
 her turda bedelini ödetir hem ilk bağlam sıfırlamasında kaybolur.
 
-Döngü kapanır: **iskele kurar → mizan tartar → kiyas üretir → iskele'ye geri girer.**
+Döngü kapanır — ve bu tek halka değil, iki döngüdür: **Mizan ⇄ Kıyas**, ortada
+hiçbir şey inşa edilmeden, düşünme ne kadar sürerse o kadar kendi arasında
+dönebilir; **İskele** ise sağ kalan bir şey inşa edilmeye değdiğinde alınan
+daldır. Kabul kriterleri sonra Mizan'a önkayıt girdisi olarak döner.
 
 ## Çıktı manifesti
 

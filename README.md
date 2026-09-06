@@ -9,7 +9,7 @@ executable acceptance criteria, a Definition of Done, a live tracking
 spreadsheet, and a progress report that regenerates itself from that
 spreadsheet.
 
-The three verbs are kept separate on purpose:
+The four verbs are kept separate on purpose:
 
 > **İskele builds** · [**Mizan**](https://github.com/XINMurat/Mizan) **weighs**
 > · [**Kıyas**](https://github.com/XINMurat/Kiyas) **generates**
@@ -17,7 +17,13 @@ The three verbs are kept separate on purpose:
 >
 > All four, and how they hand off: [the family page](https://xinmurat.github.io/)
 
-İskele produces the structure the other two operate on. When the kit is done it
+**Where İskele starts:** with a vague intent — "I want to build X". Nothing
+upstream is required: Kıyas seeds and Mizan registries are inputs it can use,
+not doors it waits behind. İskele is entered when something is worth building,
+which is why it is a branch off the Mizan ⇄ Kıyas loop rather than a station on
+it.
+
+İskele produces the structure the other three operate on. When the kit is done it
 hands off: Mizan audits the kit's own claims, Kıyas generates the missing
 features and risks, and those come back as backlog tasks.
 
@@ -94,7 +100,7 @@ embedded regression tests.
 
 ## The handoff, as files rather than as prose
 
-The three tools exchange artifacts, and the exchange is checked in CI:
+The tools exchange artifacts, and the exchange is checked in CI:
 
 ```bash
 # Kıyas seeds -> backlog tasks (only H-aday seeds become work)
@@ -166,7 +172,7 @@ documents and file creation, the run **created nothing**, named which steps
 were disabled, said plainly that nothing measurable was produced, and handed
 the decision back with three options — rather than delivering a good-looking
 prose plan that no one could track. İskele also has an
-extra exposure the other two do not: this file and the skill body are in
+extra exposure the others do not: this file and the skill body are in
 Turkish, while the kit it produces should follow the user's language. The
 filenames and column headers in the skill are **examples**; the structure —
 file order, fields, `GEN:` markers, the column keys the scripts read — is
@@ -256,7 +262,7 @@ Koddan *önceki* an için bir Claude skill'i. İskele projeni yazmaz — **proje
 çalıştırılabilir kabul kriterli atomik backlog, Tamamlandı Tanımı, canlı takip
 çizelgesi ve o çizelgeden kendini yeniden üreten ilerleme raporu.
 
-Üç fiil bilinçli olarak ayrıdır:
+Dört fiil bilinçli olarak ayrıdır:
 
 > **İskele kurar** · [**Mizan**](https://github.com/XINMurat/Mizan) **tartar**
 > · [**Kıyas**](https://github.com/XINMurat/Kiyas) **üretir**
@@ -264,7 +270,13 @@ Koddan *önceki* an için bir Claude skill'i. İskele projeni yazmaz — **proje
 >
 > Dördü ve aralarındaki devir: [aile sayfası](https://xinmurat.github.io/)
 
-İskele, diğer ikisinin üzerinde çalıştığı yapıyı üretir. Kit bitince devreder:
+**İskele nereden başlar:** belirsiz bir niyetle — "X'i yapmak istiyorum".
+Yukarıda hiçbir şeyin olması gerekmez: Kıyas tohumu da Mizan registry'si de
+kullanabileceği girdilerdir, arkasında beklediği kapılar değil. İskele, bir şey
+inşa edilmeye değdiğinde devreye girer; Mizan ⇄ Kıyas döngüsünün üstünde bir
+durak değil, ondan çıkan bir daldır.
+
+İskele, diğer üçünün üzerinde çalıştığı yapıyı üretir. Kit bitince devreder:
 Mizan kitin kendi iddialarını denetler, Kıyas eksik özellik ve riskleri üretir,
 onlar backlog'a görev olarak geri girer.
 

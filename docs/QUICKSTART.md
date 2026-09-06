@@ -1,5 +1,7 @@
 # Quickstart / Hızlı Başlangıç
 
+<div id="pane-en" markdown="1">
+
 ## English
 
 ### 1. Install the skill
@@ -85,7 +87,9 @@ self-report. Name a real judge in the backlog to change it:
 - *Kabul:* An unauthorized request gets 403. **Hakem:** pytest tests/test_authz.py
 ```
 
----
+</div>
+
+<div id="pane-tr" markdown="1" hidden>
 
 ## Türkçe
 
@@ -152,3 +156,5 @@ gerçek hakemi adlandır:
 ```markdown
 - *Kabul:* Yetkisiz istek 403 alır. **Hakem:** pytest tests/test_authz.py
 ```
+
+</div>

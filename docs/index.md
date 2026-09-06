@@ -17,6 +17,8 @@ description: "A Claude skill that turns a vague project intent into a domain mod
 
 ---
 
+<div id="pane-en" markdown="1">
+
 ## English
 
 "I know roughly what I want to build" is not a plan, and neither is a task
@@ -52,7 +54,9 @@ a [generated progress report](https://github.com/XINMurat/Iskele/blob/main/examp
 a [Kıyas seed handoff](https://github.com/XINMurat/Iskele/blob/main/examples/seeds-handoff.example.yaml),
 and the [portability run](https://github.com/XINMurat/Iskele/blob/main/examples/portability-neutral-host.md).
 
----
+</div>
+
+<div id="pane-tr" markdown="1" hidden>
 
 ## Türkçe
 
@@ -72,6 +76,8 @@ yalnızca üretilen bölgelerini yeniden yazar; elle eklenen bağlam yeniden
 
 - [Hızlı başlangıç](QUICKSTART.md)
 - [Kullanım kılavuzu](tr/kullanim-kilavuzu.md)
+
+</div>
 
 ---
 

@@ -28,6 +28,12 @@ carries an **acceptance criterion**, a Definition-of-Done, a tracker, and a
 progress report that regenerates itself from the tracker rather than from
 someone's impression of how things are going.
 
+**Where it starts:** with a vague intent — "I want to build X" — and
+nothing upstream is required. No Kıyas seeds, no Mizan registry: those are
+inputs İskele can use, not doors it waits behind. What it needs is someone who
+will answer the constraint questions in step 1, because a kit built on assumed
+answers is a kit that has to be rebuilt.
+
 Two properties it refuses to give up. Every task names its **arbiter** — who
 returns the verdict that the criterion was met — and a task whose only judge
 is the person who did the work stays self-reported, never silently promoted.
@@ -77,6 +83,12 @@ gerçekten koşabileceğiniz bir şeye dönüştürür: alan modeli, fazları
 backlog, Definition-of-Done, bir çizelge, ve işlerin nasıl gittiğine dair
 birinin izlenimi yerine **çizelgeden** kendini yeniden üreten bir ilerleme
 raporu.
+
+**Nereden başlar:** belirsiz bir niyetle — "X'i yapmak istiyorum" — ve
+yukarıda hiçbir şeyin olması gerekmez. Kıyas tohumu da Mizan registry'si de
+İskele'nin kullanabileceği girdilerdir, arkasında beklediği kapılar değil.
+İhtiyacı olan şey, 1. adımdaki kısıt sorularını cevaplayacak biri: varsayılan
+cevaplar üstüne kurulan kit, yeniden kurulması gereken kittir.
 
 Vazgeçmediği iki şey var. Her görev **hakemini** adlandırır — kriterin
 karşılandığı hükmünü kim veriyor — ve tek yargıcı işi yapan kişi olan bir

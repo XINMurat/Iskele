@@ -89,7 +89,7 @@ self-report. Name a real judge in the backlog to change it:
 
 </div>
 
-<div id="pane-tr" markdown="1" hidden>
+<div id="pane-tr" markdown="1" class="pane-init">
 
 ## Türkçe
 

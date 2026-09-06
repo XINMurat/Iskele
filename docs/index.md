@@ -5,19 +5,18 @@ description: "A Claude skill that turns a vague project intent into a domain mod
 
 # İskele
 
+<div id="pane-en" markdown="1">
+
 **From a vague project intent to an executable delivery kit, packaged as a Claude skill.**
-**Belirsiz bir proje niyetinden koşulabilir bir teslim kitine — bir Claude skill'i olarak paketlenmiş.**
 
 [Repository](https://github.com/XINMurat/Iskele) ·
 [Latest release](https://github.com/XINMurat/Iskele/releases/latest) ·
 [Mizan](https://github.com/XINMurat/Mizan) ·
 [Kıyas](https://github.com/XINMurat/Kiyas) ·
 [ux-mizan](https://github.com/XINMurat/ux-mizan) ·
-[**the family · aile**](https://xinmurat.github.io/)
+[**the family**](https://xinmurat.github.io/)
 
 ---
-
-<div id="pane-en" markdown="1">
 
 ## English
 
@@ -35,13 +34,13 @@ is the person who did the work stays self-reported, never silently promoted.
 And the progress report rewrites only its generated regions, so hand-written
 context survives regeneration.
 
-- [Quickstart](QUICKSTART.md)
-- [Usage guide](en/usage-guide.md)
+- [Quickstart](QUICKSTART.md) — install, produce one kit, read the report
+- [Usage guide](en/usage-guide.md) — the seven steps, the gates, the tracker
 
 > **A note on languages.** The packaged skill body is **English** — like
 > Mizan and Kıyas, for portability across hosts — and the **Turkish
-> originals** of `SKILL.md` and the four references live in
-> [`tr/`](tr/): [metodoloji](tr/metodoloji.md) · [alan modeli](tr/alan-modeli.md)
+> originals** of `SKILL.md` and the four references are the Turkish
+> documents: [metodoloji](tr/metodoloji.md) · [alan modeli](tr/alan-modeli.md)
 > · [kit manifesti](tr/kit-manifesti.md) · [takip](tr/takip.md) ·
 > [kurtarma](tr/kurtarma.md).
 > Either way the rule is the same: **the kit is produced in the user's
@@ -56,7 +55,18 @@ and the [portability run](https://github.com/XINMurat/Iskele/blob/main/examples/
 
 </div>
 
-<div id="pane-tr" markdown="1" hidden>
+<div id="pane-tr" markdown="1" class="pane-init">
+
+**Belirsiz bir proje niyetinden koşulabilir bir teslim kitine — bir Claude skill'i olarak paketlenmiş.**
+
+[Depo](https://github.com/XINMurat/Iskele) ·
+[Son sürüm](https://github.com/XINMurat/Iskele/releases/latest) ·
+[Mizan](https://github.com/XINMurat/Mizan) ·
+[Kıyas](https://github.com/XINMurat/Kiyas) ·
+[ux-mizan](https://github.com/XINMurat/ux-mizan) ·
+[**aile sayfası**](https://xinmurat.github.io/)
+
+---
 
 ## Türkçe
 
@@ -74,8 +84,8 @@ görev öz-beyan olarak kalır, sessizce terfi etmez. Ve ilerleme raporu
 yalnızca üretilen bölgelerini yeniden yazar; elle eklenen bağlam yeniden
 üretimden sağ çıkar.
 
-- [Hızlı başlangıç](QUICKSTART.md)
-- [Kullanım kılavuzu](tr/kullanim-kilavuzu.md)
+- [Hızlı başlangıç](QUICKSTART.md) — kur, bir kit üret, raporu oku
+- [Kullanım kılavuzu](tr/kullanim-kilavuzu.md) — yedi adım, kapılar, çizelge
 
 </div>
 

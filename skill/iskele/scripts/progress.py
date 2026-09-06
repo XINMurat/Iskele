@@ -432,8 +432,9 @@ def cost_and_duration(tasks, cfg):
     has_dates = bool(tasks) and (tasks[0].get("_cols", {}).get("baslangic", False)
                                  and tasks[0].get("_cols", {}).get("bitis", False))
 
-    per = {p: dict(cost=0.0, cost_n=0, done_eff=0.0, days=[], est=[]) for p in phases}
-    total = dict(cost=0.0, cost_n=0, done_eff=0.0, days=[], est=[])
+    per = {p: dict(cost=0.0, cost_n=0, done_eff=0.0, done_n=0, days=[], est=[])
+           for p in phases}
+    total = dict(cost=0.0, cost_n=0, done_eff=0.0, done_n=0, days=[], est=[])
     by_size = {}
 
     for t in tasks:
@@ -448,7 +449,9 @@ def cost_and_duration(tasks, cfg):
             total["cost"] += c; total["cost_n"] += 1
         if done:
             per[faz]["done_eff"] += eff
+            per[faz]["done_n"] += 1
             total["done_eff"] += eff
+            total["done_n"] += 1
             if has_dates:
                 a, b = _as_date(t.get("baslangic")), _as_date(t.get("bitis"))
                 if a and b and b >= a:
@@ -460,9 +463,19 @@ def cost_and_duration(tasks, cfg):
     def unit(bucket):
         return (bucket["cost"] / bucket["done_eff"]) if bucket["done_eff"] else None
 
+    # Ikinci payda, TAHMINDEN BAGIMSIZ: kapanan gorev SAYISI. Birincisi
+    # (efor-gunu) S/M/L agirliklarina dayanir ve o agirliklar yazarin
+    # secimiydi -- tahmin yanlissa birim maliyet ayni yonde yanlis olur.
+    # Ikisini yan yana basmak, tahminin sayiyi ne kadar tasidigini gorunur
+    # kilar: ikisi ayni yone gitmiyorsa guvenilecek olan sayidir, agirlik degil.
+    def unit_task(bucket):
+        return (bucket["cost"] / bucket["done_n"]) if bucket["done_n"] else None
+
     return dict(has_cost=has_cost, has_dates=has_dates, per=per, total=total,
                 by_size=by_size, unit_total=unit(total),
-                unit_per={p: unit(per[p]) for p in phases})
+                unit_task_total=unit_task(total),
+                unit_per={p: unit(per[p]) for p in phases},
+                unit_task_per={p: unit_task(per[p]) for p in phases})
 
 
 def compute(tasks, cfg, score_rows=None, pair_rows=None):
@@ -903,21 +916,37 @@ def r_maliyet(C, cfg):
         parts.append('      <div class="row"><span>Birim maliyet</span>'
                      '<span class="l2">sutun var, hic deger yazilmamis</span></div>\n')
     else:
-        u = cd["unit_total"]
+        u, ut = cd["unit_total"], cd["unit_task_total"]
         parts.append(f'      <div class="row"><span>Birim maliyet '
-                     f'(maliyet / tamamlanan efor-gunu)</span>'
+                     f'(maliyet / tamamlanan <b>tahmini</b> efor-gunu)</span>'
                      f'<b class="num">{fmt(u) if u else "—"}</b></div>\n')
+        parts.append(f'      <div class="row"><span>...ve tahminden bagimsiz: '
+                     f'maliyet / kapanan gorev</span>'
+                     f'<b class="num">{fmt(ut) if ut else "—"}</b></div>\n')
         parts.append(f'      <p class="l2">{cd["total"]["cost_n"]} gorevde '
                      f'maliyet yazili · toplam {fmt(cd["total"]["cost"])} · '
-                     f'tamamlanan efor {fmt(cd["total"]["done_eff"])} gun. '
+                     f'tamamlanan {cd["total"]["done_n"]} gorev / '
+                     f'{fmt(cd["total"]["done_eff"])} tahmini efor-gunu. '
                      f'Birim projeye aittir; rapor orani hesaplar, tutari '
                      f'yorumlamaz.</p>\n')
+        parts.append('      <p class="l2"><b>Ilk paydanin dayanagi bir '
+                     'TAHMINDIR.</b> Efor-gunu S/M/L agirliklarindan gelir ve o '
+                     'agirliklar yazarin secimiydi — tahmin yanlissa birim '
+                     'maliyet ayni yonde yanlis olur. Ikinci satir bu yuzden var: '
+                     'kapanan gorev SAYISI tahminden bagimsizdir. Ikisi ayni yone '
+                     'gitmiyorsa agirliga degil sayiya guven, ve asagidaki '
+                     'gecen-sure kalibrasyonuna bak.</p>\n')
         rows = [(p, cd["unit_per"][p]) for p in cfg["phases"]
                 if cd["unit_per"].get(p) is not None]
         if len(rows) >= 2:
-            parts.append('      <div class="row"><span>Faz faz birim maliyet</span>'
+            parts.append('      <div class="row"><span>Faz faz birim maliyet '
+                         '(efor-gunu / gorev)</span>'
                          '<b class="num">'
-                         + ' · '.join(f'{esc(p)} {fmt(v)}' for p, v in rows)
+                         + ' · '.join(
+                             f'{esc(p)} {fmt(v)}'
+                             + (f' / {fmt(cd["unit_task_per"][p])}'
+                                if cd["unit_task_per"].get(p) else '')
+                             for p, v in rows)
                          + '</b></div>\n')
             first, last = rows[0][1], rows[-1][1]
             if first:
@@ -1267,6 +1296,13 @@ def self_test():
     # M = 1.5 efor-gunu, tamamlanan tek gorev; toplam maliyet 4000
     check("birim maliyet tamamlanan efora bolunur",
           abs(C["cost"]["unit_total"] - (4000 / 1.5)) < 1e-6)
+    # ...ve tahminden bagimsiz ikinci payda: kapanan gorev SAYISI. Ilk payda
+    # S/M/L agirliklarina dayanir; agirlik yanlissa birim maliyet ayni yonde
+    # yanlis olur, ve bunu gorunur kilan tek sey ikinci sayidir.
+    check("gorev basina maliyet tahminden bagimsiz",
+          abs(C["cost"]["unit_task_total"] - (4000 / 1)) < 1e-6)
+    check("rapor paydanin tahmin oldugunu soyler",
+          "TAHMINDIR" in r_maliyet(C, cfg))
 
     # 28) Gecen sure yalnizca tamamlanmis ve TARIHLI gorevlerden; ve efor diye
     #     adlandirilmaz. Rapor metni bunu her seferinde soyler.
@@ -1385,8 +1421,9 @@ def main():
     elif cd["total"]["cost_n"] == 0:
         print("  Birim maliyet: sutun var, hic deger yazilmamis")
     else:
-        u = cd["unit_total"]
-        print(f"  Birim maliyet: {fmt(u) if u else '—'} / tamamlanan efor-gunu "
+        u, ut = cd["unit_total"], cd["unit_task_total"]
+        print(f"  Birim maliyet: {fmt(u) if u else '—'} / tamamlanan TAHMINI "
+              f"efor-gunu · {fmt(ut) if ut else '—'} / kapanan gorev "
               f"({cd['total']['cost_n']} gorevde maliyet yazili)")
     if cd["has_dates"] and cd["total"]["days"]:
         days = sorted(cd["total"]["days"])

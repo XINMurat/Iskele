@@ -33,7 +33,7 @@ görünümdür. İkisini elle senkron tutma — üreteci çalıştır.
 | `Durum` | **elle** | `Yapilacak` / `Devam` / `Bloke` / `Tamamlandi` |
 | `Sorumlu` `Baslangic` `Bitis` `Not` | **elle** | serbest |
 | `Hakem` | ✓ kabul kriterinden | boş olabilir |
-| `Maliyet` | — | **elle**, opsiyonel: bu görevi ilerleten oturum(lar)ın maliyeti. Birim serbest ama tutarlı olsun — rapor oranı hesaplar, tutarı yorumlamaz |
+| `Maliyet` | — | **elle**, opsiyonel: bu görevi ilerleten oturum(lar)ın maliyeti. Birim serbest ama tutarlı olsun — rapor oranı hesaplar, tutarı yorumlamaz. İKİ ayrı paydaya bölünür: tamamlanan **tahmini** efor-günü (çubukların kullandığı S/M/L ağırlıkları) ve kapanan görev **sayısı**. İlki tahmin hatasını miras alır, ikincisi almaz; ikisini birden basmak bunu görünür kılar |
 
 > `Hakem` sütunu **sona** eklenir, araya değil: `Durum` H sütununda kalmalı,
 > çünkü `Ozet` formülleri ve açılır liste doğrulaması ona bağlı.

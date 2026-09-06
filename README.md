@@ -1,5 +1,7 @@
 # İskele — From Vague Intent to an Executable Delivery Kit
 
+📚 **Docs / Belgeler:** [xinmurat.github.io/Iskele](https://xinmurat.github.io/Iskele/) — EN/TR on every page · her sayfada EN/TR
+
 A Claude skill for the moment *before* the code. İskele (Turkish: *scaffold*)
 does not write your project — it **builds the structure the project runs on**:
 a domain model, a phased roadmap with go/no-go gates, an atomic backlog with
@@ -68,7 +70,7 @@ built before this column existed, the indicator reads **"unmeasured", not 0%**.
 | `skill/iskele/scripts/kiyas_to_backlog.py` | Kıyas seeds → backlog tasks (each seed's cheapest refutation is already an executable acceptance criterion) |
 | `iskele.skill` | One-file package for installing the skill |
 | `examples/` | A worked backlog + config + report that CI runs end to end |
-| `docs/` | Quickstart and usage guide (EN/TR) |
+| `docs/` | Source of the published site: [xinmurat.github.io/Iskele](https://xinmurat.github.io/Iskele/) — quickstart, usage guide and the Turkish originals, EN/TR on every page |
 
 ## Install the skill
 
@@ -316,7 +318,7 @@ basar.
 | `skill/iskele/scripts/kiyas_to_backlog.py` | Kıyas tohumları → backlog görevleri (her tohumun en ucuz çürütmesi zaten çalıştırılabilir bir kabul kriteri) |
 | `iskele.skill` | Skill'i kurmak için tek-dosya paket |
 | `examples/` | CI'ın uçtan uca koştuğu çalışılmış backlog + config + rapor |
-| `docs/` | Hızlı başlangıç ve kullanım kılavuzu (EN/TR) |
+| `docs/` | Yayınlanan sitenin kaynağı: [xinmurat.github.io/Iskele](https://xinmurat.github.io/Iskele/) — hızlı başlangıç, kullanım kılavuzu ve Türkçe asıllar; her sayfada EN/TR |
 
 ## Kurulum
 

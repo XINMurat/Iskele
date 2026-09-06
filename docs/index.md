@@ -91,13 +91,39 @@ yalnızca üretilen bölgelerini yeniden yazar; elle eklenen bağlam yeniden
 
 ---
 
+<div data-chrome="en" markdown="1">
+
 ## The family
 
-**İskele kurar · Mizan tartar · Kıyas üretir.**
+**İskele builds · Mizan weighs · Kıyas generates · ux-mizan measures experience.**
 
-İskele builds the structure the other two operate on, and the handoffs are
+İskele builds the structure the other three operate on, and the handoffs are
 real code, not a diagram: `kiyas_to_backlog.py` turns
 [Kıyas](https://github.com/XINMurat/Kiyas) seeds into backlog tasks, and
 `iskele_to_registry.py` turns the backlog into a
 [Mizan](https://github.com/XINMurat/Mizan) registry — where Mizan's own
 validator, not İskele's, is the arbiter.
+[ux-mizan](https://github.com/XINMurat/ux-mizan) findings re-enter the backlog
+as tasks carrying acceptance criteria of their own.
+
+[All four, and how they hand off →](https://xinmurat.github.io/)
+
+</div>
+
+<div data-chrome="tr" markdown="1" class="pane-init">
+
+## Aile
+
+**İskele kurar · Mizan tartar · Kıyas üretir · ux-mizan deneyimi ölçer.**
+
+İskele, diğer üçünün üzerinde çalıştığı yapıyı kurar; devirler de diyagram
+değil gerçek kod: `kiyas_to_backlog.py` [Kıyas](https://github.com/XINMurat/Kiyas)
+tohumlarını backlog görevine, `iskele_to_registry.py` backlog'u bir
+[Mizan](https://github.com/XINMurat/Mizan) registry'sine çevirir — orada hakem
+İskele'nin değil, Mizan'ın kendi doğrulayıcısıdır.
+[ux-mizan](https://github.com/XINMurat/ux-mizan) bulguları ise kendi kabul
+kriterini taşıyan görevler olarak backlog'a geri girer.
+
+[Dördü ve nasıl devrettikleri →](https://xinmurat.github.io/)
+
+</div>

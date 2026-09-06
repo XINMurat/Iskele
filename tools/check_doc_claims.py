@@ -109,9 +109,18 @@ def documented_regions(text: str) -> tuple[set[str], int] | None:
     """The backticked keys on the 'region keys' line, with its line number."""
     for i, line in enumerate(text.splitlines(), 1):
         if re.search(r"(region keys|bölge anahtarları)", line, re.I):
-            # The sentence wraps, so read to the end of the paragraph.
-            rest = text.splitlines()[i - 1:i + 3]
-            blob = " ".join(rest).split("\n\n")[0]
+            # The sentence wraps, so read to the end of the PARAGRAPH -- which
+            # is what this comment always claimed and the code did not do: it
+            # took a fixed four-line window, so the ninth key landed outside
+            # it and the guard reported a stale list that was not stale. A
+            # checker that goes wrong as the thing it checks grows is the
+            # drift it exists to catch, one level up.
+            rest = []
+            for nxt in text.splitlines()[i - 1:]:
+                if not nxt.strip():
+                    break
+                rest.append(nxt)
+            blob = " ".join(rest)
             keys = set(re.findall(r"`([A-Z][A-Z0-9_]+)`", blob))
             return keys, i
     return None

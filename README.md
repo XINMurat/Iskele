@@ -196,6 +196,21 @@ templates and methodology text → CC-BY-4.0**
 
 ### Version
 
+**v1.4** — the **cost side of ROI**, measured rather than felt. `Maliyet` is a
+new optional column: what the session(s) that advanced a task cost, in whatever
+unit the project keeps. The report derives unit cost (cost per completed
+effort-day), breaks it down phase by phase and prints the SLOPE, because the
+information is in the direction rather than the level — each phase is an
+internal comparison arm for the next. `Baslangic`/`Bitis` were already in the
+tracker and never computed; elapsed time per completed task now feeds estimate
+calibration (RR-12's first real data), labelled *elapsed*, never *effort*.
+`tools/session_cost.py` totals real token usage from local Claude Code
+transcripts — no API key, nothing sent anywhere — so the cost figure is a
+measurement; attributing a session to a task stays a human judgement and is
+marked `[H]`. The report says in every render that this is ROI's denominator
+and not ROI: the numerator is the project's own value metric, and attribution
+without a counterfactual is `[KKE]`.
+
 **v1.3** — the **pair pass** gets a home: a `Cift` sheet in the tracker, one
 row per feature × existing guarantee, with the safe order when the pair is
 asymmetric and an outcome of `tutuyor` / `kiriliyor` / `bakilmadi`. Atomising
@@ -387,6 +402,20 @@ Bilinçli olarak ikili: **kod ve şemalar → MIT** ([`LICENSE`](LICENSE)); **d�
 ([`LICENSE-docs.md`](LICENSE-docs.md)).
 
 ### Sürüm
+
+**v1.4** — **ROI'nin maliyet tarafı**, hissedilerek değil ölçülerek. `Maliyet`
+yeni ve opsiyonel bir sütun: bir görevi ilerleten oturum(lar)ın maliyeti,
+projenin tuttuğu birimle. Rapor birim maliyeti (tamamlanan efor-günü başına
+maliyet) türetir, faz faz kırar ve **eğimi** basar — çünkü bilgi seviyede değil
+yöndedir: her faz bir sonrakinin iç karşılaştırma koludur. `Baslangic`/`Bitis`
+çizelgede zaten vardı ve hiç hesaplanmıyordu; tamamlanan görev başına geçen
+süre artık tahmin kalibrasyonunu besliyor (RR-12'nin ilk gerçek verisi) ve
+*geçen süre* diye adlandırılıyor, *efor* diye değil. `tools/session_cost.py`
+yerel Claude Code transkriptlerinden gerçek token kullanımını toplar — API
+anahtarı yok, hiçbir yere bir şey gitmez — böylece maliyet rakamı bir ölçümdür;
+bir oturumu bir göreve atfetmek insan hükmüdür ve `[H]` işaretlenir. Rapor her
+render'da bunun ROI'nin PAYDASI olduğunu, ROI olmadığını söyler: payı projenin
+kendi değer metriğidir ve karşı-olgusuz atıf `[KKE]`'dir.
 
 **v1.3** — **çift pası** bir yer kazanır: çizelgede `Cift` sekmesi, her satır
 bir özellik × mevcut garanti çifti; çift asimetrikse güvenli sıra ve sonuç

@@ -29,9 +29,14 @@ FONT = "Arial"
 # sekmesindeki COUNTIF/COUNTIFS formulleri ve acilir liste dogrulamasi ona
 # bagli. Sutun sirasini estetik gerekceyle degistirmek o formulleri sessizce
 # yanlis hucreye baglar.
+# "Maliyet" de SONA eklendi, ayni gerekceyle. Elle doldurulur ve OPSIYONELDIR:
+# bir gorevi ilerleten oturumun maliyeti, yalnizca o oturumu kosan kisinin
+# verebilecegi bir atiftir (tools/session_cost.py oturum toplamini OLCER, ama
+# hangi gorevi ilerlettigine karar veremez). Bos birakilmasi normaldir; rapor
+# bos sutunu "olculmedi" diye basar, sifir diye degil.
 HEADERS = ["ID", "Faz", "Epik", "Gorev", "Katman", "Tahmin",
            "Bagimlilik", "Durum", "Sorumlu", "Baslangic", "Bitis", "Not",
-           "Hakem"]
+           "Hakem", "Maliyet"]
 STATUSES = ["Yapilacak", "Devam", "Bloke", "Tamamlandi"]
 PALETTE = ["E2EFDA", "DEEBF7", "FCE4D6", "EDEDED", "FFF2CC", "E4DFEC"]
 
@@ -157,10 +162,10 @@ def build(tasks, out_path, phases):
     ws.add_data_validation(dv)
     dv.add(f"H2:H{last}")
 
-    for i, w in enumerate([12, 6, 26, 42, 8, 8, 24, 13, 14, 13, 13, 30, 34], start=1):
+    for i, w in enumerate([12, 6, 26, 42, 8, 8, 24, 13, 14, 13, 13, 30, 34, 12], start=1):
         ws.column_dimensions[get_column_letter(i)].width = w
     ws.freeze_panes = "A2"
-    ws.auto_filter.ref = f"A1:M{last}"
+    ws.auto_filter.ref = f"A1:N{last}"
     ws.sheet_view.showGridLines = False
 
     # ---- Ozet
@@ -273,6 +278,18 @@ def build(tasks, out_path, phases):
         ("- Kabul kriterindeki '**Hakem:**' satirindan gelir; bos olmasi normaldir.", False, 10),
         ("- Bos = o gorevin 'Tamamlandi'si oz-beyandir (kimse disaridan dogrulamadi).", False, 10),
         ("- Rapor bunu ayri bir gosterge olarak basar; ilerleme yuzdesini DEGISTIRMEZ.", False, 10),
+        ("", False, 10),
+        ("Maliyet sutunu (opsiyonel, elle):", True, 11),
+        ("- Bu gorevi ilerleten oturum(lar)in maliyeti. Birim ne olursa olsun TUTARLI olsun", False, 10),
+        ("  (token ya da para) -- rapor birimi bilmez, orani hesaplar.", False, 10),
+        ("- Oturum toplamini tools/session_cost.py OLCER; hangi goreve yazilacagi ATIFTIR", False, 10),
+        ("  ve o hukmu yalnizca oturumu kosan kisi verebilir. Bu yuzden [H].", False, 10),
+        ("- Bos birakmak normaldir; rapor bos sutunu 'olculmedi' basar, sifir basmaz.", False, 10),
+        ("", False, 10),
+        ("Baslangic / Bitis:", True, 11),
+        ("- Ikisi de doluysa rapor GECEN SURE'yi hesaplar (takvim gunu).", False, 10),
+        ("- Gecen sure EFOR DEGILDIR: 5 gun acik duran gorev 2 saatlik is olabilir.", False, 10),
+        ("  Rapor bunu 'gecen sure' diye adlandirir ve efor tahminiyle karistirmaz.", False, 10),
         ("", False, 10),
         ("Skorkart sekmesi:", True, 11),
         ("- Faz KAPANISINDA elle doldurulur; go/no-go ile ayni anda.", False, 10),

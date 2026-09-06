@@ -33,6 +33,7 @@ görünümdür. İkisini elle senkron tutma — üreteci çalıştır.
 | `Durum` | **elle** | `Yapilacak` / `Devam` / `Bloke` / `Tamamlandi` |
 | `Sorumlu` `Baslangic` `Bitis` `Not` | **elle** | serbest |
 | `Hakem` | ✓ kabul kriterinden | boş olabilir |
+| `Maliyet` | — | **elle**, opsiyonel: bu görevi ilerleten oturum(lar)ın maliyeti. Birim serbest ama tutarlı olsun — rapor oranı hesaplar, tutarı yorumlamaz |
 
 > `Hakem` sütunu **sona** eklenir, araya değil: `Durum` H sütununda kalmalı,
 > çünkü `Ozet` formülleri ve açılır liste doğrulaması ona bağlı.
@@ -172,8 +173,9 @@ otomatik hem yazılabilir kalır.
 Varsayılan bölge anahtarları: `CHIPS` (üst rozetler), `KPI` (özet göstergeler),
 `CARDS` (faz kartları), `BARS` (epik çubukları), `TIMELINE` (kapı/faz akışı),
 `HAKEM` (tamamlanan eforun ne kadarı yazardan başka bir hakem adı taşıyor),
-`SKORKART` (faz kapanış çizelgesi) ve `CIFT` (çift pası — parçalara ayrılan iş
-geri birleştirildi mi).
+`SKORKART` (faz kapanış çizelgesi), `CIFT` (çift pası — parçalara ayrılan iş
+geri birleştirildi mi) ve `MALIYET` (birim maliyet ve geçen süre — ROI'nin
+PAYDASI, ROI'nin kendisi değil).
 
 `tools/check_doc_claims.py` bu listeyi üretecin `RENDERERS` sözlüğüne bağlar:
 iki kez bayatladı — önce `HAKEM`, sonra `SKORKART` eklendi, bu cümle iki dilde

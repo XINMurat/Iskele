@@ -21,6 +21,7 @@ Cikis kodlari: 0 basarili · 2 dogrulama hatasi · 3 degismez ihlali.
 Bagimlilik: openpyxl
 """
 import argparse, json, re, subprocess, sys, tempfile
+import datetime
 from datetime import date
 from pathlib import Path
 
@@ -30,7 +31,15 @@ COL = dict(id="ID", faz="Faz", epik="Epik", tahmin="Tahmin", durum="Durum")
 # Opsiyonel sutun: eski cizelgelerde yok. YOKSA gosterge hesaplanmaz ve rapora
 # "veri yok" yazilir — %0 yazilmaz. Veri yoklugunu sifir olarak gostermek,
 # "sessiz varsayim" kirmizi cizgisinin ta kendisidir.
-OPT_COL = dict(hakem="Hakem")
+OPT_COL = dict(hakem="Hakem", maliyet="Maliyet",
+               baslangic="Baslangic", bitis="Bitis")
+# Maliyet: bu gorevi ilerleten oturum(lar)in maliyeti, elle yazilir. Birim
+# projeye kalmis (token ya da para) ve rapor birimi BILMEZ -- orani hesaplar,
+# tutari yorumlamaz. tools/session_cost.py oturum toplamini olcer; hangi goreve
+# yazilacagi bir ATIFTIR ve o hukmu yalnizca oturumu kosan kisi verebilir.
+# Gecen sure: Bitis - Baslangic. EFOR DEGILDIR ve rapor onu efor diye
+# adlandirmaz -- 5 gun acik duran gorev 2 saatlik is olabilir. Olculen sey
+# "isin ne kadar surdugu" degil "gorevin ne kadar acik kaldigi"dir.
 
 # Faz kapanis skorkarti: OPSIYONEL bir sekme, elle doldurulur. Buradaki her
 # sayi OZ-BEYANDIR -- hakem = yazar -- ve rapor bunu her seferinde soyler.
@@ -180,6 +189,8 @@ def load_tasks(xlsx, cfg):
 
         tasks.append(dict(id=tid, faz=faz, epik=raw["epik"],
                           tahmin=tahmin, durum=durum, hakem=raw["hakem"],
+                          maliyet=raw["maliyet"], baslangic=raw["baslangic"],
+                          bitis=raw["bitis"],
                           _cols={k: (v in headers) for k, v in OPT_COL.items()}))
 
     if not tasks:
@@ -374,6 +385,86 @@ def pair_totals(rows):
     return per, tot
 
 
+def _as_date(value):
+    """Excel tarih hucresi -> date, ya da None. Elle yazilmis metin de kabul."""
+    if value is None or value == "":
+        return None
+    if isinstance(value, datetime.datetime):
+        return value.date()
+    if isinstance(value, datetime.date):
+        return value
+    text = str(value).strip()[:10]
+    for fmt in ("%Y-%m-%d", "%d.%m.%Y", "%d/%m/%Y"):
+        try:
+            return datetime.datetime.strptime(text, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
+def _as_num(value):
+    if value is None or value == "":
+        return None
+    try:
+        return float(str(value).replace(",", "").replace(" ", ""))
+    except ValueError:
+        return None
+
+
+def cost_and_duration(tasks, cfg):
+    """Maliyet ve gecen sure gostergeleri -- ikisi de OPSIYONEL veriden.
+
+    Uc sey hesaplanir ve ucu de ayri tutulur:
+
+      * gecen sure  : Bitis - Baslangic, TAMAMLANMIS gorevler icin. Efor degil.
+      * maliyet     : elle yazilan Maliyet sutununun toplami.
+      * birim maliyet: maliyet / tamamlanan efor-gunu. ROI'nin PAYDASI budur --
+        payi degil. Getiri, projenin kendi metriginden gelir ve bu script onu
+        bilmez; bildigini iddia etseydi uydurmus olurdu.
+
+    Faz faz kirilir, cunku asil bilgi seviyede degil EGIMDE: F1'de birim maliyet
+    X, F3'te 0.6X ise proje kendi ic karsilastirma kolunu uretmis olur. Bu,
+    "aracsiz ne olurdu" karsi-olgusunun yerini TUTMAZ ama ondan cok daha ucuzdur
+    ve elde vardir.
+    """
+    W, CR, phases = cfg["effort_weights"], cfg["status_credit"], cfg["phases"]
+    has_cost = bool(tasks) and tasks[0].get("_cols", {}).get("maliyet", False)
+    has_dates = bool(tasks) and (tasks[0].get("_cols", {}).get("baslangic", False)
+                                 and tasks[0].get("_cols", {}).get("bitis", False))
+
+    per = {p: dict(cost=0.0, cost_n=0, done_eff=0.0, days=[], est=[]) for p in phases}
+    total = dict(cost=0.0, cost_n=0, done_eff=0.0, days=[], est=[])
+    by_size = {}
+
+    for t in tasks:
+        faz = t["faz"]
+        if faz not in per:
+            continue
+        done = CR.get(t["durum"], 0.0) >= 1
+        eff = W.get(t["tahmin"], 0.0)
+        c = _as_num(t.get("maliyet")) if has_cost else None
+        if c is not None:
+            per[faz]["cost"] += c; per[faz]["cost_n"] += 1
+            total["cost"] += c; total["cost_n"] += 1
+        if done:
+            per[faz]["done_eff"] += eff
+            total["done_eff"] += eff
+            if has_dates:
+                a, b = _as_date(t.get("baslangic")), _as_date(t.get("bitis"))
+                if a and b and b >= a:
+                    d = (b - a).days + 1
+                    per[faz]["days"].append(d)
+                    total["days"].append(d)
+                    by_size.setdefault(t["tahmin"], []).append(d)
+
+    def unit(bucket):
+        return (bucket["cost"] / bucket["done_eff"]) if bucket["done_eff"] else None
+
+    return dict(has_cost=has_cost, has_dates=has_dates, per=per, total=total,
+                by_size=by_size, unit_total=unit(total),
+                unit_per={p: unit(per[p]) for p in phases})
+
+
 def compute(tasks, cfg, score_rows=None, pair_rows=None):
     W, CR, phases = cfg["effort_weights"], cfg["status_credit"], cfg["phases"]
     epics = {}
@@ -412,7 +503,8 @@ def compute(tasks, cfg, score_rows=None, pair_rows=None):
     total_dn = sum(p["dn"] for p in ph.values())
 
     pair_per, pair_tot = pair_totals(pair_rows)
-    return dict(epics=epics, phases=ph, total_eff=total_eff,
+    cd = cost_and_duration(tasks, cfg)
+    return dict(epics=epics, phases=ph, total_eff=total_eff, cost=cd,
                 pair_rows=pair_rows, pair_per=pair_per, pair_tot=pair_tot,
                 score_rows=score_rows,
                 score_totals=score_totals(score_rows) if score_rows else None,
@@ -782,9 +874,97 @@ def r_cift(C, cfg):
             '    </div>')
 
 
+def r_maliyet(C, cfg):
+    """GEN:MALIYET -- birim maliyet ve gecen sure.
+
+    Bu bolge ROI HESAPLAMAZ ve hesapladigini soylemez. ROI'nin iki terimi var;
+    burada olculen yalnizca biri:
+
+      PAYDA  maliyet / tamamlanan efor-gunu. Elle yazilan Maliyet sutunundan
+             gelir, birimi projeye aittir, ve bu script birimi yorumlamaz.
+      PAY    projenin kendi deger metrigi -- kapanan ticket, cevrim suresi,
+             kacan kusur orani. Bu script onu BILMEZ.
+
+    Faz faz basilir, cunku bilgi seviyede degil EGIMDEDIR: her faz bir sonraki
+    icin ic karsilastirma kolu olur. "Aracsiz ne olurdu" karsi-olgusunun yerini
+    tutmaz -- ama o kol cogu ekipte hic kurulamaz, bu ise elde vardir.
+    """
+    cd = C["cost"]
+    parts = []
+
+    if not cd["has_cost"]:
+        parts.append('      <div class="row"><span>Birim maliyet</span>'
+                     '<span class="l2">olculmedi (cizelgede &quot;Maliyet&quot; '
+                     'sutunu yok)</span></div>\n'
+                     '      <p class="l2">%0 DEGIL. Oturum toplamini '
+                     'tools/session_cost.py olcer; hangi goreve yazilacagi '
+                     'atiftir.</p>\n')
+    elif cd["total"]["cost_n"] == 0:
+        parts.append('      <div class="row"><span>Birim maliyet</span>'
+                     '<span class="l2">sutun var, hic deger yazilmamis</span></div>\n')
+    else:
+        u = cd["unit_total"]
+        parts.append(f'      <div class="row"><span>Birim maliyet '
+                     f'(maliyet / tamamlanan efor-gunu)</span>'
+                     f'<b class="num">{fmt(u) if u else "—"}</b></div>\n')
+        parts.append(f'      <p class="l2">{cd["total"]["cost_n"]} gorevde '
+                     f'maliyet yazili · toplam {fmt(cd["total"]["cost"])} · '
+                     f'tamamlanan efor {fmt(cd["total"]["done_eff"])} gun. '
+                     f'Birim projeye aittir; rapor orani hesaplar, tutari '
+                     f'yorumlamaz.</p>\n')
+        rows = [(p, cd["unit_per"][p]) for p in cfg["phases"]
+                if cd["unit_per"].get(p) is not None]
+        if len(rows) >= 2:
+            parts.append('      <div class="row"><span>Faz faz birim maliyet</span>'
+                         '<b class="num">'
+                         + ' · '.join(f'{esc(p)} {fmt(v)}' for p, v in rows)
+                         + '</b></div>\n')
+            first, last = rows[0][1], rows[-1][1]
+            if first:
+                trend = round(100 * (last - first) / first)
+                yon = "dusuyor" if trend < 0 else ("artiyor" if trend > 0 else "sabit")
+                parts.append(f'      <p class="l2">Egim: ilk fazdan sona '
+                             f'%{abs(trend)} {yon}. <b>Asil bilgi budur</b> — her faz '
+                             f'bir sonrakinin ic karsilastirma koludur. Bu, '
+                             f'&quot;aracsiz ne olurdu&quot; karsi-olgusunun yerini '
+                             f'TUTMAZ.</p>\n')
+
+    if not cd["has_dates"]:
+        parts.append('      <div class="row"><span>Gecen sure</span>'
+                     '<span class="l2">olculmedi (Baslangic/Bitis bos ya da yok)'
+                     '</span></div>\n')
+    elif not cd["total"]["days"]:
+        parts.append('      <div class="row"><span>Gecen sure</span>'
+                     '<span class="l2">tarihli tamamlanmis gorev yok</span></div>\n')
+    else:
+        days = sorted(cd["total"]["days"])
+        med = days[len(days) // 2]
+        parts.append(f'      <div class="row"><span>Gecen sure (medyan)</span>'
+                     f'<b class="num">{med} gun · {len(days)} gorev</b></div>\n')
+        if cd["by_size"]:
+            per_size = ' · '.join(
+                f'{esc(k)} {sorted(v)[len(v)//2]}g'
+                for k, v in sorted(cd["by_size"].items()) if v)
+            parts.append(f'      <div class="row"><span>Tahmine gore medyan '
+                         f'gecen sure</span><b class="num">{per_size}</b></div>\n')
+            parts.append('      <p class="l2">Tahmin kalibrasyonu: S/M/L '
+                         'agirliklari yazarin secimiydi, bu ilk gercek veridir '
+                         '(RR-12). <b>Gecen sure EFOR DEGILDIR</b> — 5 gun acik '
+                         'duran gorev 2 saatlik is olabilir; olculen sey gorevin '
+                         'ne kadar ACIK KALDIGIDIR.</p>\n')
+
+    return ('<div class="note">\n' + "".join(parts) +
+            '      <p class="l2"><b>Bu bolge ROI degildir.</b> ROI\'nin paydasi '
+            'burada; payi projenin kendi deger metriginde. Ve "arac %X '
+            'kazandirdi" cumlesi icin ucuncu bir sey gerekir: karsi-olgu. O kol '
+            'olmadan atif [KKE]\'dir.</p>\n'
+            '    </div>')
+
+
 RENDERERS = dict(CHIPS=r_chips, KPI=r_kpi, CARDS=r_cards,
                  BARS=r_bars, TIMELINE=r_timeline, HAKEM=r_hakem,
-                 SKORKART=r_skorkart, CIFT=r_cift)
+                 SKORKART=r_skorkart, CIFT=r_cift,
+                 MALIYET=r_maliyet)
 
 
 def patch(html, key, block):
@@ -1048,6 +1228,77 @@ def self_test():
     check("cift pasi ilerleme yuzdesini degistirmez",
           compute(t, cfg, None, rows)["overall_pct"] == compute(t, cfg)["overall_pct"])
 
+    # ---- Maliyet ve gecen sure ---------------------------------------------
+    import datetime as _dt
+    TH = ["ID", "Epik", "Faz", "Katman", "Tahmin", "Durum", "Maliyet",
+          "Baslangic", "Bitis"]
+
+    def make_c(rows, headers=TH):
+        wb = Workbook(); ws = wb.active; ws.title = "Takip"
+        ws.append(headers)
+        for r in rows:
+            ws.append(r)
+        p = tmp / "tc.xlsx"; wb.save(p); return p
+
+    # 25) Sutun YOKSA gosterge %0 degil "olculmedi". Hakem sutunuyla ayni
+    #     kirmizi cizgi: olculmemis maliyeti sifir basmak, en pahali sessiz
+    #     varsayimdir -- proje bedava gorunur.
+    t, _ = load_tasks(make_c([["F0-BE-01", "E1", "F0", "BE", "M", "Tamamlandi"]],
+                             headers=TH[:6]), cfg)
+    C = compute(t, cfg)
+    check("Maliyet sutunu yoksa has_cost False", C["cost"]["has_cost"] is False)
+    check("sutun yoksa rapor 'olculmedi' basar", "olculmedi" in r_maliyet(C, cfg))
+
+    # 26) Sutun var, deger yok: yine sifir degil. Bos hucre ile 0 arasindaki
+    #     fark, bu dosyadaki her gostergenin uzerine kuruldugu ayrimdir.
+    t, _ = load_tasks(make_c([["F0-BE-01", "E1", "F0", "BE", "M", "Tamamlandi",
+                               "", "", ""]]), cfg)
+    C = compute(t, cfg)
+    check("deger yazilmamissa cost_n 0", C["cost"]["total"]["cost_n"] == 0)
+
+    # 27) Birim maliyet = maliyet / TAMAMLANAN efor-gunu. Tamamlanmamis isin
+    #     maliyeti paya girer (harcandi), efora girmez (teslim edilmedi) --
+    #     tersi, biten isi ucuz gosteren bir bolme olurdu.
+    t, _ = load_tasks(make_c([
+        ["F0-BE-01", "E1", "F0", "BE", "M", "Tamamlandi", "3000", "", ""],
+        ["F0-BE-02", "E1", "F0", "BE", "M", "Devam", "1000", "", ""],
+    ]), cfg)
+    C = compute(t, cfg)
+    # M = 1.5 efor-gunu, tamamlanan tek gorev; toplam maliyet 4000
+    check("birim maliyet tamamlanan efora bolunur",
+          abs(C["cost"]["unit_total"] - (4000 / 1.5)) < 1e-6)
+
+    # 28) Gecen sure yalnizca tamamlanmis ve TARIHLI gorevlerden; ve efor diye
+    #     adlandirilmaz. Rapor metni bunu her seferinde soyler.
+    t, _ = load_tasks(make_c([
+        ["F0-BE-01", "E1", "F0", "BE", "S", "Tamamlandi", "100",
+         _dt.date(2026, 9, 1), _dt.date(2026, 9, 3)],
+        ["F0-BE-02", "E1", "F0", "BE", "S", "Devam", "100",
+         _dt.date(2026, 9, 1), _dt.date(2026, 9, 9)],
+    ]), cfg)
+    C = compute(t, cfg)
+    check("gecen sure yalniz tamamlanmis gorevden", C["cost"]["total"]["days"] == [3])
+    check("rapor 'EFOR DEGILDIR' der", "EFOR DEGILDIR" in r_maliyet(C, cfg))
+
+    # 29) Faz faz egim: asil bilgi seviyede degil YONDE. Her faz bir sonrakinin
+    #     ic karsilastirma koludur -- karsi-olgunun yerini tutmaz, ve rapor
+    #     tuttugunu iddia etmez.
+    t, _ = load_tasks(make_c([
+        ["F0-BE-01", "E1", "F0", "BE", "M", "Tamamlandi", "3000", "", ""],
+        ["F1-BE-01", "E1", "F1", "BE", "M", "Tamamlandi", "1500", "", ""],
+    ]), cfg)
+    C = compute(t, cfg)
+    html = r_maliyet(C, cfg)
+    check("faz faz birim maliyet basilir", "Faz faz birim maliyet" in html)
+    check("egim yonuyle birlikte basilir", "dusuyor" in html)
+    check("karsi-olgu uyarisi her zaman var", "TUTMAZ" in html and "[KKE]" in html)
+
+    # 30) Maliyet ilerleme yuzdesine DOKUNMAZ. Ucuncu gosterge de digerleri gibi
+    #     ayri kalir: %100 kapanmis bir faz pahali olabilir ve bu celiski degil
+    #     bilgidir.
+    check("maliyet ilerleme yuzdesini degistirmez",
+          compute(t, cfg)["overall_pct"] == compute(t, cfg, None, None)["overall_pct"])
+
     print("SELF-TEST:", "BASARILI" if ok else "BASARISIZ")
     return 0 if ok else 1
 
@@ -1127,6 +1378,20 @@ def main():
         T = C["pair_tot"]
         print(f"  Cift pasi: {T['n']} cift · {T['kirik']} kirik"
               + (f" · {T['bakilmadi']} bakilmadi" if T["bakilmadi"] else ""))
+
+    cd = C["cost"]
+    if not cd["has_cost"]:
+        print("  Birim maliyet: olculmedi ('Maliyet' sutunu yok) -- %0 DEGIL")
+    elif cd["total"]["cost_n"] == 0:
+        print("  Birim maliyet: sutun var, hic deger yazilmamis")
+    else:
+        u = cd["unit_total"]
+        print(f"  Birim maliyet: {fmt(u) if u else '—'} / tamamlanan efor-gunu "
+              f"({cd['total']['cost_n']} gorevde maliyet yazili)")
+    if cd["has_dates"] and cd["total"]["days"]:
+        days = sorted(cd["total"]["days"])
+        print(f"  Gecen sure: medyan {days[len(days)//2]} gun "
+              f"({len(days)} tamamlanmis gorev) -- efor DEGIL, acik kalma suresi")
 
     if a.check:
         return

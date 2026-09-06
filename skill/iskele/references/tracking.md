@@ -30,6 +30,7 @@ the generator.
 | `Durum` (status) | **by hand** | `Yapilacak` / `Devam` / `Bloke` / `Tamamlandi` |
 | `Sorumlu` `Baslangic` `Bitis` `Not` | **by hand** | free text |
 | `Hakem` (arbiter) | ✓ from the acceptance criterion | may be empty |
+| `Maliyet` (cost) | — | **by hand**, optional: what the session(s) that advanced this task cost. Any unit, kept consistent — the report computes the ratio, it does not interpret the amount |
 
 > The `Hakem` column is appended **at the end**, never inserted: `Durum` must
 > stay in column H, because the `Ozet` formulas and the dropdown validation
@@ -182,8 +183,9 @@ writable.
 Default region keys: `CHIPS` (top badges), `KPI` (summary indicators), `CARDS`
 (phase cards), `BARS` (epic bars), `TIMELINE` (gate/phase flow), `HAKEM`
 (how much of the completed effort names an arbiter other than the author),
-`SKORKART` (the phase-close scorecard) and `CIFT` (the pair pass — whether the
-work that was taken apart was put back together).
+`SKORKART` (the phase-close scorecard), `CIFT` (the pair pass — whether the
+work that was taken apart was put back together) and `MALIYET` (unit cost and
+elapsed time — the DENOMINATOR of ROI, never ROI itself).
 
 `tools/check_doc_claims.py` binds this list to the generator's `RENDERERS`
 dict, because it went stale twice: `HAKEM` shipped, then `SKORKART` shipped,

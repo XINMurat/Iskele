@@ -36,6 +36,8 @@ from pathlib import Path
 import yaml
 
 WORK_TIERS = {"H-aday"}
+# Arbiter classes that may lift a task past self-report (family-vocabulary.yaml).
+EXECUTABLE_ARBITERS = {"runtime", "instrument", "third_party"}
 SIZE_HINT = [
     (re.compile(r'\b(kucuk|small|hours?|saat|yarim gun|half[- ]day)\b', re.I), "S"),
     (re.compile(r'\b(orta|medium|1-2\s*g[uü]n|days?)\b', re.I), "M"),
@@ -100,7 +102,7 @@ def main():
         arb = (s.get("arbiter") or {})
         who = one_line(arb.get("who"))
         kabul = test or "EKSIK — tohumda cheapest_refutation.test yok"
-        if who and arb.get("class") in {"runtime", "instrument", "third_party"}:
+        if who and arb.get("class") in EXECUTABLE_ARBITERS:
             kabul += f" **Hakem:** {who}"
 
         mark = "  <!-- TAHMIN: kalibresiz -->" if size_of(s.get("cost")) is None else ""

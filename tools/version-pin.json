@@ -1,0 +1,12 @@
+{
+  "_comment": "Where the version is decided, and which prose repeats it. The site's release table and the README had drifted a release apart with nothing pinning either. Only the number is pinned.",
+  "source_file": "skill/iskele/SKILL.md",
+  "version_key": "version",
+  "markers": [
+    "Current version:",
+    "Şu anki sürüm:"
+  ],
+  "files": [
+    "README.md"
+  ]
+}

@@ -204,6 +204,29 @@ templates and methodology text → CC-BY-4.0**
 
 ### Version
 
+Current version: v1.5
+
+**Unreleased (on `main`, after v1.5.0)** — tooling only.
+`tools/build_skill.py` builds and checks `iskele.skill` byte for byte; the
+shipped package had CRLF inside, including `#!/usr/bin/env python3\r`
+shebangs, and the old check normalised CRLF so it passed. The README's
+current-version line is pinned to `metadata.version` in SKILL.md.
+`leak_check.py --require` makes an empty CI secret fail. The handoff job now
+runs Kıyas's own worked example through the whole chain — Kıyas's validator
+on the input, Mizan's on the output — and checks that no link drops work.
+
+**v1.5** — the **expectation delta**: an S/M/L estimate written before the
+work is a preregistered expectation, and the gap between it and the measured
+effort (`GercekEfor`, optional — worked effort, kept apart from elapsed time)
+is a second metric that stands beside the human's account, never in place of
+it. `estimate_basis` in the config decides what the number may be called:
+`unaided` says something about the tool's effect (still not a
+counterfactual), `tool-assisted` measures the team's calibration, and
+`unknown` — the default — prints the number and says it cannot tell which.
+Unit cost now has **two denominators**: per completed estimated effort-day and
+per completed task, because the first rests on the S/M/L weights; when the two
+diverge, the weights are doing the work.
+
 **v1.4** — the **cost side of ROI**, measured rather than felt. `Maliyet` is a
 new optional column: what the session(s) that advanced a task cost, in whatever
 unit the project keeps. The report derives unit cost (cost per completed
@@ -416,6 +439,28 @@ Bilinçli olarak ikili: **kod ve şemalar → MIT** ([`LICENSE`](LICENSE)); **d�
 ([`LICENSE-docs.md`](LICENSE-docs.md)).
 
 ### Sürüm
+
+Şu anki sürüm: v1.5
+
+**Yayımlanmadı (`main` üzerinde, v1.5.0'dan sonra)** — yalnızca araçlar.
+`tools/build_skill.py` `iskele.skill`'i bayt bayt üretir ve denetler; dağıtılan
+paketin içinde `#!/usr/bin/env python3\r` shebang'leri dahil CRLF vardı ve eski
+kontrol CRLF'yi normalleştirdiği için geçiyordu. README'deki güncel sürüm
+satırı SKILL.md'deki `metadata.version`'a sabitlendi. `leak_check.py
+--require` boş bir CI secret'ını düşürür. Handoff job'ı artık Kıyas'ın kendi
+örneğini zincirin tamamından geçiriyor — girdiyi Kıyas'ın, çıktıyı Mizan'ın
+doğrulayıcısı yargılar — ve hiçbir halkanın iş düşürmediğini denetler.
+
+**v1.5** — **beklenti sapması**: işten önce yazılmış S/M/L tahmini önkayıtlı bir
+beklentidir; onunla ölçülmüş efor (`GercekEfor`, opsiyonel — harcanan efor,
+geçen süreden ayrı tutulur) arasındaki fark, insanın anlatımının yerine değil
+yanına konan ikinci bir metriktir. Config'teki `estimate_basis` sayının ne diye
+adlandırılabileceğine karar verir: `unaided` aracın etkisi hakkında bir şey
+söyler (yine de karşı-olgu değildir), `tool-assisted` ekibin kalibrasyonunu
+ölçer, varsayılan `unknown` sayıyı basar ve hangisi olduğunu söyleyemediğini
+yazar. Birim maliyetin artık **iki paydası** var: tamamlanan tahmini efor-günü
+başına ve tamamlanan görev başına — çünkü ilki S/M/L ağırlıklarına dayanır; ikisi
+ayrıştığında işi ağırlıklar yapıyordur.
 
 **v1.4** — **ROI'nin maliyet tarafı**, hissedilerek değil ölçülerek. `Maliyet`
 yeni ve opsiyonel bir sütun: bir görevi ilerleten oturum(lar)ın maliyeti,

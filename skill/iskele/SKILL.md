@@ -4,6 +4,7 @@ description: Turns a vague project intent into an executable delivery kit — do
 license: MIT
 metadata:
   author: XINMurat
+  version: "1.5"
 ---
 
 # Iskele

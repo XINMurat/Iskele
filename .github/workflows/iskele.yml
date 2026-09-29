@@ -331,6 +331,33 @@ jobs:
               print("FAIL: the chain lost or invented work between links"); sys.exit(1)
           print("OK: a batch Kiyas accepts reaches a registry Mizan accepts, intact.")
           PY
+          # And back: completed tasks return to the registry as results, and
+          # the registry still passes Mizan's own validator afterwards.
+          python - <<'PY'
+          from openpyxl import load_workbook
+          wb = load_workbook("/tmp/chain.xlsx"); ws = wb["Takip"]
+          col = [c.value for c in ws[1]].index("Durum") + 1
+          for r in range(2, ws.max_row + 1):
+              if ws.cell(r, 1).value:
+                  ws.cell(r, col).value = "Tamamlandi"
+          wb.save("/tmp/chain.xlsx")
+          PY
+          python skill/iskele/scripts/iskele_results.py --xlsx /tmp/chain.xlsx \
+            --config skill/iskele/assets/iskele.config.example.json \
+            --registry /tmp/chain-registry.yaml
+          python _mizan/tools/mizan_validate.py --strict /tmp/chain-registry.yaml
+          python - <<'PY'
+          import sys, yaml
+          reg = yaml.safe_load(open("/tmp/chain-registry.yaml", encoding="utf-8"))
+          h, r = len(reg["hypotheses"]), len(reg["results"])
+          print("hypotheses", h, "results", r)
+          if h != r:
+              print("FAIL: a completed task did not come back as a result"); sys.exit(1)
+          PY
+          # Second run must add nothing (append-only).
+          python skill/iskele/scripts/iskele_results.py --xlsx /tmp/chain.xlsx \
+            --config skill/iskele/assets/iskele.config.example.json \
+            --registry /tmp/chain-registry.yaml | grep -q "0 eklendi"
 
   adr-chain:
     runs-on: ubuntu-latest

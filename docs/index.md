@@ -119,9 +119,10 @@ real code, not a diagram: `kiyas_to_backlog.py` turns
 [Kıyas](https://github.com/XINMurat/Kiyas) seeds into backlog tasks, and
 `iskele_to_registry.py` turns the backlog into a
 [Mizan](https://github.com/XINMurat/Mizan) registry — where Mizan's own
-validator, not İskele's, is the arbiter.
+validator, not İskele's, is the arbiter. `iskele_results.py` closes the
+loop: completed tasks return to that registry as results.
 [ux-mizan](https://github.com/XINMurat/ux-mizan) findings re-enter the backlog
-as tasks carrying acceptance criteria of their own.
+(`ux_to_backlog.py`) as tasks carrying acceptance criteria of their own.
 
 [All four, and how they hand off →](https://xinmurat.github.io/)
 
@@ -137,8 +138,9 @@ as tasks carrying acceptance criteria of their own.
 değil gerçek kod: `kiyas_to_backlog.py` [Kıyas](https://github.com/XINMurat/Kiyas)
 tohumlarını backlog görevine, `iskele_to_registry.py` backlog'u bir
 [Mizan](https://github.com/XINMurat/Mizan) registry'sine çevirir — orada hakem
-İskele'nin değil, Mizan'ın kendi doğrulayıcısıdır.
-[ux-mizan](https://github.com/XINMurat/ux-mizan) bulguları ise kendi kabul
+İskele'nin değil, Mizan'ın kendi doğrulayıcısıdır. `iskele_results.py`
+döngüyü kapatır: tamamlanan görevler o registry'ye sonuç olarak döner.
+[ux-mizan](https://github.com/XINMurat/ux-mizan) bulguları ise (`ux_to_backlog.py`) kendi kabul
 kriterini taşıyan görevler olarak backlog'a geri girer.
 
 [Dördü ve nasıl devrettikleri →](https://xinmurat.github.io/)

@@ -74,6 +74,7 @@ built before this column existed, the indicator reads **"unmeasured", not 0%**.
 | `skill/iskele/scripts/progress.py` | `tracker.xlsx` → the report's GEN regions |
 | `skill/iskele/scripts/iskele_to_registry.py` | backlog → a Mizan registry (each acceptance criterion is already a preregistered refutation condition) |
 | `skill/iskele/scripts/kiyas_to_backlog.py` | Kıyas seeds → backlog tasks (each seed's cheapest refutation is already an executable acceptance criterion) |
+| `skill/iskele/scripts/iskele_results.py` | completed tasks in `tracker.xlsx` → Mizan `results[]` (append-only; never changes a tier, never proposes K without a named arbiter's evidence) |
 | `iskele.skill` | One-file package for installing the skill |
 | `examples/` | A worked backlog + config + report that CI runs end to end |
 | `docs/` | Source of the published site: [xinmurat.github.io/Iskele](https://xinmurat.github.io/Iskele/) — quickstart, usage guide and the Turkish originals, EN/TR on every page |
@@ -108,6 +109,7 @@ python skill/iskele/scripts/kiyas_to_backlog.py --seeds seeds.yaml --phase F2 --
 
 # backlog -> a Mizan registry of preregistered acceptance criteria
 python skill/iskele/scripts/iskele_to_registry.py --backlog 03-gorev-listesi.md --out registry.yaml
+python skill/iskele/scripts/iskele_results.py --xlsx tracker.xlsx --registry registry.yaml
 
 # ...and Mizan itself returns the verdict on the result
 python ../Mizan/tools/mizan_validate.py registry.yaml
@@ -351,6 +353,7 @@ basar.
 | `skill/iskele/scripts/progress.py` | `tracker.xlsx` → raporun GEN bölgeleri |
 | `skill/iskele/scripts/iskele_to_registry.py` | backlog → Mizan registry'si (her kabul kriteri zaten önkayıtlı bir çürütme koşulu) |
 | `skill/iskele/scripts/kiyas_to_backlog.py` | Kıyas tohumları → backlog görevleri (her tohumun en ucuz çürütmesi zaten çalıştırılabilir bir kabul kriteri) |
+| `skill/iskele/scripts/iskele_results.py` | `tracker.xlsx`'te tamamlanan görevler → Mizan `results[]` (yalnız ekler; tier değiştirmez) |
 | `iskele.skill` | Skill'i kurmak için tek-dosya paket |
 | `examples/` | CI'ın uçtan uca koştuğu çalışılmış backlog + config + rapor |
 | `docs/` | Yayınlanan sitenin kaynağı: [xinmurat.github.io/Iskele](https://xinmurat.github.io/Iskele/) — hızlı başlangıç, kullanım kılavuzu ve Türkçe asıllar; her sayfada EN/TR |
@@ -385,6 +388,7 @@ python skill/iskele/scripts/kiyas_to_backlog.py --seeds tohumlar.yaml --phase F2
 
 # backlog -> önkayıtlı kabul kriterlerinden oluşan Mizan registry'si
 python skill/iskele/scripts/iskele_to_registry.py --backlog 03-gorev-listesi.md --out registry.yaml
+python skill/iskele/scripts/iskele_results.py --xlsx tracker.xlsx --registry registry.yaml
 
 # ...ve hükmü Mizan'ın kendisi verir
 python ../Mizan/tools/mizan_validate.py registry.yaml

@@ -212,6 +212,7 @@ The handoff is a file, not prose. Two adapters carry it:
 ```bash
 python scripts/iskele_to_registry.py --backlog 03-gorev-listesi.md --out registry.yaml
 python scripts/kiyas_to_backlog.py --seeds tohumlar.yaml --phase F2 --out yeni.md
+python scripts/iskele_results.py --xlsx tracker.xlsx --registry registry.yaml
 ```
 
 Every acceptance criterion is a refutation condition written before the work
@@ -403,6 +404,7 @@ or marked as an estimate. If it is neither, do not write it.
 - `scripts/progress.py` — `tracker.xlsx` → update the report's GEN regions
 - `scripts/iskele_to_registry.py` — Step 7: backlog → Mizan registry (preregistration)
 - `scripts/kiyas_to_backlog.py` — Step 7: Kiyas seeds → backlog tasks
+- `scripts/iskele_results.py` — Step 7: completed tasks → Mizan results (append-only)
 - `scripts/check_adr.py` — validates the ADR chain in piece `06`: status
   vocabulary, forward pointers that resolve, supersede consistency, and that
   each decision lists the options it weighed

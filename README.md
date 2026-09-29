@@ -211,7 +211,9 @@ Current version: v1.5
 shipped package had CRLF inside, including `#!/usr/bin/env python3\r`
 shebangs, and the old check normalised CRLF so it passed. The README's
 current-version line is pinned to `metadata.version` in SKILL.md.
-`leak_check.py --require` makes an empty CI secret fail.
+`leak_check.py --require` makes an empty CI secret fail. The handoff job now
+runs Kıyas's own worked example through the whole chain — Kıyas's validator
+on the input, Mizan's on the output — and checks that no link drops work.
 
 **v1.5** — the **expectation delta**: an S/M/L estimate written before the
 work is a preregistered expectation, and the gap between it and the measured
@@ -445,7 +447,9 @@ Bilinçli olarak ikili: **kod ve şemalar → MIT** ([`LICENSE`](LICENSE)); **d�
 paketin içinde `#!/usr/bin/env python3\r` shebang'leri dahil CRLF vardı ve eski
 kontrol CRLF'yi normalleştirdiği için geçiyordu. README'deki güncel sürüm
 satırı SKILL.md'deki `metadata.version`'a sabitlendi. `leak_check.py
---require` boş bir CI secret'ını düşürür.
+--require` boş bir CI secret'ını düşürür. Handoff job'ı artık Kıyas'ın kendi
+örneğini zincirin tamamından geçiriyor — girdiyi Kıyas'ın, çıktıyı Mizan'ın
+doğrulayıcısı yargılar — ve hiçbir halkanın iş düşürmediğini denetler.
 
 **v1.5** — **beklenti sapması**: işten önce yazılmış S/M/L tahmini önkayıtlı bir
 beklentidir; onunla ölçülmüş efor (`GercekEfor`, opsiyonel — harcanan efor,

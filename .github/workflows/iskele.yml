@@ -391,6 +391,28 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Every stated version agrees with the skill's own
+        run: |
+          set -e
+          # The site's release table said v1.5.0 while this README's version
+          # section still ended a release earlier; nothing pinned either. The
+          # README's "Current version" line is now pinned to metadata.version in
+          # SKILL.md (same script as Mizan/ux-mizan, map in tools/version-pin.json).
+          pip install --quiet pyyaml   # the host job does not always install it
+          python tools/check_version_pin.py
+
+      - name: Self-test — the version pin actually fails on a stale line
+        run: |
+          set -e
+          cp README.md /tmp/version-backup
+          sed -i 's/Current version: v[0-9][0-9]*\.[0-9][0-9]*/Current version: v0.1/' README.md
+          if python tools/check_version_pin.py; then
+            cp /tmp/version-backup README.md
+            echo "FAIL: a stale version went unnoticed" >&2; exit 1
+          fi
+          cp /tmp/version-backup README.md
+          echo "ok -- a stale version is caught"
+
       - name: Every menu entry can keep the promise its language makes
         run: |
           set -e
@@ -705,7 +727,11 @@ jobs:
           # different code, so a clean tree does not prove a clean iskele.skill.
           # A hit prints the file, the line and the term's index -- never the
           # term, because this log is public.
-          python tools/leak_check.py --package iskele.skill
+          # --require: an empty secret must fail here, not print the same green
+          # line as a clean tree. Fork PRs get no secrets, so they are exempt.
+          req="--require"
+          if [ "${{ github.event.pull_request.head.repo.fork }}" = "true" ]; then req=""; fi
+          python tools/leak_check.py $req --package iskele.skill
 
   skill-package-in-sync:
     runs-on: ubuntu-latest
@@ -714,37 +740,11 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: iskele.skill must match skill/iskele/ contents
-        run: |
-          python - <<'PY'
-          import zipfile, os, sys
-          def norm(b): return b.replace(b"\r\n", b"\n")
-          z = zipfile.ZipFile("iskele.skill")
-          names = set(z.namelist())
-          bad = []
-          # every packaged file must match its source
-          for name in names:
-              src = os.path.join("skill", name)   # arcname is iskele/... ; source is skill/iskele/...
-              if not os.path.exists(src):
-                  bad.append(f"{name}: packaged but missing from source"); continue
-              if norm(z.read(name)) != norm(open(src, "rb").read()):
-                  bad.append(f"{name}: content differs from skill/{name}")
-          # every source file must be packaged
-          for root, dirs, files in os.walk("skill/iskele"):
-              dirs[:] = [d for d in dirs if d != "__pycache__"]
-              for f in files:
-                  if f.endswith(".pyc"):
-                      continue
-                  rel = os.path.relpath(os.path.join(root, f), "skill").replace(os.sep, "/")
-                  if rel not in names:
-                      bad.append(f"{rel}: in source but not packaged")
-          if bad:
-              print("iskele.skill is OUT OF SYNC with skill/iskele/:")
-              for b in bad: print("  -", b)
-              print("\nRebuild it (see CONTRIBUTING.md) and commit.")
-              sys.exit(1)
-          print("iskele.skill is in sync with skill/iskele/.")
-          PY
+      - name: iskele.skill must match skill/iskele/ byte for byte (LF, no CRLF)
+        # tools/build_skill.py is shared by the four repositories. The inline
+        # check it replaces normalised CRLF on both sides, so a package
+        # built on Windows -- CRLF shebangs included -- passed as in sync.
+        run: python tools/build_skill.py --check
 
   skill-scan:
     # A skill is code plus instructions that load into an agent's context and

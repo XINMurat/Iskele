@@ -58,15 +58,7 @@ python tools/check_counts.py --verbose
 python tools/check_doc_claims.py --verbose
 
 # 6. the packaged skill must match its source:
-python - <<'PY'
-import zipfile, os, sys
-n = lambda b: b.replace(b"\r\n", b"\n"); z = zipfile.ZipFile("iskele.skill")
-bad = [k for k in z.namelist()
-       if not os.path.exists(os.path.join("skill", k))
-       or n(z.read(k)) != n(open(os.path.join("skill", k), "rb").read())]
-print("skill in sync" if not bad else "OUT OF SYNC: " + ", ".join(bad))
-sys.exit(1 if bad else 0)
-PY
+python tools/build_skill.py --check   # byte for byte: a CRLF inside fails
 ```
 
 ### The context budget
@@ -90,21 +82,15 @@ If you change **any** file under `skill/iskele/`, rebuild the one-file package
 so it stays in sync (the shipped `iskele.skill` embeds those files):
 
 ```bash
-python - <<'PY'
-import zipfile, os
-with zipfile.ZipFile("iskele.skill", "w", zipfile.ZIP_DEFLATED) as z:
-    for root, dirs, files in os.walk("skill/iskele"):
-        # Running the scripts leaves __pycache__ behind; git ignores it but a
-        # naive packer would ship it, and then the package no longer matches
-        # its source on a machine that never ran them.
-        dirs[:] = [d for d in dirs if d != "__pycache__"]
-        for f in sorted(files):
-            if f.endswith(".pyc"):
-                continue
-            p = os.path.join(root, f)
-            z.write(p, os.path.relpath(p, "skill").replace(os.sep, "/"))
-PY
+python tools/build_skill.py           # writes iskele.skill
+python tools/build_skill.py --check   # what CI runs
 ```
+
+The builder is the same file in all four repositories. It writes LF line
+endings whatever the checkout has, a fixed timestamp and a sorted file list,
+and skips `__pycache__`/`*.pyc`. A package zipped by hand on Windows once
+shipped `#!/usr/bin/env python3\r` shebangs, and the old check normalised
+CRLF on both sides, so it passed as in sync.
 
 CI checks this. A stale package is not a cosmetic problem: users install the
 package, not the source, so a drifted `iskele.skill` means the documented
@@ -162,8 +148,9 @@ göstermek zorundadır.
 ### PR açmadan önce
 
 Yukarıdaki İngilizce bölümdeki altı komutu çalıştır. `skill/iskele/` altında
-**herhangi bir** dosyayı değiştirdiysen tek-dosya paketi yeniden üret (aynı
-bölümdeki script). CI bunu kontrol eder. Bayat paket kozmetik bir sorun
+**herhangi bir** dosyayı değiştirdiysen tek-dosya paketi yeniden üret:
+`python tools/build_skill.py` (CI `--check` ile koşar; paketin içinde CRLF
+varsa düşer — paketleyici dört repoda aynı dosyadır). CI bunu kontrol eder. Bayat paket kozmetik bir sorun
 değildir: kullanıcı kaynağı değil paketi kurar, yani kaymış bir `iskele.skill`
 belgelenen davranışla dağıtılan davranışın çelişmesi demektir.
 

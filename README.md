@@ -39,6 +39,25 @@ features and risks, and those come back as backlog tasks.
 actually run, progress is **computed** from the tracker, and the report is a
 derivative of the tracker — not a parallel document that drifts.
 
+## What it looks like
+
+You say what you want to build; İskele writes the kit to files. An excerpt of
+the backlog it produces (from [`examples/backlog.example.md`](examples/backlog.example.md)):
+
+> *"I want to build an internal tool where field teams log equipment
+> inspections and managers see which sites are overdue. Where do I start?"*
+
+```markdown
+## F1 — Core
+### Epic F1.1 — Core model
+- [ ] **F1-BE-02** (M) Core CRUD API + authorisation. **Depends:** F1-BE-01
+  - *Accept:* An unauthorised request gets 403; an authorised one creates the record.
+```
+
+Every task has an ID, an S/M/L estimate, its dependencies and an acceptance
+criterion you can run. `backlog_to_tracker.py` turns the file into
+`tracker.xlsx`; `progress.py` computes the report from it.
+
 ## The chain
 
 ```
@@ -316,6 +335,26 @@ onlar backlog'a görev olarak geri girer.
 İskele ikisini de kapatır: her görev atomik ve fiilen koşulabilir kabul
 kriterli, ilerleme çizelgeden **hesaplanır**, rapor çizelgenin türevidir — yanına
 kurulup zamanla sapan ikinci bir belge değil.
+
+## Nasıl görünür
+
+Ne kurmak istediğini söylersin; İskele kiti dosyalara yazar. Ürettiği
+backlog'dan bir alıntı ([`examples/backlog.example.md`](examples/backlog.example.md)):
+
+> *"Saha ekiplerinin ekipman denetimlerini kaydettiği, yöneticilerin hangi
+> sahaların geciktiğini gördüğü bir iç araç yapmak istiyorum. Nereden
+> başlamalıyım?"*
+
+```markdown
+## F1 — Çekirdek
+### Epik F1.1 — Çekirdek model
+- [ ] **F1-BE-02** (M) Çekirdek CRUD API + yetki kontrolü. **Bağ.:** F1-BE-01
+  - *Kabul:* Yetkisiz istek 403 alır; yetkili istek kaydı oluşturur.
+```
+
+Her görevin bir kimliği, S/M/L tahmini, bağımlılıkları ve koşulabilir bir kabul
+kriteri vardır. `backlog_to_tracker.py` dosyayı `tracker.xlsx`'e çevirir;
+`progress.py` raporu ondan hesaplar.
 
 ## Zincir
 

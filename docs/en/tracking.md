@@ -233,6 +233,8 @@ The single file that binds the generator to the project. Template:
 the numbers come from the tracker. Keep that separation: prose in the config,
 numbers in the data.
 
+`report_lang` (`tr`|`en`): `GEN:` labels; English headings: `07-progress-report.html`.
+
 ### Input validation — no silent assumptions
 
 The generator must not quietly fall back to a default for an unknown value.

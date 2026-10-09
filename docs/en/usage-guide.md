@@ -1,10 +1,11 @@
 # İskele — Usage Guide (EN)
 
-The Turkish original of the methodology text lives in
-[`../tr/kullanim-kilavuzu.md`](../tr/kullanim-kilavuzu.md); the skill itself
-([`skill/iskele/SKILL.md`](../../skill/iskele/SKILL.md)) is written in Turkish
-and is the normative source. This guide is the English walkthrough of the same
-seven-step loop.
+The Turkish counterpart is
+[`../tr/kullanim-kilavuzu.md`](../tr/kullanim-kilavuzu.md). The normative
+source is the skill itself,
+[`skill/iskele/SKILL.md`](../../skill/iskele/SKILL.md) — in English; the
+Turkish originals of it and of its references are kept under `docs/tr/`. This
+guide is the English walkthrough of the same seven-step loop.
 
 ## The seven steps
 
@@ -96,6 +97,48 @@ The loop closes — and it is two loops, not one ring: **Mizan ⇄ Kıyas** can 
 between themselves for as long as the thinking needs, with nothing being built,
 while **İskele** is the branch taken when something survives and is worth
 building. Its criteria then return to Mizan as preregistered entries.
+
+## What the loop gained in v1.x
+
+The seven steps above are the stable core. These were added on top of them,
+each from a failure seen in a real project; the normative text is
+[`SKILL.md`](../../skill/iskele/SKILL.md) and the references it names.
+
+- **Acceptance criteria are written from the consumption side** — "the user
+  reaches X", not "the system produces X". A production-side criterion passes
+  even when the capability is unreachable. And **a producing task names its
+  consuming twin**: anything that produces information a user will see either
+  carries the reading surface in its own criterion or names the task that
+  brings it (`→ F3-FE-03`). Cutting the backlog by layer makes that gap the
+  default.
+- **Scenario rehearsal at the gate** — the level DoD and go/no-go cannot see:
+  can the domain's real situations be expressed in the model (expressible,
+  a written boundary, or a finding), and **when two features are active at
+  once, whose guarantee breaks?** The answer lives in the tracker's `Cift`
+  sheet, one row per pair, and the report prints it as `GEN:CIFT` with the
+  unchecked pairs counted separately. Scenarios come from the domain owner and
+  are written when a phase opens, not when it reaches the gate.
+- **`check_adr.py` at go/no-go** — validates the ADR chain in piece `06`:
+  status vocabulary, forward pointers that resolve, supersede consistency, and
+  that each decision lists the options it weighed.
+- **Piece `11`, `AGENTS.md`** — the machine-facing signpost: what this project
+  is, where each rule lives, what is forbidden.
+- **The reading surface stays small** — the ADR log is read through a
+  generated one-line index, and closed phases move to `arsiv/` (moved, never
+  deleted). Archiving is a reading decision, not a scope decision: the
+  percentage comes from the tracker either way.
+- **The expectation delta** — an optional `GercekEfor` column (effort actually
+  worked, not elapsed time) yields actual / estimated effort, and
+  `estimate_basis` in the config decides what that number may be called
+  (`unknown` by default). Unit cost is reported with two denominators, and
+  `tools/session_cost.py` totals real token usage from local Claude Code
+  transcripts — attributing a session to a task stays a human judgement,
+  marked `[H]`.
+- **The handoff is files, both ways** — `iskele_to_registry.py` turns the
+  backlog into Mizan preregistrations, `kiyas_to_backlog.py` turns Kıyas seeds
+  into tasks, and `iskele_results.py` writes completed tasks back to the
+  registry as results. It appends only and never changes a tier: promotion is
+  someone else's decision.
 
 ## Red lines
 

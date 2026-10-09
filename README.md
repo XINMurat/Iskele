@@ -225,14 +225,16 @@ templates and methodology text → CC-BY-4.0**
 
 ### Version
 
-Current version: v1.5
+Current version: v1.6
 
-**Unreleased (on `main`, after v1.5.0)** — **English report labels**:
+**v1.6** — **English report labels**:
 `"report_lang": "en"` in the config makes `progress.py` write every label in
 the generated regions in English, and `07-progress-report.html` is the
 English template; the default stays Turkish and its output is byte-for-byte
 unchanged. A self-test renders all nine regions in English across the
-branches and fails on any Turkish label left. Tooling:
+branches and fails on any Turkish label left. **The loop closes on the way
+back:** `iskele_results.py` writes completed tasks into the Mizan registry as
+results — append-only, never changing a tier. Tooling:
 `tools/build_skill.py` builds and checks `iskele.skill` byte for byte; the
 shipped package had CRLF inside, including `#!/usr/bin/env python3\r`
 shebangs, and the old check normalised CRLF so it passed. The README's
@@ -488,14 +490,16 @@ Bilinçli olarak ikili: **kod ve şemalar → MIT** ([`LICENSE`](LICENSE)); **d�
 
 ### Sürüm
 
-Şu anki sürüm: v1.5
+Şu anki sürüm: v1.6
 
-**Yayımlanmadı (`main` üzerinde, v1.5.0'dan sonra)** — **İngilizce rapor
+**v1.6** — **İngilizce rapor
 etiketleri**: config'te `"report_lang": "en"`, `progress.py`'nin üretilen
 bölgelerdeki her etiketi İngilizce yazmasını sağlar; `07-progress-report.html`
 İngilizce şablondur. Varsayılan Türkçe kalır ve çıktısı bayt bayt değişmez.
 Bir self-test dokuz bölgenin hepsini dallar boyunca İngilizce üretir ve kalan
-tek bir Türkçe etikette düşer. Araçlar:
+tek bir Türkçe etikette düşer. **Döngü dönüşte de kapanır:** `iskele_results.py`
+tamamlanan görevleri Mizan registry'sine sonuç olarak yazar — yalnızca ekler,
+katmanı asla değiştirmez. Araçlar:
 `tools/build_skill.py` `iskele.skill`'i bayt bayt üretir ve denetler; dağıtılan
 paketin içinde `#!/usr/bin/env python3\r` shebang'leri dahil CRLF vardı ve eski
 kontrol CRLF'yi normalleştirdiği için geçiyordu. README'deki güncel sürüm

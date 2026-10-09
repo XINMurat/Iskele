@@ -22,7 +22,7 @@
         "skill/iskele/SKILL.md",
         "skill/iskele/references/tracking.md"
       ],
-      "ceiling": 9672
+      "ceiling": 9760
     },
     "recovery": {
       "files": [
@@ -31,5 +31,6 @@
       ],
       "ceiling": 13235
     }
-  }
+  },
+  "_raised_tracking_report_lang": "9672 -> 9760 (2026-10-09, report_lang). Two lines were added: SKILL.md's language bullet says the kit is in the user's language, and the HTML report was the exception, so the switch belongs there; tracking.md is the config reference. Both were cut to one line first (the config example line moved to assets/iskele.config.example.json); +39 remained. The raise leaves ~49 tokens of headroom so the next line does not break the gate on arrival."
 }

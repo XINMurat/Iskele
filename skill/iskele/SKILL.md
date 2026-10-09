@@ -343,6 +343,7 @@ this skill exists to prevent.
   the column keys the scripts read. Translate the names, never the schema —
   the scripts look at the schema. (The Turkish originals of this file and of
   the four references are kept in the repository under `docs/tr/`.)
+  Report labels: `"report_lang": "en"` + `07-progress-report.html`.
 - **Check a tool before assuming it.** `backlog_to_tracker.py` and
   `progress.py` need **openpyxl**. If it is missing: **say so**, and offer an
   explicit alternative (a CSV tracker, or waiting for the install and

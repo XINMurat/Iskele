@@ -575,18 +575,38 @@ def active_phase(C, cfg):
 
 
 # ---------------------------------------------------------------- RENDER
+# Rapor dili. Varsayilan "tr": cikti bayt bayt eskisiyle ayni kalir. "en" yalniz
+# GEN bolgelerinin etiketlerini degistirir; faz/epik adlari, aciklamalar ve
+# kullanicinin yazdigi her sey (config, cizelge) oldugu gibi basilir -- onlar
+# projenin dilindedir, raporun degil. Sabit basliklar sablondadir:
+# 07-ilerleme-raporu.html (tr) / 07-progress-report.html (en).
+LANG = "tr"
+REPORT_LANGS = ("tr", "en")
+
+
+def L(tr, en):
+    return en if LANG == "en" else tr
+
+
+def P(x):
+    """Yuzde: Turkce %41, Ingilizce 41%."""
+    return L(f"%{x}", f"{x}%")
+
+
 def r_chips(C, cfg):
     ap = active_phase(C, cfg)
-    nxt = "tamam"
+    nxt = L("tamam", "done")
     if ap:
         meta = cfg["phase_meta"].get(ap, {})
         nxt = f"{meta.get('ms', ap)} — {meta.get('title', ap).split('· ')[-1]}"
     return ('<div class="meta">\n'
             f'      <span class="chip"><span class="dot d-todo"></span>Program '
-            f'<b>%{C["overall_pct"]}</b> · {C["total_dn"]}/{C["total_n"]} gorev · '
-            f'~{fmt(C["total_eff"])} gun</span>\n'
+            f'<b>{P(C["overall_pct"])}</b> · {C["total_dn"]}/{C["total_n"]} '
+            f'{L("gorev", "tasks")} · '
+            f'~{fmt(C["total_eff"])} {L("gun", "days")}</span>\n'
             f'      <span class="chip"><span class="dot '
-            f'{"d-prog" if ap else "d-done"}"></span>Siradaki <b>{esc(nxt)}</b></span>\n'
+            f'{"d-prog" if ap else "d-done"}"></span>{L("Siradaki", "Next")} '
+            f'<b>{esc(nxt)}</b></span>\n'
             f'      <span class="chip">git {git_short()}</span>\n'
             f'      <span class="chip">{date.today().isoformat()}</span>\n'
             '    </div>')
@@ -600,18 +620,18 @@ def r_kpi(C, cfg):
     for p in phases[:-1]:
         cum += ph[p]["eff"]
         out.append(f'      <div class="kpi"><div class="v num">~{fmt(cum)}</div>'
-                   f'<div class="l">{esc(p)} sonuna kadar</div>'
-                   f'<div class="l2">~{fmt(round(cum / wpm, 1))} ay</div></div>')
+                   f'<div class="l">{L(f"{esc(p)} sonuna kadar", f"Through end of {esc(p)}")}</div>'
+                   f'<div class="l2">~{fmt(round(cum / wpm, 1))} {L("ay", "months")}</div></div>')
     out.append(f'      <div class="kpi"><div class="v num">~{fmt(C["total_eff"])}</div>'
-               f'<div class="l">Tum program</div>'
-               f'<div class="l2">~{fmt(round(C["total_eff"] / wpm, 1))} ay</div></div>')
+               f'<div class="l">{L("Tum program", "Whole program")}</div>'
+               f'<div class="l2">~{fmt(round(C["total_eff"] / wpm, 1))} {L("ay", "months")}</div></div>')
     rem = fmt(C["total_eff"] - C["total_done"])
     out.append('      <div class="kpi" style="border-color:color-mix(in srgb,'
                'var(--accent) 40%,var(--line))">'
                f'<div class="v num">{C["overall_pct"]}<small>%</small></div>'
-               f'<div class="l">Program geneli (olculen)</div>'
-               f'<div class="l2">{C["total_dn"]}/{C["total_n"]} gorev · '
-               f'<b>~{rem} gun kalan</b></div></div>')
+               f'<div class="l">{L("Program geneli (olculen)", "Whole program (measured)")}</div>'
+               f'<div class="l2">{C["total_dn"]}/{C["total_n"]} {L("gorev", "tasks")} · '
+               f'<b>~{rem} {L("gun kalan", "days left")}</b></div></div>')
     out.append('    </div>')
     return "\n".join(out)
 
@@ -624,28 +644,30 @@ def r_cards(C, cfg):
         meta = cfg["phase_meta"].get(p, {})
         pct = round(100 * d["done"] / d["eff"]) if d["eff"] else 0
         if pct >= 100:
-            edge, badge = "done", '<span class="status s-done">tamam</span>'
+            edge, badge = "done", f'<span class="status s-done">{L("tamam", "done")}</span>'
         elif p == ap:
-            label = f'siradaki ({meta.get("ms", p)})' if pct == 0 else f'devam (%{pct})'
+            label = (L(f'siradaki ({meta.get("ms", p)})', f'next ({meta.get("ms", p)})')
+                     if pct == 0 else L(f'devam (%{pct})', f'in progress ({pct}%)'))
             edge, badge = "prog", f'<span class="status s-prog">{label}</span>'
         else:
             dep = meta.get("dep") or meta.get("ms", p)
-            edge, badge = "todo", f'<span class="status s-wait">{esc(dep)} kapisina bagli</span>'
+            edge, badge = "todo", (f'<span class="status s-wait">'
+                                   f'{L(f"{esc(dep)} kapisina bagli", f"waits on gate {esc(dep)}")}</span>')
         out.append(
             f'      <div class="card" style="--edge:var(--{edge})">\n'
             f'        <h2>{esc(meta.get("title", p))} {badge}</h2>\n'
             f'        <div class="repo">{esc(meta.get("repo", ""))}</div>\n'
             f'        <p>{esc(meta.get("desc", ""))}</p>\n'
-            f'        <div class="row"><span>Ilerleme</span><b class="num">{pct}%</b></div>\n'
+            f'        <div class="row"><span>{L("Ilerleme", "Progress")}</span><b class="num">{pct}%</b></div>\n'
             f'        <span class="track" style="height:6px;margin:6px 0 10px">'
             f'<span class="fill" style="width:{pct}%"></span></span>\n'
-            f'        <div class="row"><span>Efor</span>'
-            f'<b class="num">~{fmt(d["eff"])} gun</b></div>\n'
-            f'        <div class="row"><span>Kalan</span>'
-            f'<b class="num">~{fmt(d["eff"] - d["done"])} gun</b></div>\n'
-            f'        <div class="row"><span>Gorev</span>'
+            f'        <div class="row"><span>{L("Efor", "Effort")}</span>'
+            f'<b class="num">~{fmt(d["eff"])} {L("gun", "days")}</b></div>\n'
+            f'        <div class="row"><span>{L("Kalan", "Remaining")}</span>'
+            f'<b class="num">~{fmt(d["eff"] - d["done"])} {L("gun", "days")}</b></div>\n'
+            f'        <div class="row"><span>{L("Gorev", "Tasks")}</span>'
             f'<b class="num">{d["dn"]}/{d["n"]}</b></div>\n'
-            f'        <div class="row"><span>Yigin</span>'
+            f'        <div class="row"><span>{L("Yigin", "Stack")}</span>'
             f'<b>{esc(meta.get("stack", "—"))}</b></div>\n'
             f'      </div>')
     out.append('    </div>')
@@ -665,12 +687,12 @@ def r_bars(C, cfg):
                    f'<span class="fill" style="width:{pct}%"></span></span></span>'
                    f'<span class="pct">{pct}%</span>'
                    f'<span class="ka">{fmt(d["eff"])}</span>'
-                   f'<span class="rem">{fmt(d["eff"] - d["done"])} kalan</span></div>')
-    out.append(f'      <div class="bar total"><span class="name">Toplam '
-               f'({len(items)} epik)</span><span class="lane"></span>'
+                   f'<span class="rem">{fmt(d["eff"] - d["done"])} {L("kalan", "left")}</span></div>')
+    out.append(f'      <div class="bar total"><span class="name">{L("Toplam", "Total")} '
+               f'({len(items)} {L("epik", "epics")})</span><span class="lane"></span>'
                f'<span class="pct">{C["overall_pct"]}%</span>'
                f'<span class="ka">{fmt(C["total_eff"])}</span>'
-               f'<span class="rem">{fmt(C["total_eff"] - C["total_done"])} kalan</span></div>')
+               f'<span class="rem">{fmt(C["total_eff"] - C["total_done"])} {L("kalan", "left")}</span></div>')
     out.append('    </div>')
     return "\n".join(out)
 
@@ -682,19 +704,20 @@ def r_timeline(C, cfg):
         out.append(f'      <div class="step ok"><span class="mk">{esc(s.get("mk", "✓"))}</span>'
                    f'<div><div class="t">{esc(s.get("t", ""))}</div>'
                    f'<div class="m">{esc(s.get("m", ""))}</div></div>'
-                   f'<span class="when">tamam</span></div>')
+                   f'<span class="when">{L("tamam", "done")}</span></div>')
     for step in cfg["flow"]:
         p = step.get("phase")
         d = C["phases"].get(p, dict(eff=0, done=0))
         pct = round(100 * d["done"] / d["eff"]) if d["eff"] else 0
         if step.get("kind") == "gate":
-            cls, when = ("step gate ok", "acik") if pct >= 100 else ("step gate", "karar")
+            cls, when = (("step gate ok", L("acik", "open")) if pct >= 100
+                         else ("step gate", L("karar", "decision")))
         elif pct >= 100:
-            cls, when = "step ok", "tamam"
+            cls, when = "step ok", L("tamam", "done")
         elif pct > 0:
-            cls, when = "step on", "devam"
+            cls, when = "step on", L("devam", "in progress")
         elif p == ap:
-            cls, when = "step on", "siradaki"
+            cls, when = "step on", L("siradaki", "next")
         else:
             cls, when = "step", "—"
         out.append(f'      <div class="{cls}"><span class="mk">{esc(step.get("mk", "▸"))}</span>'
@@ -710,36 +733,52 @@ def r_hakem(C, cfg):
     ILERLEMENIN ICINDE degil. Bu sayiyi yuzdeye katmak, iki ayri seyi
     (bitti / dogrulandi) tek gostergeye eritirdi."""
     if not C["arbiter_col"]:
-        return ('<div class="note">\n'
-                '      <b>Hakem gostergesi: veri yok.</b> Cizelgede <code>Hakem</code>\n'
-                '      sutunu bulunmuyor (eski surum). Bu <em>%0</em> demek degildir —\n'
-                '      olculmedi demektir. Cizelgeyi <code>backlog_to_tracker.py</code>\n'
-                '      ile yeniden uret.\n'
-                '    </div>')
+        return L('<div class="note">\n'
+                 '      <b>Hakem gostergesi: veri yok.</b> Cizelgede <code>Hakem</code>\n'
+                 '      sutunu bulunmuyor (eski surum). Bu <em>%0</em> demek degildir —\n'
+                 '      olculmedi demektir. Cizelgeyi <code>backlog_to_tracker.py</code>\n'
+                 '      ile yeniden uret.\n'
+                 '    </div>',
+                 '<div class="note">\n'
+                 '      <b>Arbiter indicator: no data.</b> The tracker has no <code>Hakem</code>\n'
+                 '      column (older version). This does not mean <em>0%</em> —\n'
+                 '      it means not measured. Regenerate the tracker with\n'
+                 '      <code>backlog_to_tracker.py</code>.\n'
+                 '    </div>')
     if C["total_done"] <= 0:
-        return ('<div class="note">\n'
-                '      <b>Hakem gostergesi: henuz tamamlanan is yok.</b> Oran, ilk\n'
-                '      gorev kapandiginda anlam kazanir.\n'
-                '    </div>')
+        return L('<div class="note">\n'
+                 '      <b>Hakem gostergesi: henuz tamamlanan is yok.</b> Oran, ilk\n'
+                 '      gorev kapandiginda anlam kazanir.\n'
+                 '    </div>',
+                 '<div class="note">\n'
+                 '      <b>Arbiter indicator: nothing completed yet.</b> The ratio\n'
+                 '      means something once the first task closes.\n'
+                 '    </div>')
 
     pct = C["arbiter_pct"]
     self_rep = 100 - pct
     return ('<div class="note">\n'
-            f'      <div class="row"><span>Tamamlanan eforun hakemli olani</span>'
-            f'<b class="num">%{pct}</b></div>\n'
+            f'      <div class="row"><span>{L("Tamamlanan eforun hakemli olani", "Completed effort with an independent arbiter")}</span>'
+            f'<b class="num">{P(pct)}</b></div>\n'
             f'      <span class="track" style="height:6px;margin:6px 0 10px">'
             f'<span class="fill" style="width:{pct}%"></span></span>\n'
-            f'      <div class="row"><span>Oz-beyanda kalan</span>'
-            f'<b class="num">%{self_rep}</b></div>\n'
-            f'      <div class="row"><span>Hakemli kapanan gorev</span>'
+            f'      <div class="row"><span>{L("Oz-beyanda kalan", "Left at self-report")}</span>'
+            f'<b class="num">{P(self_rep)}</b></div>\n'
+            f'      <div class="row"><span>{L("Hakemli kapanan gorev", "Tasks closed by an arbiter")}</span>'
             f'<b class="num">{C["arbiter_dn"]}/{C["total_dn"]}</b></div>\n'
-            '      <p class="l2">Olculen sey: kabul kriterinde yazardan baska bir\n'
-            '      hakem adi gecen gorevlerin, tamamlanan efor icindeki payi.\n'
-            '      Kriterin fiilen kosuldugunu <b>gostermez</b> — bunu hicbir\n'
-            '      cizelge bilemez; Tamamlandi Tanimi bilir. Dusuk oran, isin\n'
-            '      kotu oldugunu degil, "bitti" hukmunun buyuk olcude isi yapanin\n'
-            '      kendi beyanina dayandigini soyler.</p>\n'
-            '    </div>')
+            + L('      <p class="l2">Olculen sey: kabul kriterinde yazardan baska bir\n'
+                '      hakem adi gecen gorevlerin, tamamlanan efor icindeki payi.\n'
+                '      Kriterin fiilen kosuldugunu <b>gostermez</b> — bunu hicbir\n'
+                '      cizelge bilemez; Tamamlandi Tanimi bilir. Dusuk oran, isin\n'
+                '      kotu oldugunu degil, "bitti" hukmunun buyuk olcude isi yapanin\n'
+                '      kendi beyanina dayandigini soyler.</p>\n',
+                '      <p class="l2">What is measured: the share of completed effort\n'
+                '      whose acceptance criterion names an arbiter other than the author.\n'
+                '      It does <b>not</b> show that the criterion was actually run — no\n'
+                '      tracker can know that; the Definition of Done does. A low ratio\n'
+                '      does not mean the work is bad; it means the "done" verdict rests\n'
+                '      mostly on the word of whoever did the work.</p>\n')
+            + '    </div>')
 
 
 def r_skorkart(C, cfg):
@@ -751,39 +790,58 @@ def r_skorkart(C, cfg):
     """
     rows = C.get("score_rows")
     if rows is None:
-        return ('<div class="note">\n'
-                '      <b>Skorkart: olculmedi.</b> Cizelgede <code>Skorkart</code>\n'
-                '      sekmesi yok. Bu <em>sifir</em> demek degildir -- tutulmuyor\n'
-                '      demektir. Sekmeyi <code>backlog_to_tracker.py</code> ile\n'
-                '      uret, kapida elle doldur.\n'
-                '    </div>')
+        return L('<div class="note">\n'
+                 '      <b>Skorkart: olculmedi.</b> Cizelgede <code>Skorkart</code>\n'
+                 '      sekmesi yok. Bu <em>sifir</em> demek degildir -- tutulmuyor\n'
+                 '      demektir. Sekmeyi <code>backlog_to_tracker.py</code> ile\n'
+                 '      uret, kapida elle doldur.\n'
+                 '    </div>',
+                 '<div class="note">\n'
+                 '      <b>Scorecard: not measured.</b> The tracker has no <code>Skorkart</code>\n'
+                 '      sheet. This does not mean <em>zero</em> -- it means it is not\n'
+                 '      kept. Generate the sheet with <code>backlog_to_tracker.py</code>\n'
+                 '      and fill it in by hand at each gate.\n'
+                 '    </div>')
     if not rows:
-        return ('<div class="note">\n'
-                '      <b>Skorkart: henuz kapanmis faz yok.</b> Tablo ilk kapida\n'
-                '      anlam kazanir; faz acilirken doldurulmaz.\n'
-                '    </div>')
+        return L('<div class="note">\n'
+                 '      <b>Skorkart: henuz kapanmis faz yok.</b> Tablo ilk kapida\n'
+                 '      anlam kazanir; faz acilirken doldurulmaz.\n'
+                 '    </div>',
+                 '<div class="note">\n'
+                 '      <b>Scorecard: no phase closed yet.</b> The table means\n'
+                 '      something at the first gate; it is not filled when a phase opens.\n'
+                 '    </div>')
 
     T = C["score_totals"]
+    nm = L("olculmedi", "not measured")
 
     def cell(key):
         total, n = T[key]
         if total is None:
-            return '<span class="l2">olculmedi</span>'
-        suffix = "" if n == len(rows) else f' <span class="l2">({n}/{len(rows)} faz)</span>'
+            return f'<span class="l2">{nm}</span>'
+        suffix = ("" if n == len(rows)
+                  else f' <span class="l2">({n}/{len(rows)} {L("faz", "phases")})</span>')
         return f'<b class="num">{total}</b>{suffix}'
 
     lines = [
-        ("Faz acildiktan sonraki backlog revizyonu", "revizyon",
-         "Yuksek: faz, girdileri hazir olmadan acildi."),
-        ("Yeniden calisma turu", "tur",
-         "Tek epikte topluyorsa supheyi kiside degil bolunmede ara."),
-        ("Isten sonra yeniden yazilan kriter", "kriter",
-         "Her biri, onkayit olmaktan cikmis bir kriterdir."),
-        ("Faz disina cikma", "kapsam",
-         "Kapsam disi listesinin neyi tutmadigi."),
-        ("Kacan", "kacan",
-         "Kapidan sonra bulunan, bu fazin kriterlerinin kapsadigi hata. "
-         "Surec disindan gelen tek sayi."),
+        (L("Faz acildiktan sonraki backlog revizyonu", "Backlog revisions after the phase opened"),
+         "revizyon",
+         L("Yuksek: faz, girdileri hazir olmadan acildi.",
+           "High: the phase opened before its inputs were ready.")),
+        (L("Yeniden calisma turu", "Rework rounds"), "tur",
+         L("Tek epikte topluyorsa supheyi kiside degil bolunmede ara.",
+           "If they cluster in one epic, suspect the split, not the person.")),
+        (L("Isten sonra yeniden yazilan kriter", "Criteria rewritten after the work"), "kriter",
+         L("Her biri, onkayit olmaktan cikmis bir kriterdir.",
+           "Each one is a criterion that stopped being a preregistration.")),
+        (L("Faz disina cikma", "Scope escapes"), "kapsam",
+         L("Kapsam disi listesinin neyi tutmadigi.",
+           "What the out-of-scope list failed to hold.")),
+        (L("Kacan", "Escaped defects"), "kacan",
+         L("Kapidan sonra bulunan, bu fazin kriterlerinin kapsadigi hata. "
+           "Surec disindan gelen tek sayi.",
+           "Defects found after the gate that this phase's criteria covered. "
+           "The only number that comes from outside the process.")),
     ]
     body = "".join(
         f'      <div class="row"><span>{lab}</span>{cell(key)}</div>\n'
@@ -792,41 +850,53 @@ def r_skorkart(C, cfg):
 
     ikiz, _ = T["ikiz"]
     kapida, _ = T["ikiz_kapida"]
+    gap = L("Tuketen-ikiz boslugu", "Consuming-twin gap")
     if ikiz is None or kapida is None:
-        ratio = ('      <div class="row"><span>Tuketen-ikiz boslugu</span>'
-                 '<span class="l2">olculmedi</span></div>\n')
+        ratio = (f'      <div class="row"><span>{gap}</span>'
+                 f'<span class="l2">{nm}</span></div>\n')
     elif ikiz == 0:
-        ratio = ('      <div class="row"><span>Tuketen-ikiz boslugu</span>'
+        ratio = (f'      <div class="row"><span>{gap}</span>'
                  '<b class="num">0</b></div>\n'
-                 '      <p class="l2">Sifir, taramanin temiz oldugunu degil, bu\n'
-                 '      fazda hic bulunmadigini soyler.</p>\n')
+                 + L('      <p class="l2">Sifir, taramanin temiz oldugunu degil, bu\n'
+                     '      fazda hic bulunmadigini soyler.</p>\n',
+                     '      <p class="l2">Zero does not say the sweep was clean; it says\n'
+                     '      none was found in this phase.</p>\n'))
     else:
         pct = round(100 * kapida / ikiz)
-        ratio = (f'      <div class="row"><span>Tuketen-ikiz boslugu: kapida bulunan</span>'
-                 f'<b class="num">{kapida}/{ikiz} (%{pct})</b></div>\n'
-                 f'      <p class="l2">Asil sayi bu: kapida degil <em>tesadufen</em>\n'
-                 f'      bulunanlar, kapinin o bosluga bakmadigini gosterir.</p>\n')
+        ratio = (f'      <div class="row"><span>{L("Tuketen-ikiz boslugu: kapida bulunan", "Consuming-twin gap: found at the gate")}</span>'
+                 f'<b class="num">{kapida}/{ikiz} ({P(pct)})</b></div>\n'
+                 + L('      <p class="l2">Asil sayi bu: kapida degil <em>tesadufen</em>\n'
+                     '      bulunanlar, kapinin o bosluga bakmadigini gosterir.</p>\n',
+                     '      <p class="l2">This is the real number: the ones found <em>by\n'
+                     '      accident</em> rather than at the gate show the gate was not\n'
+                     '      looking at that gap.</p>\n'))
 
     prov, _ = T["senaryo"]
     tes, _ = T["senaryo_tesadufi"]
+    sen = L("Senaryo bulgusu: provali / tesadufi", "Scenario findings: rehearsed / by accident")
     if prov is None or tes is None:
-        senaryo = ('      <div class="row"><span>Senaryo bulgusu: provali / tesadufi</span>'
-                   '<span class="l2">olculmedi</span></div>\n')
+        senaryo = (f'      <div class="row"><span>{sen}</span>'
+                   f'<span class="l2">{nm}</span></div>\n')
     else:
-        senaryo = (f'      <div class="row"><span>Senaryo bulgusu: provali / tesadufi</span>'
+        senaryo = (f'      <div class="row"><span>{sen}</span>'
                    f'<b class="num">{prov} / {tes}</b></div>\n'
-                   '      <p class="l2">Hic bulgu vermeyen bir prova listesi temiz\n'
-                   '      proje degil, calistirilmamis listedir.</p>\n')
+                   + L('      <p class="l2">Hic bulgu vermeyen bir prova listesi temiz\n'
+                       '      proje degil, calistirilmamis listedir.</p>\n',
+                       '      <p class="l2">A rehearsal list that yields no finding is not\n'
+                       '      a clean project; it is a list nobody ran.</p>\n'))
 
     kodlar = sorted({k for row in rows
                      for k in re.findall(r"RR-\d{2}", row.get("rampa", ""))})
-    ramp = (f'      <div class="row"><span>Kullanilan rampalar</span>'
+    ramps = L("Kullanilan rampalar", "Recovery ramps used")
+    ramp = (f'      <div class="row"><span>{ramps}</span>'
             f'<b class="num">{esc(", ".join(kodlar))}</b></div>\n'
             if kodlar else
-            '      <div class="row"><span>Kullanilan rampalar</span>'
-            '<span class="l2">yok</span></div>\n'
-            '      <p class="l2">Hicbiri kullanilmadiysa ya kusursuz gecti ya\n'
-            '      da fark edilmedi.</p>\n')
+            f'      <div class="row"><span>{ramps}</span>'
+            f'<span class="l2">{L("yok", "none")}</span></div>\n'
+            + L('      <p class="l2">Hicbiri kullanilmadiysa ya kusursuz gecti ya\n'
+                '      da fark edilmedi.</p>\n',
+                '      <p class="l2">If none was used, either it went flawlessly or\n'
+                '      nobody noticed.</p>\n'))
 
     # Kacan, cizelgenin surec DISINDAN gelen tek sayisi. Sayinin yaninda sinif
     # yoksa dongu kapanmamistir: hata cikti, duzeltme girdi, bir sonraki
@@ -834,33 +904,44 @@ def r_skorkart(C, cfg):
     # ile "3 kacan, hicbiri siniflanmamis" ayni cizelge degildir (RR-13).
     kc, _ = T["kacan"]
     sinif = " ".join(r.get("kacan_sinifi", "") for r in rows).strip()
+    esc_lab = L("Kacan", "Escaped defects")
+    cls_lab = L("Kacan / siniflanmis", "Escaped / classified")
     if kc is None:
-        kacan_blok = ('      <div class="row"><span>Kacan</span>'
-                      '<span class="l2">olculmedi</span></div>\n')
+        kacan_blok = (f'      <div class="row"><span>{esc_lab}</span>'
+                      f'<span class="l2">{nm}</span></div>\n')
     elif kc == 0:
-        kacan_blok = ('      <div class="row"><span>Kacan</span>'
+        kacan_blok = (f'      <div class="row"><span>{esc_lab}</span>'
                       '<b class="num">0</b></div>\n'
-                      '      <p class="l2">Sifir, kapinin siki oldugunu degil, bu\n'
-                      '      fazdan sonra hic bulunmadigini soyler.</p>\n')
+                      + L('      <p class="l2">Sifir, kapinin siki oldugunu degil, bu\n'
+                          '      fazdan sonra hic bulunmadigini soyler.</p>\n',
+                          '      <p class="l2">Zero does not say the gate was tight; it says\n'
+                          '      none was found after this phase.</p>\n'))
     elif sinif:
-        kacan_blok = (f'      <div class="row"><span>Kacan / siniflanmis</span>'
-                      f'<b class="num">{kc} / var</b></div>\n'
+        kacan_blok = (f'      <div class="row"><span>{cls_lab}</span>'
+                      f'<b class="num">{kc} / {L("var", "yes")}</b></div>\n'
                       f'      <p class="l2">{esc(sinif)}</p>\n')
     else:
-        kacan_blok = (f'      <div class="row"><span>Kacan / siniflanmis</span>'
-                      f'<b class="num">{kc} / yok</b></div>\n'
-                      '      <p class="l2">Sinifsiz kacak: hangi kontrolun bunu\n'
-                      '      yakalamasi gerektigi yazilmamis. RR-13 tam olarak bu\n'
-                      '      hucre icin var -- sayi, dongu degildir.</p>\n')
+        kacan_blok = (f'      <div class="row"><span>{cls_lab}</span>'
+                      f'<b class="num">{kc} / {L("yok", "no")}</b></div>\n'
+                      + L('      <p class="l2">Sinifsiz kacak: hangi kontrolun bunu\n'
+                          '      yakalamasi gerektigi yazilmamis. RR-13 tam olarak bu\n'
+                          '      hucre icin var -- sayi, dongu degildir.</p>\n',
+                          '      <p class="l2">Unclassified escape: nobody wrote which check\n'
+                          '      should have caught it. RR-13 exists for exactly this\n'
+                          '      cell -- a count is not a loop.</p>\n'))
 
     return ('<div class="note">\n'
-            f'      <div class="row"><span>Kapanmis faz</span>'
+            f'      <div class="row"><span>{L("Kapanmis faz", "Closed phases")}</span>'
             f'<b class="num">{esc(", ".join(r["faz"] for r in rows))}</b></div>\n'
             + body + ratio + senaryo + ramp + kacan_blok +
-            '      <p class="l2"><b>Bu tablodaki her sayi oz-beyandir</b> -- isi\n'
-            '      yapan doldurur, hakem = yazar. Olctugu sey ekibin performansi\n'
-            '      degil, planin nerede sizdirdigi: yuksek sayi kotu degildir,\n'
-            '      gizlenen sayi kotudur.</p>\n'
+            L('      <p class="l2"><b>Bu tablodaki her sayi oz-beyandir</b> -- isi\n'
+              '      yapan doldurur, hakem = yazar. Olctugu sey ekibin performansi\n'
+              '      degil, planin nerede sizdirdigi: yuksek sayi kotu degildir,\n'
+              '      gizlenen sayi kotudur.</p>\n',
+              '      <p class="l2"><b>Every number in this table is self-reported</b> --\n'
+              '      whoever did the work fills it in, arbiter = author. It measures\n'
+              '      not the team\'s performance but where the plan leaked: a high\n'
+              '      number is not bad, a hidden one is.</p>\n') +
             '    </div>')
 
 
@@ -873,52 +954,69 @@ def r_cift(C, cfg):
     -- kusur zaten parcalarin arasinda yasar.
     """
     rows = C.get("pair_rows")
+    pp = L("Cift pasi", "Pair pass")
     if rows is None:
         return ('<div class="note">\n'
-                '      <div class="row"><span>Cift pasi</span>'
-                '<span class="l2">olculmedi (&quot;Cift&quot; sekmesi yok)</span></div>\n'
-                '      <p class="l2">Sifir cift DEGIL: bu proje pasi tutmuyor.\n'
-                '      Sekmeyi backlog_to_tracker.py uretir.</p>\n'
-                '    </div>')
+                f'      <div class="row"><span>{pp}</span>'
+                + L('<span class="l2">olculmedi (&quot;Cift&quot; sekmesi yok)</span></div>\n'
+                    '      <p class="l2">Sifir cift DEGIL: bu proje pasi tutmuyor.\n'
+                    '      Sekmeyi backlog_to_tracker.py uretir.</p>\n',
+                    '<span class="l2">not measured (no &quot;Cift&quot; sheet)</span></div>\n'
+                    '      <p class="l2">NOT zero pairs: this project does not keep the pass.\n'
+                    '      backlog_to_tracker.py generates the sheet.</p>\n')
+                + '    </div>')
     if not rows:
         return ('<div class="note">\n'
-                '      <div class="row"><span>Cift pasi</span>'
-                '<span class="l2">sekme var, hic cift yazilmamis</span></div>\n'
-                '      <p class="l2">Backlog\'i atomize etmek, yalnizca iki\n'
-                '      ozellik ayni anda etkinken var olan kusuru yok eder. Bos\n'
-                '      bir liste, temiz bir model degil kosulmamis bir pastir.</p>\n'
-                '    </div>')
+                f'      <div class="row"><span>{pp}</span>'
+                + L('<span class="l2">sekme var, hic cift yazilmamis</span></div>\n'
+                    '      <p class="l2">Backlog\'i atomize etmek, yalnizca iki\n'
+                    '      ozellik ayni anda etkinken var olan kusuru yok eder. Bos\n'
+                    '      bir liste, temiz bir model degil kosulmamis bir pastir.</p>\n',
+                    '<span class="l2">sheet exists, no pair written</span></div>\n'
+                    '      <p class="l2">Atomizing the backlog destroys exactly the defect\n'
+                    '      that exists only while two features are active at once. An\n'
+                    '      empty list is not a clean model; it is a pass nobody ran.</p>\n')
+                + '    </div>')
 
     per, tot = C["pair_per"], C["pair_tot"]
+    pr, br, nc = L("cift", "pairs"), L("kirik", "broken"), L("bakilmadi", "unchecked")
     satirlar = "".join(
         f'      <div class="row"><span>{esc(faz)}</span>'
-        f'<b class="num">{d["n"]} cift · {d["kirik"]} kirik'
-        + (f' · {d["bakilmadi"]} bakilmadi' if d["bakilmadi"] else '')
+        f'<b class="num">{d["n"]} {pr} · {d["kirik"]} {br}'
+        + (f' · {d["bakilmadi"]} {nc}' if d["bakilmadi"] else '')
         + '</b></div>\n'
         for faz, d in ((p, per[p]) for p in cfg["phases"] if p in per))
 
     kirik_satir = "".join(
         f'      <p class="l2"><b>{esc(r["faz"])} · {esc(r["ozellik"])}</b> × '
         f'{esc(r["garanti"])}'
-        + (f' — sira: {esc(r["gerekli_sira"])}' if r["gerekli_sira"] else '')
+        + (f' — {L("sira", "order")}: {esc(r["gerekli_sira"])}' if r["gerekli_sira"] else '')
         + f'<br>{esc(r["not_"])}</p>\n'
         for r in rows if r["sonuc"] == "kiriliyor")
 
     if tot["bakilmadi"]:
-        acik = (f'      <p class="l2"><b>{tot["bakilmadi"]} cift listelendi ve\n'
-                f'      sinanmadi.</b> Bu sifir degil, acik istir: listelenmis ama\n'
-                f'      bakilmamis cift, hic listelenmemis cift kadar korur.</p>\n')
+        acik = L(f'      <p class="l2"><b>{tot["bakilmadi"]} cift listelendi ve\n'
+                 f'      sinanmadi.</b> Bu sifir degil, acik istir: listelenmis ama\n'
+                 f'      bakilmamis cift, hic listelenmemis cift kadar korur.</p>\n',
+                 f'      <p class="l2"><b>{tot["bakilmadi"]} pairs were listed and\n'
+                 f'      never tested.</b> That is not zero, it is open work: a pair\n'
+                 f'      listed and never checked protects as much as a pair nobody listed.</p>\n')
     else:
         acik = ''
 
     return ('<div class="note">\n'
-            f'      <div class="row"><span>Cift pasi</span>'
-            f'<b class="num">{tot["n"]} cift · {tot["kirik"]} kirik</b></div>\n'
+            f'      <div class="row"><span>{pp}</span>'
+            f'<b class="num">{tot["n"]} {pr} · {tot["kirik"]} {br}</b></div>\n'
             + satirlar + acik + kirik_satir +
-            '      <p class="l2">Her satir elle yazilir: hangi mevcut garantiye\n'
-            '      dokunuldugunu backlog\'dan uretmek mumkun degil, modeli bilen\n'
-            '      insan bilir. Yesil test paketi burada karsi kanit degildir --\n'
-            '      testler ozellik basina yazilir, cift hakkinda susar.</p>\n'
+            L('      <p class="l2">Her satir elle yazilir: hangi mevcut garantiye\n'
+              '      dokunuldugunu backlog\'dan uretmek mumkun degil, modeli bilen\n'
+              '      insan bilir. Yesil test paketi burada karsi kanit degildir --\n'
+              '      testler ozellik basina yazilir, cift hakkinda susar.</p>\n',
+              '      <p class="l2">Every row is written by hand: which existing\n'
+              '      guarantee a feature touches cannot be generated from the backlog;\n'
+              '      the person who knows the model knows it. A green test suite is not\n'
+              '      counter-evidence here -- tests are written per feature and are\n'
+              '      silent about the pair.</p>\n') +
             '    </div>')
 
 
@@ -939,44 +1037,67 @@ def r_maliyet(C, cfg):
     """
     cd = C["cost"]
     parts = []
+    uc = L("Birim maliyet", "Unit cost")
 
     if not cd["has_cost"]:
-        parts.append('      <div class="row"><span>Birim maliyet</span>'
-                     '<span class="l2">olculmedi (cizelgede &quot;Maliyet&quot; '
-                     'sutunu yok)</span></div>\n'
-                     '      <p class="l2">%0 DEGIL. Oturum toplamini '
-                     'tools/session_cost.py olcer; hangi goreve yazilacagi '
-                     'atiftir.</p>\n')
+        parts.append(f'      <div class="row"><span>{uc}</span>'
+                     + L('<span class="l2">olculmedi (cizelgede &quot;Maliyet&quot; '
+                         'sutunu yok)</span></div>\n'
+                         '      <p class="l2">%0 DEGIL. Oturum toplamini '
+                         'tools/session_cost.py olcer; hangi goreve yazilacagi '
+                         'atiftir.</p>\n',
+                         '<span class="l2">not measured (the tracker has no &quot;Maliyet&quot; '
+                         'column)</span></div>\n'
+                         '      <p class="l2">NOT 0%. tools/session_cost.py measures the '
+                         'session total; which task it is written to is an '
+                         'attribution.</p>\n'))
     elif cd["total"]["cost_n"] == 0:
-        parts.append('      <div class="row"><span>Birim maliyet</span>'
-                     '<span class="l2">sutun var, hic deger yazilmamis</span></div>\n')
+        parts.append(f'      <div class="row"><span>{uc}</span>'
+                     f'<span class="l2">{L("sutun var, hic deger yazilmamis", "column exists, no value written")}</span></div>\n')
     else:
         u, ut = cd["unit_total"], cd["unit_task_total"]
-        parts.append(f'      <div class="row"><span>Birim maliyet '
-                     f'(maliyet / tamamlanan <b>tahmini</b> efor-gunu)</span>'
-                     f'<b class="num">{fmt(u) if u else "—"}</b></div>\n')
-        parts.append(f'      <div class="row"><span>...ve tahminden bagimsiz: '
-                     f'maliyet / kapanan gorev</span>'
-                     f'<b class="num">{fmt(ut) if ut else "—"}</b></div>\n')
-        parts.append(f'      <p class="l2">{cd["total"]["cost_n"]} gorevde '
-                     f'maliyet yazili · toplam {fmt(cd["total"]["cost"])} · '
-                     f'tamamlanan {cd["total"]["done_n"]} gorev / '
-                     f'{fmt(cd["total"]["done_eff"])} tahmini efor-gunu. '
-                     f'Birim projeye aittir; rapor orani hesaplar, tutari '
-                     f'yorumlamaz.</p>\n')
-        parts.append('      <p class="l2"><b>Ilk paydanin dayanagi bir '
-                     'TAHMINDIR.</b> Efor-gunu S/M/L agirliklarindan gelir ve o '
-                     'agirliklar yazarin secimiydi — tahmin yanlissa birim '
-                     'maliyet ayni yonde yanlis olur. Ikinci satir bu yuzden var: '
-                     'kapanan gorev SAYISI tahminden bagimsizdir. Ikisi ayni yone '
-                     'gitmiyorsa agirliga degil sayiya guven, ve asagidaki '
-                     'gecen-sure kalibrasyonuna bak.</p>\n')
+        parts.append(f'      <div class="row"><span>'
+                     + L('Birim maliyet (maliyet / tamamlanan <b>tahmini</b> efor-gunu)',
+                         'Unit cost (cost / completed <b>estimated</b> effort-day)')
+                     + f'</span><b class="num">{fmt(u) if u else "—"}</b></div>\n')
+        parts.append(f'      <div class="row"><span>'
+                     + L('...ve tahminden bagimsiz: maliyet / kapanan gorev',
+                         '...and independent of the estimate: cost / closed task')
+                     + f'</span><b class="num">{fmt(ut) if ut else "—"}</b></div>\n')
+        t = cd["total"]
+        parts.append(L(f'      <p class="l2">{t["cost_n"]} gorevde '
+                       f'maliyet yazili · toplam {fmt(t["cost"])} · '
+                       f'tamamlanan {t["done_n"]} gorev / '
+                       f'{fmt(t["done_eff"])} tahmini efor-gunu. '
+                       f'Birim projeye aittir; rapor orani hesaplar, tutari '
+                       f'yorumlamaz.</p>\n',
+                       f'      <p class="l2">Cost written on {t["cost_n"]} tasks · '
+                       f'total {fmt(t["cost"])} · '
+                       f'{t["done_n"]} tasks completed / '
+                       f'{fmt(t["done_eff"])} estimated effort-days. '
+                       f'The unit belongs to the project; the report computes the ratio '
+                       f'and does not interpret the amount.</p>\n'))
+        parts.append(L('      <p class="l2"><b>Ilk paydanin dayanagi bir '
+                       'TAHMINDIR.</b> Efor-gunu S/M/L agirliklarindan gelir ve o '
+                       'agirliklar yazarin secimiydi — tahmin yanlissa birim '
+                       'maliyet ayni yonde yanlis olur. Ikinci satir bu yuzden var: '
+                       'kapanan gorev SAYISI tahminden bagimsizdir. Ikisi ayni yone '
+                       'gitmiyorsa agirliga degil sayiya guven, ve asagidaki '
+                       'gecen-sure kalibrasyonuna bak.</p>\n',
+                       '      <p class="l2"><b>The first denominator rests on an '
+                       'ESTIMATE.</b> Effort-days come from the S/M/L weights, and those '
+                       'weights were the author\'s choice — if the estimate is wrong, unit '
+                       'cost is wrong in the same direction. That is why the second line '
+                       'exists: the NUMBER of closed tasks is independent of the estimate. '
+                       'If the two do not move together, trust the count, not the weight, '
+                       'and look at the elapsed-time calibration below.</p>\n'))
         rows = [(p, cd["unit_per"][p]) for p in cfg["phases"]
                 if cd["unit_per"].get(p) is not None]
         if len(rows) >= 2:
-            parts.append('      <div class="row"><span>Faz faz birim maliyet '
-                         '(efor-gunu / gorev)</span>'
-                         '<b class="num">'
+            parts.append('      <div class="row"><span>'
+                         + L('Faz faz birim maliyet (efor-gunu / gorev)',
+                             'Unit cost by phase (effort-day / task)')
+                         + '</span><b class="num">'
                          + ' · '.join(
                              f'{esc(p)} {fmt(v)}'
                              + (f' / {fmt(cd["unit_task_per"][p])}'
@@ -986,87 +1107,140 @@ def r_maliyet(C, cfg):
             first, last = rows[0][1], rows[-1][1]
             if first:
                 trend = round(100 * (last - first) / first)
-                yon = "dusuyor" if trend < 0 else ("artiyor" if trend > 0 else "sabit")
-                parts.append(f'      <p class="l2">Egim: ilk fazdan sona '
-                             f'%{abs(trend)} {yon}. <b>Asil bilgi budur</b> — her faz '
-                             f'bir sonrakinin ic karsilastirma koludur. Bu, '
-                             f'&quot;aracsiz ne olurdu&quot; karsi-olgusunun yerini '
-                             f'TUTMAZ.</p>\n')
+                if LANG == "en":
+                    yon = "down" if trend < 0 else ("up" if trend > 0 else "flat")
+                    parts.append(f'      <p class="l2">Slope: from the first phase to the last, '
+                                 f'{abs(trend)}% {yon}. <b>This is the real information</b> — '
+                                 f'each phase is the next one\'s internal comparison arm. It '
+                                 f'does NOT replace the &quot;what would have happened without '
+                                 f'the tool&quot; counterfactual.</p>\n')
+                else:
+                    yon = "dusuyor" if trend < 0 else ("artiyor" if trend > 0 else "sabit")
+                    parts.append(f'      <p class="l2">Egim: ilk fazdan sona '
+                                 f'%{abs(trend)} {yon}. <b>Asil bilgi budur</b> — her faz '
+                                 f'bir sonrakinin ic karsilastirma koludur. Bu, '
+                                 f'&quot;aracsiz ne olurdu&quot; karsi-olgusunun yerini '
+                                 f'TUTMAZ.</p>\n')
 
+    el = L("Gecen sure", "Elapsed time")
     if not cd["has_dates"]:
-        parts.append('      <div class="row"><span>Gecen sure</span>'
-                     '<span class="l2">olculmedi (Baslangic/Bitis bos ya da yok)'
+        parts.append(f'      <div class="row"><span>{el}</span>'
+                     f'<span class="l2">{L("olculmedi (Baslangic/Bitis bos ya da yok)", "not measured (Baslangic/Bitis empty or missing)")}'
                      '</span></div>\n')
     elif not cd["total"]["days"]:
-        parts.append('      <div class="row"><span>Gecen sure</span>'
-                     '<span class="l2">tarihli tamamlanmis gorev yok</span></div>\n')
+        parts.append(f'      <div class="row"><span>{el}</span>'
+                     f'<span class="l2">{L("tarihli tamamlanmis gorev yok", "no completed task with dates")}</span></div>\n')
     else:
         days = sorted(cd["total"]["days"])
         med = days[len(days) // 2]
-        parts.append(f'      <div class="row"><span>Gecen sure (medyan)</span>'
-                     f'<b class="num">{med} gun · {len(days)} gorev</b></div>\n')
+        parts.append(f'      <div class="row"><span>{L("Gecen sure (medyan)", "Elapsed time (median)")}</span>'
+                     f'<b class="num">{med} {L("gun", "day" if med == 1 else "days")} · {len(days)} {L("gorev", "tasks")}</b></div>\n')
         if cd["by_size"]:
+            dch = L("g", "d")
             per_size = ' · '.join(
-                f'{esc(k)} {sorted(v)[len(v)//2]}g'
+                f'{esc(k)} {sorted(v)[len(v)//2]}{dch}'
                 for k, v in sorted(cd["by_size"].items()) if v)
-            parts.append(f'      <div class="row"><span>Tahmine gore medyan '
-                         f'gecen sure</span><b class="num">{per_size}</b></div>\n')
-            parts.append('      <p class="l2">Tahmin kalibrasyonu: S/M/L '
-                         'agirliklari yazarin secimiydi, bu ilk gercek veridir '
-                         '(RR-12). <b>Gecen sure EFOR DEGILDIR</b> — 5 gun acik '
-                         'duran gorev 2 saatlik is olabilir; olculen sey gorevin '
-                         'ne kadar ACIK KALDIGIDIR.</p>\n')
+            parts.append(f'      <div class="row"><span>{L("Tahmine gore medyan gecen sure", "Median elapsed time by estimate")}'
+                         f'</span><b class="num">{per_size}</b></div>\n')
+            parts.append(L('      <p class="l2">Tahmin kalibrasyonu: S/M/L '
+                           'agirliklari yazarin secimiydi, bu ilk gercek veridir '
+                           '(RR-12). <b>Gecen sure EFOR DEGILDIR</b> — 5 gun acik '
+                           'duran gorev 2 saatlik is olabilir; olculen sey gorevin '
+                           'ne kadar ACIK KALDIGIDIR.</p>\n',
+                           '      <p class="l2">Estimate calibration: the S/M/L '
+                           'weights were the author\'s choice; this is the first real data '
+                           '(RR-12). <b>Elapsed time IS NOT EFFORT</b> — a task open for 5 '
+                           'days may be 2 hours of work; what is measured is how long the '
+                           'task STAYED OPEN.</p>\n'))
 
     # --- beklenti sapmasi: ikinci metrik, geri bildirimin YERINE degil YANINDA
     basis = cd.get("estimate_basis", "unknown")
+    dv = L("Beklenti sapmasi", "Expectation delta")
     if not cd.get("has_effort"):
-        parts.append('      <div class="row"><span>Beklenti sapmasi</span>'
-                     '<span class="l2">olculmedi (&quot;GercekEfor&quot; sutunu yok)'
+        parts.append(f'      <div class="row"><span>{dv}</span>'
+                     f'<span class="l2">{L("olculmedi (&quot;GercekEfor&quot; sutunu yok)", "not measured (no &quot;GercekEfor&quot; column)")}'
                      '</span></div>\n')
     elif not cd.get("deviation"):
-        parts.append('      <div class="row"><span>Beklenti sapmasi</span>'
-                     '<span class="l2">sutun var, tahmini VE gercegi olan '
-                     'tamamlanmis gorev yok</span></div>\n')
+        parts.append(f'      <div class="row"><span>{dv}</span>'
+                     f'<span class="l2">{L("sutun var, tahmini VE gercegi olan tamamlanmis gorev yok", "column exists, no completed task with both an estimate AND an actual")}'
+                     '</span></div>\n')
     else:
         med = cd["deviation_median"]
-        yon = ("tahminin ALTINDA" if med < 1 else
-               ("tahminin USTUNDE" if med > 1 else "tahminle ayni"))
-        parts.append(f'      <div class="row"><span>Beklenti sapmasi '
-                     f'(gercek efor / tahmini efor, medyan)</span>'
-                     f'<b class="num">{med:.2f}x · {len(cd["deviation"])} gorev'
+        if LANG == "en":
+            yon = ("BELOW the estimate" if med < 1 else
+                   ("ABOVE the estimate" if med > 1 else "on the estimate"))
+        else:
+            yon = ("tahminin ALTINDA" if med < 1 else
+                   ("tahminin USTUNDE" if med > 1 else "tahminle ayni"))
+        parts.append(f'      <div class="row"><span>'
+                     + L('Beklenti sapmasi (gercek efor / tahmini efor, medyan)',
+                         'Expectation delta (actual effort / estimated effort, median)')
+                     + f'</span><b class="num">{med:.2f}x · {len(cd["deviation"])} {L("gorev", "tasks")}'
                      f'</b></div>\n')
-        okuma = {
-            "unaided": (
-                'Tahminler <b>araci hesaba katmadan</b> yapildigi beyan edilmis. '
-                'O zaman bu sapma, aracin etkisi hakkinda bir sey <b>soyler</b> '
-                '— ama karsi-olgu degil, <b>onkayitli bir beklentidir</b>: '
-                'is baslamadan once, sonucu gormeden, bir insan tarafindan '
-                'yazilmis bir sayi. Tahmin edenin iyimserligi hala olculmedi.'),
-            "tool-assisted": (
-                'Tahminler <b>arac bilinerek</b> yapildigi beyan edilmis. O zaman '
-                'bu sapma ekibin <b>KALIBRASYONUNU</b> olcer, aracin etkisini '
-                'degil — daha kucuk tahmin edip tutturmak, hizlanmak degildir. '
-                'Yine de degerlidir: kalibrasyon duzeldikce plan guvenilirlesir.'),
-            "unknown": (
-                '<b>Tahminlerin neye gore yapildigi beyan edilmemis</b> '
-                '(<code>estimate_basis</code>). O yuzden bu sayinin neyi olctugu '
-                'soylenemez: araci hesaba katmayan bir tahminse aracin etkisine '
-                'dair bir isarettir, katan bir tahminse yalnizca kalibrasyondur. '
-                'Ikisi ayni sayiyi uretir ve ayni sey degildir.'),
-        }.get(basis, '')
-        parts.append(f'      <p class="l2">Medyan gorev {yon} kapandi. '
-                     f'{okuma}</p>\n')
-        parts.append('      <p class="l2"><b>Bu, insan geri bildiriminin yerine '
-                     'gecmez.</b> Ikinci bir metriktir ve birincinin goremedigi '
-                     'yerde ise yarar: geri bildirim <em>neden</em> daha hizli '
-                     'ya da yavas oldugunu soyler, bu sayi <em>ne kadar</em> '
-                     'saptigini — ve ikisi celisirse asil bulgu odur.</p>\n')
+        if LANG == "en":
+            okuma = {
+                "unaided": (
+                    'Estimates were declared as made <b>without accounting for the tool</b>. '
+                    'Then this delta <b>does say</b> something about the tool\'s effect '
+                    '— but it is not a counterfactual, it is <b>a preregistered expectation</b>: '
+                    'a number written by a person before the work started, without seeing '
+                    'the result. The estimator\'s optimism is still unmeasured.'),
+                "tool-assisted": (
+                    'Estimates were declared as made <b>knowing the tool</b>. Then this '
+                    'delta measures the team\'s <b>CALIBRATION</b>, not the tool\'s effect '
+                    '— estimating smaller and hitting it is not speeding up. Still '
+                    'valuable: as calibration improves, the plan becomes trustworthy.'),
+                "unknown": (
+                    '<b>It was not declared what the estimates were based on</b> '
+                    '(<code>estimate_basis</code>). So it cannot be said what this number '
+                    'measures: for an estimate that ignored the tool it is a signal about '
+                    'the tool\'s effect; for one that accounted for it, only calibration. '
+                    'Both produce the same number and are not the same thing.'),
+            }.get(basis, '')
+            parts.append(f'      <p class="l2">The median task closed {yon}. '
+                         f'{okuma}</p>\n')
+            parts.append('      <p class="l2"><b>This does not replace human '
+                         'feedback.</b> It is a second metric, useful where the first cannot '
+                         'see: feedback says <em>why</em> it went faster or slower, this number '
+                         'says <em>how far</em> it drifted — and if the two disagree, that is '
+                         'the real finding.</p>\n')
+        else:
+            okuma = {
+                "unaided": (
+                    'Tahminler <b>araci hesaba katmadan</b> yapildigi beyan edilmis. '
+                    'O zaman bu sapma, aracin etkisi hakkinda bir sey <b>soyler</b> '
+                    '— ama karsi-olgu degil, <b>onkayitli bir beklentidir</b>: '
+                    'is baslamadan once, sonucu gormeden, bir insan tarafindan '
+                    'yazilmis bir sayi. Tahmin edenin iyimserligi hala olculmedi.'),
+                "tool-assisted": (
+                    'Tahminler <b>arac bilinerek</b> yapildigi beyan edilmis. O zaman '
+                    'bu sapma ekibin <b>KALIBRASYONUNU</b> olcer, aracin etkisini '
+                    'degil — daha kucuk tahmin edip tutturmak, hizlanmak degildir. '
+                    'Yine de degerlidir: kalibrasyon duzeldikce plan guvenilirlesir.'),
+                "unknown": (
+                    '<b>Tahminlerin neye gore yapildigi beyan edilmemis</b> '
+                    '(<code>estimate_basis</code>). O yuzden bu sayinin neyi olctugu '
+                    'soylenemez: araci hesaba katmayan bir tahminse aracin etkisine '
+                    'dair bir isarettir, katan bir tahminse yalnizca kalibrasyondur. '
+                    'Ikisi ayni sayiyi uretir ve ayni sey degildir.'),
+            }.get(basis, '')
+            parts.append(f'      <p class="l2">Medyan gorev {yon} kapandi. '
+                         f'{okuma}</p>\n')
+            parts.append('      <p class="l2"><b>Bu, insan geri bildiriminin yerine '
+                         'gecmez.</b> Ikinci bir metriktir ve birincinin goremedigi '
+                         'yerde ise yarar: geri bildirim <em>neden</em> daha hizli '
+                         'ya da yavas oldugunu soyler, bu sayi <em>ne kadar</em> '
+                         'saptigini — ve ikisi celisirse asil bulgu odur.</p>\n')
 
     return ('<div class="note">\n' + "".join(parts) +
-            '      <p class="l2"><b>Bu bolge ROI degildir.</b> ROI\'nin paydasi '
-            'burada; payi projenin kendi deger metriginde. Ve "arac %X '
-            'kazandirdi" cumlesi icin ucuncu bir sey gerekir: karsi-olgu. O kol '
-            'olmadan atif [KKE]\'dir.</p>\n'
+            L('      <p class="l2"><b>Bu bolge ROI degildir.</b> ROI\'nin paydasi '
+              'burada; payi projenin kendi deger metriginde. Ve "arac %X '
+              'kazandirdi" cumlesi icin ucuncu bir sey gerekir: karsi-olgu. O kol '
+              'olmadan atif [KKE]\'dir.</p>\n',
+              '      <p class="l2"><b>This section is not ROI.</b> ROI\'s denominator '
+              'is here; its numerator is in the project\'s own value metric. And the '
+              'sentence "the tool saved X%" needs a third thing: a counterfactual. '
+              'Without that arm, attribution is [KKE].</p>\n') +
             '    </div>')
 
 
@@ -1459,6 +1633,78 @@ def self_test():
     check("her durumda geri bildirimin yerine gecmedigini yazar",
           all("yerine gecmez" in h for h in (html_u, html_t, html_k)))
 
+    # ---- report_lang: en ----------------------------------------------------
+    # 34) Ingilizce raporda tek bir Turkce etiket kalmaz. Fixture'lar Ingilizce
+    #     proje verisi tasir, yani kalan her Turkce kelime script'in kendi
+    #     etiketidir. Sema adlari (sutun/sekme adlari) dil degil veridir ve
+    #     <code>/&quot; icinde basilir; onlar taramadan once cikarilir.
+    global LANG
+    LANG = "en"
+    try:
+        en = []
+        cfg_en = dict(cfg)
+
+        def add(C, c=cfg_en):
+            for fn in RENDERERS.values():
+                en.append(fn(C, c))
+
+        happy = [["A-1", "F0", "F0.1 One", "S", "Tamamlandi"],
+                 ["A-2", "F0", "F0.1 One", "L", "Tamamlandi"],
+                 ["B-1", "F1", "F1.1 Two", "M", "Yapilacak"]]
+        add(compute(load_tasks(make(happy), cfg)[0], cfg))
+        add(compute(load_tasks(make([["A-1", "F0", "F0.1 One", "M", "Yapilacak"]]),
+                               cfg)[0], cfg))
+        add(compute(load_tasks(make_h([
+            ["A-1", "F0", "F0.1 One", "L", "Tamamlandi", "pytest tests/a.py"],
+            ["B-1", "F1", "F1.1 Two", "M", "Yapilacak", ""]]), cfg)[0], cfg))
+        add(compute(load_tasks(make_h([
+            ["A-1", "F0", "F0.1 One", "L", "Yapilacak", ""]]), cfg)[0], cfg))
+        base = load_tasks(make_s([], headers=None), cfg)[0]
+        for srows in ([],
+                      [["F0", 2, 3, 1, 4, 1, 2, 5, 1, "RR-03", 1, "", "Note"]],
+                      [["F0", 2, 3, 1, 0, 0, 2, 5, 1, "", 2, "DoD: reading surface", "Note"]],
+                      [["F0", 0, 0, 0, 0, 0, 0, 0, 0, "", 0, "", "Note"]]):
+            rows, _ = load_scorecard(make_s(srows, headers=SH2), cfg)
+            add(compute(base, cfg, rows))
+        prow, _ = load_pairs(make_p([
+            ["F0", "pausing", "staleness flag", "", "", "kiriliyor", "Pausing hides stuck work."],
+            ["F1", "anonymising", "reassignment", "evet", "reassign first", "bakilmadi", ""]]), cfg)
+        add(compute(base, cfg, None, prow))
+        add(compute(base, cfg, None, load_pairs(make_p([]), cfg)[0]))
+        add(compute(load_tasks(make_c([
+            ["F0-BE-01", "E1", "F0", "BE", "M", "Tamamlandi", "3000",
+             _dt.date(2026, 9, 1), _dt.date(2026, 9, 3)],
+            ["F1-BE-01", "E1", "F1", "BE", "M", "Tamamlandi", "1500",
+             _dt.date(2026, 9, 4), _dt.date(2026, 9, 5)]]), cfg)[0], cfg))
+        add(compute(load_tasks(make_c([["F0-BE-01", "E1", "F0", "BE", "M", "Tamamlandi",
+                                        "", "", ""]]), cfg)[0], cfg))
+        te = load_tasks(make_e([["F0-BE-01", "E1", "F0", "BE", "M", "Tamamlandi", "0.75"]]),
+                        cfg)[0]
+        for basis in ("unaided", "tool-assisted", "unknown"):
+            cb = dict(cfg_en); cb["estimate_basis"] = basis
+            add(compute(te, cb), cb)
+        add(compute(load_tasks(make_e([["F0-BE-01", "E1", "F0", "BE", "M", "Devam", ""]]),
+                               cfg)[0], cfg))
+
+        text = "\n".join(en)
+        text = re.sub(r"<code>.*?</code>|&quot;.*?&quot;", " ", text, flags=re.S)
+        text = re.sub(r"<[^>]+>", " ", text)
+        text = re.sub(r"\b(Hakem|Skorkart|Cift|Maliyet|GercekEfor|Baslangic|Bitis)\b",
+                      " ", text)
+        tr_chars = re.findall(r"[çğıöşüÇĞİÖŞÜ]", text)
+        tr_words = sorted(set(re.findall(
+            r"\b(gun|gorev|kalan|tamam|devam|siradaki|olculmedi|sutun\w*|sekme\w*|"
+            r"cizelge\w*|yok|var|epik|toplam|ilerleme|efor|yigin|ay|karar|acik|"
+            r"sira|kirik|bakilmadi|sinanmadi|egim|dusuyor|artiyor|sabit|tahmin\w*|"
+            r"degil\w*|kapanmis|kacan|rampalar|kapida|kapisina|sonuna|kadar|faz|"
+            r"medyan|gecen|sure|birim|beyan\w*|oz-beyan\w*)\b", text, flags=re.I)))
+        check("report_lang en: Turkce harf kalmaz", not tr_chars)
+        check("report_lang en: Turkce etiket kalmaz"
+              + (f" (kalan: {', '.join(tr_words)})" if tr_words else ""), not tr_words)
+        check("report_lang en: yuzde 41% bicimiyle basilir", "%41" not in text)
+    finally:
+        LANG = "tr"
+
     print("SELF-TEST:", "BASARILI" if ok else "BASARISIZ")
     return 0 if ok else 1
 
@@ -1478,6 +1724,12 @@ def main():
         sys.exit(self_test())
 
     cfg = load_config(a.config)
+    global LANG
+    LANG = cfg.get("report_lang", "tr")
+    if LANG not in REPORT_LANGS:
+        # Sessiz varsayim yok: bilinmeyen dil Turkceye dusmez, durdurur.
+        sys.exit(f"HATA: report_lang {LANG!r} desteklenmiyor "
+                 f"(desteklenen: {', '.join(REPORT_LANGS)})")
     if not cfg["phases"]:
         sys.exit("HATA: yapilandirmada 'phases' bos "
                  "(iskele.config.json olustur; ornek: assets/iskele.config.example.json)")

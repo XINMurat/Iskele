@@ -84,6 +84,47 @@ birden değiştir: backlog ölçeği, `iskele.config.json`, rapor dipnotu.
 kısmi kredi vermek ilerlemeyi şişirir ve "neredeyse bitti" yanılsaması üretir;
 vereceksen bilinçli yap ve rapora yaz.
 
+## Döngünün v1.x ile kazandıkları
+
+Yukarıdaki yedi adım sabit çekirdektir. Bunlar onun üstüne eklendi, her biri
+gerçek bir projede görülmüş bir hatadan; normatif metin
+[`SKILL.md`](../../skill/iskele/SKILL.md) ve onun adlandırdığı referanslardır.
+
+- **Kabul kriteri tüketim tarafından yazılır** — "sistem X üretir" değil,
+  "kullanıcı X'e ulaşır". Üretim tarafı bir kriter, yetenek erişilemez olsa
+  bile geçer. Ve **üreten görev tüketen ikizini adlandırır**: kullanıcının
+  göreceği bilgiyi üreten her görev ya okuma yüzeyini kendi kriterinde taşır
+  ya da onu getiren görevin kimliğini yazar (`→ F3-FE-03`). Backlog'u katmana
+  göre kesmek bu boşluğu varsayılan yapar.
+- **Kapıda senaryo provası** — DoD'nin ve go/no-go'nun göremediği seviye:
+  alanın gerçek durumları modelde ifade edilebiliyor mu (ifade edilebilir,
+  yazılı bir sınır ya da bir bulgu), ve **iki özellik aynı anda aktifken
+  kimin güvencesi kırılır?** Cevap çizelgenin `Cift` sayfasında yaşar, her
+  çift için bir satır; rapor onu `GEN:CIFT` olarak basar ve bakılmamış
+  çiftleri ayrıca sayar. Senaryoları alan sahibi verir ve faz açılırken
+  yazılırlar, kapıya varınca değil.
+- **Go/no-go'da `check_adr.py`** — parça `06`'daki ADR zincirini doğrular:
+  durum sözlüğü, çözülen ileri işaretçiler, supersede tutarlılığı ve her
+  kararın tarttığı seçenekleri listelemesi.
+- **Parça `11`, `AGENTS.md`** — makineye dönük tabela: bu proje ne, her kural
+  nerede yaşıyor, ne yasak.
+- **Okuma yüzeyi küçük kalır** — ADR günlüğü üretilmiş tek satırlık bir
+  indeksten okunur, kapanan fazlar `arsiv/` klasörüne taşınır (taşınır, asla
+  silinmez). Arşivlemek bir okuma kararıdır, kapsam kararı değil: yüzde her
+  durumda çizelgeden gelir.
+- **Beklenti farkı** — isteğe bağlı `GercekEfor` sütunu (geçen süre değil,
+  gerçekten çalışılan efor) gerçek / tahmini efor oranını verir, ve config'teki
+  `estimate_basis` bu sayının ne diye adlandırılabileceğine karar verir
+  (varsayılan `unknown`). Birim maliyet iki paydayla raporlanır, ve
+  `tools/session_cost.py` yerel Claude Code dökümlerinden gerçek token
+  kullanımını toplar — bir oturumu bir göreve atamak insan hükmü olarak kalır,
+  `[H]` ile işaretlenir.
+- **Devir iki yönde de dosyadır** — `iskele_to_registry.py` backlog'u Mizan
+  önkayıtlarına, `kiyas_to_backlog.py` Kıyas tohumlarını görevlere çevirir,
+  `iskele_results.py` ise tamamlanan görevleri registry'ye sonuç olarak geri
+  yazar. Yalnızca ekler ve tier'ı asla değiştirmez: terfi başkasının
+  kararıdır.
+
 ## Kırmızı çizgiler
 
 - **Sahte kesinlik.** Tahmini hassas sayı gibi sunma; tabanını ve kalibresiz

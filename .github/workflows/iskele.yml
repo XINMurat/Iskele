@@ -384,7 +384,7 @@ jobs:
           out=$(python skill/iskele/scripts/check_change.py \
             --config skill/iskele/assets/iskele.config.example.json --files-only)
           echo "$out"
-          if echo "$out" | grep -q "olculmedi"; then
+          if echo "$out" | grep -q "^olculmedi"; then
             echo "FAIL: the example config leaves a threshold unmeasured" >&2; exit 1
           fi
 

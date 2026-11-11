@@ -93,6 +93,7 @@ built before this column existed, the indicator reads **"unmeasured", not 0%**.
 | `skill/iskele/scripts/progress.py` | `tracker.xlsx` → the report's GEN regions |
 | `skill/iskele/scripts/iskele_to_registry.py` | backlog → a Mizan registry (each acceptance criterion is already a preregistered refutation condition) |
 | `skill/iskele/scripts/kiyas_to_backlog.py` | Kıyas seeds → backlog tasks (each seed's cheapest refutation is already an executable acceptance criterion) |
+| `skill/iskele/scripts/check_change.py` | is this change reviewable? one task ID per commit, diff and file budgets from the config's `review` block, a ratchet baseline for files already over budget, and the critical paths a person must read |
 | `skill/iskele/scripts/iskele_results.py` | completed tasks in `tracker.xlsx` → Mizan `results[]` (append-only; never changes a tier, never proposes K without a named arbiter's evidence) |
 | `iskele.skill` | One-file package for installing the skill |
 | `examples/` | A worked backlog + config + report that CI runs end to end |
@@ -399,6 +400,7 @@ basar.
 | `skill/iskele/scripts/progress.py` | `tracker.xlsx` → raporun GEN bölgeleri |
 | `skill/iskele/scripts/iskele_to_registry.py` | backlog → Mizan registry'si (her kabul kriteri zaten önkayıtlı bir çürütme koşulu) |
 | `skill/iskele/scripts/kiyas_to_backlog.py` | Kıyas tohumları → backlog görevleri (her tohumun en ucuz çürütmesi zaten çalıştırılabilir bir kabul kriteri) |
+| `skill/iskele/scripts/check_change.py` | bu değişiklik incelenebilir mi? commit başına tek görev ID'si, config'in `review` bloğundan fark ve dosya bütçesi, bütçeyi zaten aşan dosyalar için büyümeyi yasaklayan taban çizgisi ve bir insanın okuması gereken kritik yollar |
 | `skill/iskele/scripts/iskele_results.py` | `tracker.xlsx`'te tamamlanan görevler → Mizan `results[]` (yalnız ekler; tier değiştirmez) |
 | `iskele.skill` | Skill'i kurmak için tek-dosya paket |
 | `examples/` | CI'ın uçtan uca koştuğu çalışılmış backlog + config + rapor |

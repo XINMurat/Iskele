@@ -38,6 +38,7 @@ yeniden çalışma yükler.
 [çalıştır]
 python progress.py      # çizelgeden raporu üret
 python check_adr.py     # ADR zincirini doğrula
+python check_change.py --config iskele.config.json --base [ana dal]   # değişiklik incelenebilir mi
 ```
 
 ## Çalışma disiplini
@@ -52,7 +53,10 @@ python check_adr.py     # ADR zincirini doğrula
    **raporla** (`09-kurtarma-rampalari.md` → RR-05).
 5. **Boş elle soru sorma.** Belirsizlik getiren önerisini ve gerekçesini de
    getirir; kararı sahibi verir (RR-10).
-6. **Çizelgeyi güncelle**, sonra `python progress.py`. İlerleme hesaplanır,
+6. **Bir değişiklik, bir görev.** Commit tek görev ID'si taşır ve fark bütçesinin
+   içinde kalır; taşıma ile davranış değişikliği ayrı commit'tir. Okunamayan
+   değişiklik incelenmiş sayılmaz (`check_change.py`).
+7. **Çizelgeyi güncelle**, sonra `python progress.py`. İlerleme hesaplanır,
    tahmin edilmez.
 
 ## Yasaklar
@@ -63,6 +67,8 @@ python check_adr.py     # ADR zincirini doğrula
 - ❌ Yürürlükteki bir ADR'yi yerinde düzenlemek — yenisi açılır, eskisinin
   durumu `Yerini aldı → ADR-x` olur
 - ❌ Kapanmış görevi, kanıtını silerek yeniden yazmak
+- ❌ Bütçeyi aşan dosyayı taban çizgisine yazıp büyütmeye devam etmek
+- ❌ Kritik yolu (`review.critical_globs`) insan okumadan birleştirmek
 - ❌ [projeye özgü: gizli anahtar, para hesabı, modül sınırı ihlali…]
 
 ## Bitti ne demek

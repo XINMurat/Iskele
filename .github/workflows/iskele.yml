@@ -368,6 +368,26 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Self-test - the reviewability gate actually fires
+        run: |
+          set -e
+          # Every finding class is shown to fire and to stay quiet, then the
+          # gate is run end to end on a throw-away repository: a growing legacy
+          # file and a commit with no task ID must turn it red.
+          python skill/iskele/scripts/check_change.py --self-test
+
+      - name: The shipped config example carries a complete review block
+        run: |
+          set -e
+          # A template whose thresholds are missing teaches the first user that
+          # "olculmedi" is the normal state of the gate.
+          out=$(python skill/iskele/scripts/check_change.py \
+            --config skill/iskele/assets/iskele.config.example.json --files-only)
+          echo "$out"
+          if echo "$out" | grep -q "olculmedi"; then
+            echo "FAIL: the example config leaves a threshold unmeasured" >&2; exit 1
+          fi
+
       - name: The shipped ADR template passes its own checker
         run: |
           set -e

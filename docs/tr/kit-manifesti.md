@@ -83,6 +83,8 @@ değiştirilebilir ama **çizelge, rapor ve üreteçte aynı olmalı**.
 - Değişiklik ana dala girdi.
 - Davranış değiştiyse otomatik test var.
 - Yeni arayüz ise yetki kontrolü var.
+- Değişiklik **tek görev ID'sine** hizmet ediyor ve `review` bütçesinin içinde
+  (`check_change.py`); kritik yolu adı yazılı bir kişi okudu.
 - Çizelge güncellendi.
 - Tıkanma/negatif bulgu kayda geçti.
 

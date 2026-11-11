@@ -13,6 +13,12 @@ Kutu tam dolmadan ilerleme yok.
 - [ ] **Kullanıcının göreceği bir bilgi üretiyorsa: o bilgiyi okuyabileceği bir yüzey
       var ve fiilen açıldı** — ya da aynı fazda o yüzeyi getiren görev listede ve bu
       görevin kutusunda ID'si yazılı. *Üretim tarafı bir kriteri tek başına karşılamaz.*
+- [ ] **Değişiklik incelenebilir:** tek görev ID'si taşıyor, fark ve dosya bütçesinin
+      içinde — `python check_change.py --config iskele.config.json --base [ana dal]`
+      temiz. Yeniden düzenleme ile davranış değişikliği ayrı değişikliklerde.
+- [ ] Değişiklik **kritik yola** dokunuyorsa (`INSAN_ONAYI`): okuyan kişinin adı
+      değişiklik kaydında. Onaylayan, değişikliği yazana sormadan anlatabiliyor.
+- [ ] Teslim notunda **neyin doğrulanmadığı** yazılı (boşsa "yok" yazılır, satır silinmez).
 - [ ] `tracker.xlsx`'te durum güncellendi.
 - [ ] Tıkanma/negatif bulgu `06-riskler-ve-kararlar.md`'ye yazıldı.
 
@@ -24,6 +30,12 @@ göremez; bu yüzden DoD'de ayrı madde.
 
 **"mış gibi" testi:** Yorum satırı, log mesajı veya buton *varlığı* davranış kanıtı
 değildir. Kabul kriterini gerçek veriyle bir kez daha çalıştırmadan done deme.
+
+**İncelenebilirlik bütçesi:** eşikler `iskele.config.json` → `review` bloğunda durur,
+bu dosyada değil — sayı iki yerde yazılırsa biri bayatlar. Eşik verilmemiş bir denetim
+`olculmedi` basar ve geçmez; bilerek kapatılan denetim `null` yazılır. Bütçeyi bugün
+aşan dosyalar `--write-baseline` ile kaydedilir: kayıtlı dosya **büyüyemez**, kayıtsız
+dosyaya pay yoktur.
 
 ## 2. Go/No-Go — faz geçişi
 
@@ -47,6 +59,9 @@ parçasıdır. Yeşil test paketi burada karşı kanıt değildir.
 - [ ] `kiriliyor` çıkan her çift ya kapatıldı ya da bir görev olarak backlog'a
       girdi.
 
+
+- [ ] `check_change.py --files-only` temiz; taban çizgisi bu fazda büyümedi
+      (küçülen dosya için sıkılaştırıldı).
 
 ### M0 — F0 → F1
 - [ ] Altyapı servisleri healthy.

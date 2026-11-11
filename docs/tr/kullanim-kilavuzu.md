@@ -103,6 +103,11 @@ gerçek bir projede görülmüş bir hatadan; normatif metin
   çift için bir satır; rapor onu `GEN:CIFT` olarak basar ve bakılmamış
   çiftleri ayrıca sayar. Senaryoları alan sahibi verir ve faz açılırken
   yazılırlar, kapıya varınca değil.
+- **DoD'de `check_change.py`** — değişiklik incelenebilir mi: commit başına
+  tek görev ID'si, fark ve her kaynak dosya config'in `review` bloğundaki
+  bütçenin içinde, ve adı yazılı bir kişinin okuması gereken kritik yollar.
+  Verilmemiş eşik `olculmedi` basar ve koşu geçmez; bütçeyi zaten aşan dosyalar
+  taban çizgisine yazılır ve büyüyemez.
 - **Go/no-go'da `check_adr.py`** — parça `06`'daki ADR zincirini doğrular:
   durum sözlüğü, çözülen ileri işaretçiler, supersede tutarlılığı ve her
   kararın tarttığı seçenekleri listelemesi.

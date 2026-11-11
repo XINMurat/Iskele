@@ -117,6 +117,10 @@ Her görev: `ID` · epik · katman · **tahmin (S/M/L)** · **bağımlılık** �
   okuma yüzeyi vardır* (üretim tarafı tek başına yetmez).
 - **Faz go/no-go** — kapıda tek tek doğrulanacak somut maddeler.
 
+- **İncelenebilirlik** — `scripts/check_change.py` kimsenin okuyamayacağı
+  değişikliği düşürür: tek commit'te birden çok görev ID'si, `review` bütçesini
+  aşan fark ya da dosya; ve bir insanın okuması gereken kritik yolları adlandırır.
+
 - **Kurtarma rampaları** — aynı adım, ters yöne bakan hâli. DoD ve go/no-go
   "bitti"nin ne demek olduğunu söyler; kitte hiçbir şey görev kapanmadığında,
   geçilmiş kapı bozulduğunda ya da niyet iş ortasında kaydığında ne

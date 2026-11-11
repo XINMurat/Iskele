@@ -118,6 +118,11 @@ each from a failure seen in a real project; the normative text is
   sheet, one row per pair, and the report prints it as `GEN:CIFT` with the
   unchecked pairs counted separately. Scenarios come from the domain owner and
   are written when a phase opens, not when it reaches the gate.
+- **`check_change.py` in the DoD** — is the change reviewable: one task ID
+  per commit, the diff and every source file inside the budget set in the
+  config's `review` block, and the critical paths a named person must read.
+  A threshold that is absent prints `olculmedi` and the run does not pass;
+  files already over budget go into a baseline and may not grow.
 - **`check_adr.py` at go/no-go** — validates the ADR chain in piece `06`:
   status vocabulary, forward pointers that resolve, supersede consistency, and
   that each decision lists the options it weighed.

@@ -101,6 +101,8 @@ Two sections:
 - The change landed on the main branch.
 - If behaviour changed, there is an automated test.
 - If it is a new interface, there is a permission check.
+- The change serves **one task ID** and stays inside the `review` budget
+  (`check_change.py`); a critical path was read by a named person.
 - The tracker was updated.
 - Blockers and negative findings were recorded.
 

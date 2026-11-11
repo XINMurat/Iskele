@@ -137,6 +137,10 @@ Two levels:
   from now, and a forward pointer that resolves to nothing is worse than no
   pointer, because it reads like a trail.
 
+- **Reviewability** — `scripts/check_change.py` fails a change nobody can
+  read: several task IDs in one commit, a diff or file over the `review`
+  budget; and it names the critical paths a person must read.
+
 - **Recovery ramps** — the same step, pointed the other way. DoD and go/no-go
   say what "done" means; nothing in the kit yet says what to do when a task
   will not close, a passed gate stops holding, or the intent moves mid-build.
@@ -409,6 +413,7 @@ or marked as an estimate. If it is neither, do not write it.
 - `scripts/iskele_to_registry.py` — Step 7: backlog → Mizan registry (preregistration)
 - `scripts/kiyas_to_backlog.py` — Step 7: Kiyas seeds → backlog tasks
 - `scripts/iskele_results.py` — Step 7: completed tasks → Mizan results (append-only)
+- `scripts/check_change.py` — Step 5: is the change reviewable
 - `scripts/check_adr.py` — validates the ADR chain in piece `06`: status
   vocabulary, forward pointers that resolve, supersede consistency, and that
   each decision lists the options it weighed

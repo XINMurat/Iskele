@@ -5,6 +5,17 @@
   "effort_weights": {"S": 0.75, "M": 1.5, "L": 4.0},
   "status_credit": {"Tamamlandi": 1.0, "Devam": 0.0, "Bloke": 0.0, "Yapilacak": 0.0},
   "workdays_per_month": 21,
+  "review": {
+    "id_pattern": "F\\d+-[A-Z]+-\\d+",
+    "max_changed_lines": 400,
+    "max_file_lines": 600,
+    "max_line_length": 160,
+    "source_globs": ["src/**/*"],
+    "exclude_globs": ["**/*.min.js", "**/migrations/**"],
+    "critical_globs": [],
+    "exempt_message_pattern": "^(release|docs):",
+    "baseline": "review-baseline.json"
+  },
   "phase_meta": {
     "F0": {"title": "F0 · Kurulum", "repo": "faz/f0-kurulum", "stack": "Docker · API · Web",
            "ms": "M0", "dep": null,
